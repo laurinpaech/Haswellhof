@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// https://github.com/lvandeve/lodepng
 unsigned char* decodeOneStep(const char* filename) {
 	unsigned error;
 	unsigned char* image = 0;
