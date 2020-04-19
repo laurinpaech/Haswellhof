@@ -1,5 +1,5 @@
 #include <math.h>
-
+#include <stdlib.h>
 
 void get_gaussian(float sigma, int size, float* dest) {
     // compute matrix of shape size*size 2d gaussian with variance sigma and mean (size/2, size/2) 
