@@ -15,8 +15,11 @@ struct interest_point {
     // Detected orientation [radiant] (with 0.0 == upright)
     float orientation = 0.0f;
 
-    // Flag for U-SURF
+    // Flag indicating if U-SURF is used
     bool upright = true;
+
+    // Flag indicating if laplacian Dxx + Dyy >= 0
+    bool laplacian;
 
     // SURF descriptor
     float descriptor[64];
