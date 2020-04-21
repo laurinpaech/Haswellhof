@@ -11,9 +11,12 @@ void get_gaussian(float sigma, int size, float* dest) {
     }
 }
 
-void get_descriptor(int keyp_x, int keyp_y, int scale, float* iimage, int height, int width, int PATCH_SIZE, float **ret_descriptor) {
+void get_descriptor(int keyp_x, int keyp_y, int scale, float* iimage, int height, int width, float **ret_descriptor) {
 
     // assert keyp_x, keyp_y is far enough out
+    
+    // initializing patch size
+    int PATCH_SIZE = 20 * scale;
 
     int top_right = keyp_y/2*width + keyp_x/2; // TODO: check if  indicescorrect
 
@@ -94,5 +97,5 @@ void get_descriptor(int keyp_x, int keyp_y, int scale, float* iimage, int height
 
     // assign descriptor to return variable 
     *ret_descriptor = descriptor;
-    
+
 }
