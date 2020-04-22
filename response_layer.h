@@ -1,6 +1,8 @@
 #pragma once
 
-struct respone_layer {
+#include <assert.h>
+
+struct response_layer {
     
     // Size of filter
     int filter_size;
@@ -10,10 +12,13 @@ struct respone_layer {
     int width;
     int height;
 
+    // TODO: (Sebastian) decide if we want to have this initial samping steps in here or not
+    int step = 2;
+
     // Array with all hessian responses
     float *response;
 
     // Array with all flags marking positive laplacian (Dxx + Dyy >= 0)
-    bool *lacplacian;
+    bool *laplacian;
 
 };
