@@ -8,7 +8,6 @@
 #include "integral_image.h"
 #include "fasthessian.h"
 
-
 int main(int argc, char const *argv[])
 {
 	int width, height, channels;
@@ -27,7 +26,7 @@ int main(int argc, char const *argv[])
 	struct integral_image* iimage = Integral(image, width, height);
 
 	// Fast-Hessian
-	struct fasthessian* fh = createFastHessian(&iimage);
+	struct fasthessian* fh = createFastHessian(iimage);
 
 	// Non-maximum supression interest points
 	// TODO

@@ -1,8 +1,7 @@
 
 struct fasthessian* createFastHessian() {
 
-    struct fasthessian* fh = malloc(sizeof(struct fasthessian));
-
+    struct fasthessian* fh = (struct fasthessian*) malloc(sizeof(struct fasthessian));
 
     return fh;
 }
