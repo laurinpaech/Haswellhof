@@ -23,9 +23,9 @@ struct integral_image *Integral(unsigned char* gray_image, unsigned width, unsig
         row_sum = 0.0f;
         for(int j=0; j<width; ++j) 
         {
-            row_sum += data[i*height+j]; 
+            row_sum += data[i*width+j]; 
             /*add sum of current row until current idx to sum of all previous rows until current index */
-            data[i*height+j] = row_sum + data[(i-1)*height+j];
+            data[i*width+j] = row_sum + data[(i-1)*width+j];
         }
     }
 
