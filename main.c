@@ -39,6 +39,8 @@ int main(int argc, char const *argv[])
 	// TODO
 
 	stbi_image_free(image);
+	free(iimage->data);
+	free(iimage);
 
 	return 0;
 }
