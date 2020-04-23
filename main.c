@@ -3,7 +3,7 @@
 
 #include "stb_image.h"
 #include "integral_image.h"
-#include "fasthessian.h"
+//#include "fasthessian.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,8 +21,9 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
+
 	// Calculate integral image
-	struct integral_image* iimage = Integral(image, width, height);
+	struct integral_image* iimage = create_integral_img(image, width, height);
 
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);
