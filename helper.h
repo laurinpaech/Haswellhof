@@ -24,7 +24,7 @@ void solve_linear_3x3_system(float A[9], float b[3], float ret_x[3]) {
 
     // computing solution vector x = A_inv * b
     ret_x[0] = 0.0f;
-    ret_x[1] = 0.0f; 
+    ret_x[1] = 0.0f;
     ret_x[2] = 0.0f;
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
