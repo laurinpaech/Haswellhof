@@ -5,15 +5,15 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "stb_image.h"
+#include "integral_image.h"
+#include "fasthessian.h"
+
 
 int main(int argc, char const *argv[])
 {
 	int width, height, channels;
 
-	// image is gamma corrected by default:
-	// stackoverflow.com/questions/59774647/loading-image-with-stb-image-library-as-float-outputs-wrong-values
-
-	// load image
+	// Load image
 	// stbi_ldr_to_hdr_gamma(1.0f)
 	float* image = stbi_loadf("test.png", &width, &height, &channels, STBI_grey);
 
@@ -21,6 +21,22 @@ int main(int argc, char const *argv[])
 		printf("Could not open or find image\n");
         return -1;
     }
+
+	// Calculate integral image
+	// TODO
+	struct integral_image* iimage = NULL;
+
+	// Fast-Hessian
+	struct fasthessian* fh = createFastHessian(&iimage);
+
+	// Non-maximum supression interest points
+	// TODO
+
+	// Detector stuff
+	// TODO
+
+	// Post-processing
+	// TODO
 
 	stbi_image_free(image);
 
