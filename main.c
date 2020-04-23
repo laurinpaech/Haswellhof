@@ -1,12 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "stb_image.h"
 #include "integral_image.h"
 #include "fasthessian.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 int main(int argc, char const *argv[])
 {
