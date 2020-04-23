@@ -16,6 +16,8 @@ int main(int argc, char const *argv[])
 	// load image
 	// stbi_ldr_to_hdr_gamma(1.0f)
 	float* image = stbi_loadf("test.png", &width, &height, &channels, STBI_grey);
+	struct integral_image *integral_img = Integral(image, width, height);
+
 
     if(!image) {
 		printf("Could not open or find image\n");
