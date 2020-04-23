@@ -23,8 +23,8 @@ float box_integral(struct integral_image *iimage, int row, int col, int rows, in
     int c1 = fmin(col + cols, width) - 1;
 
     float A = 0.0f;
-    float B = 0.0f; 
-    float C = 0.0f; 
+    float B = 0.0f;
+    float C = 0.0f;
     float D = 0.0f;
 
     if (r0 >= 0 && c0 >= 0) {
@@ -32,7 +32,7 @@ float box_integral(struct integral_image *iimage, int row, int col, int rows, in
     }
     if (r0 >= 0 && c1 >= 0) {
         B = data[r0 * width + c1];
-    }  
+    }
     if (r1 >= 0 && c0 >= 0) {
         C = data[r1 * width + c0];
     }
