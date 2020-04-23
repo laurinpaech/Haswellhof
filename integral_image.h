@@ -6,6 +6,7 @@
 struct integral_image {
     int width;
     int height;
+    /* https://aticleworld.com/pointer-inside-a-structure/ */
     float *data;
 };
 
