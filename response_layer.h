@@ -12,8 +12,8 @@ struct response_layer {
     int width;
     int height;
 
-    // TODO: (Sebastian) decide if we want to have this initial samping steps in here or not
-    int step = 2;
+    // Sampling step for this layer
+    int step;
 
     // Array with all hessian responses
     float *response;

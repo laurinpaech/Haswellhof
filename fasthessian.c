@@ -11,15 +11,81 @@ struct fasthessian* create_fast_hessian(struct integral_image *iimage) {
 
     struct fasthessian* fh = (struct fasthessian*) malloc(sizeof(struct fasthessian));
 
+    // Interest Image
     fh->iimage = iimage;
+
+    // Set Variables
     fh->octaves = NUM_OCTAVES;
     fh->layers = NUM_LAYER;
+    fh->step = INITIAL_STEP;
+    fh->thresh = THRESHOLD;
 
     return fh;
 }
 
-void create_response_map() {
+void create_response_map(struct fasthessian* fh, struct integral_image *iimage) {
+    int img_width = (fh->iimage)->width;
+    int img_height = (fh->iimage)->height;
+    int init_step = fh->step;
 
+    int w = img_width / init_step;
+    int h = (i_height / init_step);
+
+    // Octave 1 - 9, 15, 21, 27
+    struct response_layer* layer0 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer0->filter_size = 9;
+    layer0->width = w;
+    layer0->height = h;
+    layer0->step = init_step;
+
+    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer1->filter_size = 15;
+    layer1->width = w;
+    layer1->height = h;
+    layer1->step = init_step;
+
+    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer2->filter_size = 21;
+    layer2->width = w;
+    layer2->height = h;
+    layer2->step = init_step;
+
+    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer3->filter_size = 27;
+    layer3->width = w;
+    layer3->height = h;
+    layer3->step = init_step;
+
+    fh->response_map[0] = layer0
+    fh->response_map[1] = layer1
+    fh->response_map[2] = layer2
+    fh->response_map[3] = layer3
+
+    // Octave 2 - 15, 27, 39, 51
+    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer2->filter_size = 39;
+    layer2->width = w/2;
+    layer2->height = h/2;
+    layer2->step = init_step*2;
+
+    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer3->filter_size = 51;
+    layer3->width = w/2;
+    layer3->height = h/2;
+    layer3->step = init_step*2;
+
+    // Octave 3 - 27, 51, 75, 99
+    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer2->filter_size = 75;
+    layer2->width = w/4;
+    layer2->height = h/4;
+    layer2->step = init_step*4;
+
+    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer3->filter_size = 99;
+    layer3->width = w/4;
+    layer3->height = h/4;
+    layer3->step = init_step*4;
 }
 
 void compute_response_layer(struct response_layer* layer) {

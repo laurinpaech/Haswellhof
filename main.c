@@ -21,7 +21,6 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
-
 	// Calculate integral image
 	struct integral_image* iimage = create_integral_img(image, width, height);
 

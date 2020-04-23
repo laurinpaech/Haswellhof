@@ -7,6 +7,13 @@
 
 #define NUM_OCTAVES 4
 #define NUM_LAYER 10
+#define INITIAL_STEP 10
+#define THRESHOLD 10
+
+static const int NUM_OCTAVES = 3;
+static const int NUM_LAYER = 4;
+static const float THRESHOLD = 0.0004f;
+static const int INITIAL_STEP = 2;
 
 struct fasthessian {
 
