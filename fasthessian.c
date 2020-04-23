@@ -44,48 +44,54 @@ void create_response_map(struct fasthessian* fh, struct integral_image *iimage) 
     layer1->height = h;
     layer1->step = init_step;
 
-    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    struct response_layer* layer2 = (struct response_layer *) malloc(sizeof(struct response_layer));
     layer2->filter_size = 21;
     layer2->width = w;
     layer2->height = h;
     layer2->step = init_step;
 
-    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    struct response_layer* layer3 = (struct response_layer *) malloc(sizeof(struct response_layer));
     layer3->filter_size = 27;
     layer3->width = w;
     layer3->height = h;
     layer3->step = init_step;
 
-    fh->response_map[0] = layer0
-    fh->response_map[1] = layer1
-    fh->response_map[2] = layer2
-    fh->response_map[3] = layer3
+    fh->response_map[0] = layer0;
+    fh->response_map[1] = layer1;
+    fh->response_map[2] = layer2;
+    fh->response_map[3] = layer3;
 
     // Octave 2 - 15, 27, 39, 51
-    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer2->filter_size = 39;
-    layer2->width = w/2;
-    layer2->height = h/2;
-    layer2->step = init_step*2;
+    struct response_layer* layer4 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer4->filter_size = 39;
+    layer4->width = w/2;
+    layer4->height = h/2;
+    layer4->step = init_step*2;
 
-    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer3->filter_size = 51;
-    layer3->width = w/2;
-    layer3->height = h/2;
-    layer3->step = init_step*2;
+    struct response_layer* layer5 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer5->filter_size = 51;
+    layer5->width = w/2;
+    layer5->height = h/2;
+    layer5->step = init_step*2;
+
+    fh->response_map[4] = layer4;
+    fh->response_map[5] = layer5;
 
     // Octave 3 - 27, 51, 75, 99
-    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer2->filter_size = 75;
-    layer2->width = w/4;
-    layer2->height = h/4;
-    layer2->step = init_step*4;
+    struct response_layer* layer6 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer6->filter_size = 75;
+    layer6->width = w/4;
+    layer6->height = h/4;
+    layer6->step = init_step*4;
 
-    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer3->filter_size = 99;
-    layer3->width = w/4;
-    layer3->height = h/4;
-    layer3->step = init_step*4;
+    struct response_layer* layer7 = (struct response_layer *) malloc(sizeof(struct response_layer));
+    layer7->filter_size = 99;
+    layer7->width = w/4;
+    layer7->height = h/4;
+    layer7->step = init_step*4;
+
+    fh->response_map[6] = layer6;
+    fh->response_map[7] = layer7;
 }
 
 void compute_response_layer(struct response_layer* layer) {
