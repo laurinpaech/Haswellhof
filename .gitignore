@@ -52,5 +52,4 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-*.png
 .vscode/

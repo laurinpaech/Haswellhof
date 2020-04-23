@@ -2,11 +2,13 @@
 #include <stdlib.h>
 
 void get_gaussian(float sigma, int size, float* dest) {
-    // compute matrix of shape size*size 2d gaussian with variance sigma and mean (size/2, size/2) 
-    // TODO
+    /* computes matrix of shape (size x size) containing prob values of
+    2d gaussian with std=sigma and mean=(size/2, size/2) */
+    float variance = sigma*sigma;
+    float normalization = 1/(2*M_PI*variance);
     for (int i=0; i<size; i++) {
         for (int j=0; j<size; j++) {
-            dest[i*size + j] = 1;
+            dest[i*size + j] = normalization * exp(-((i-size/2)*(i-size/2)+(j-size/2)*(j-size/2))/(2*variance));
         }
     }
 }
@@ -16,12 +18,12 @@ void get_descriptor(int keyp_x, int keyp_y, int scale, float* iimage, int height
     // assert keyp_x, keyp_y is far enough out
     
     // initializing patch size
-    int PATCH_SIZE = 20 * scale;
+    int PATCH_SIZE = 20;
 
-    int top_right = keyp_y/2*width + keyp_x/2; // TODO: check if  indicescorrect
+    int top_right = keyp_y/2*width + keyp_x/2; // TODO: check if index correct
 
     // compute/load gaussian weighting matrix GW for PATCH_SIZE here 
-    // due to resue over all patches we probably want to precompute it and pass it as a param 
+    // due to resue over all patches we probably want to precompute it and pass it as a parameter
     float *GW = (float*) malloc(PATCH_SIZE*PATCH_SIZE * sizeof(float));
     get_gaussian(3.3, PATCH_SIZE, GW);
 
@@ -39,8 +41,9 @@ void get_descriptor(int keyp_x, int keyp_y, int scale, float* iimage, int height
             // c4 ij c5
             // c6 c7 c8
 
-            // TODO: check if  indicescorrect
-            // int m = (j*width+i)*scale;
+            // TODO: check if indices correct
+            // TODO: check for out of bounds
+            // int ij = (j*width+i)*scale;
             int c1 = top_right + ((j)*scale-1)*width+((i)*scale-1);
             int c2 = top_right + ((j)*scale-1)*width+((i+1)*scale-1);
             int c3 = top_right + ((j)*scale-1)*width+((i+2)*scale-1);
@@ -65,13 +68,13 @@ void get_descriptor(int keyp_x, int keyp_y, int scale, float* iimage, int height
     float sum_of_squares = 0;
     // TODO: (Sebastian) Check if this has to be relative to patch size
     for (int i=0; i<4; i++) {
-        for (int j=0; j<4; j++) { // iterate over sub_patches 
+        for (int j=0; j<4; j++) { // iterate over 4x4 sub_patches 
             descriptor[desc_idx] = 0;
             descriptor[desc_idx+1] = 0;
             descriptor[desc_idx+2] = 0;
             descriptor[desc_idx+3] = 0;
             for (int k=i*5; k<i*5+5; k++) {
-                for (int l=j*5; k<j*5+5; j++) { // iterate over pixels of 5x5 sub_patches
+                for (int l=j*5; k<j*5+5; j++) { // iterate over 5x5 sample points sub_patch[i][j]
                     float x = dx[k][l]; 
                     float y = dy[k][l]; 
 

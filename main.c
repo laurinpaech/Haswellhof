@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -8,6 +5,8 @@
 #include "integral_image.h"
 //#include "fasthessian.h"
 
+#include <stdio.h>
+#include <stdlib.h>
 
 int main(int argc, char const *argv[])
 {
@@ -29,7 +28,7 @@ int main(int argc, char const *argv[])
 	struct integral_image* iimage = create_integral_img(image, width, height);
 
 	// Fast-Hessian
-	//struct fasthessian* fh = createFastHessian(&iimage);
+	struct fasthessian* fh = createFastHessian(iimage);
 
 	// Non-maximum supression interest points
 	// TODO
