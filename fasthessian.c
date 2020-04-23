@@ -7,18 +7,22 @@
 #include <math.h>
 #include <assert.h>
 
-struct fasthessian* createFastHessian() {
+struct fasthessian* create_fast_hessian(struct integral_image *iimage) {
 
     struct fasthessian* fh = (struct fasthessian*) malloc(sizeof(struct fasthessian));
+
+    fh->iimage = iimage;
+    fh->octaves = NUM_OCTAVES;
+    fh->layers = NUM_LAYER;
 
     return fh;
 }
 
-void buildResponseMap() {
+void create_response_map() {
 
 }
 
-void buildResponseLayer(struct response_layer* layer) {
+void compute_response_layer(struct response_layer* layer) {
 
 }
 

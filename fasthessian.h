@@ -34,13 +34,13 @@ struct fasthessian {
 float threshold = 0.0004f;
 
 // Create Fast-Hessian struct
-void createFastHessian();
+struct fasthessian* create_fast_hessian();
 
 // Create octaves with response layers
-void buildResponseMap();
+void create_response_map();
 
 // Compute responses for layer
-void buildResponseLayer(struct response_layer* layer);
+void compute_response_layer(struct response_layer* layer);
 
 // checking if (row, col) is maximum in 3x3x3 neighborhood
 bool is_extremum(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom);

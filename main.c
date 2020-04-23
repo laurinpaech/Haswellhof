@@ -22,11 +22,18 @@ int main(int argc, char const *argv[])
     }
 
 	// Calculate integral image
-	// TODO
 	struct integral_image* iimage = Integral(image, width, height);
 
 	// Fast-Hessian
-	struct fasthessian* fh = createFastHessian(iimage);
+	struct fasthessian* fh = create_fast_hessian(iimage);
+
+	// Create octaves with response layers
+	create_response_map(fh);
+
+	// Compute responses for every layer
+	for (size_t i = 0; i < fh->; i++) {
+		compute_response_layer(fh);
+	}
 
 	// Non-maximum supression interest points
 	// TODO
@@ -40,6 +47,7 @@ int main(int argc, char const *argv[])
 	stbi_image_free(image);
 	free(iimage->data);
 	free(iimage);
+	free(fh);
 
 	return 0;
 }
