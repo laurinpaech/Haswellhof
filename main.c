@@ -45,7 +45,8 @@ int main(int argc, char const *argv[])
 	// TODO
 
 	// Free memory
-	free(iimage->data);  // TODO: move this into integral image
+	stbi_image_free(image); // possibly move this to create_integral_img
+	free(iimage->data);
 	free(iimage);
 	for (size_t i = 0; i < NUM_LAYERS; i++) {
 		free(fh->response_map[i]);
