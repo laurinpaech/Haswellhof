@@ -1,5 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
+#include "integral_image.h"
+#include "interest_point.h"
 
 void get_gaussian(float sigma, int size, float* dest) {
     /* computes matrix of shape (size x size) containing prob values of
@@ -8,23 +10,29 @@ void get_gaussian(float sigma, int size, float* dest) {
     float normalization = 1/(2*M_PI*variance);
     for (int i=0; i<size; i++) {
         for (int j=0; j<size; j++) {
-            dest[i*size + j] = normalization * exp(-((i-size/2)*(i-size/2)+(j-size/2)*(j-size/2))/(2*variance));
+            dest[j*size + i] = normalization * exp(-((i-size/2)*(i-size/2)+(j-size/2)*(j-size/2))/(2*variance));
         }
     }
 }
 
-void get_descriptor(int keyp_x, int keyp_y, int scale, float* iimage, int height, int width, float **ret_descriptor) {
+void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint) {
 
-    // assert keyp_x, keyp_y is far enough out
-    
     // initializing patch size
     int PATCH_SIZE = 20;
 
-    int top_right = keyp_y/2*width + keyp_x/2; // TODO: check if index correct
+    int width = iimage->width;
+    int height = iimage->height;
+
+    float scale = ipoint->scale;
+    float ipoint_x = ipoint->x;
+    float ipoint_y = ipoint->y;
+
+    float col_offset = ipoint_x-PATCH_SIZE*scale/2;
+    float row_offset = ipoint_y-PATCH_SIZE*scale/2;
 
     // compute/load gaussian weighting matrix GW for PATCH_SIZE here 
-    // due to resue over all patches we probably want to precompute it and pass it as a parameter
-    float *GW = (float*) malloc(PATCH_SIZE*PATCH_SIZE * sizeof(float));
+    // TODO: move to main as it is to resued over all patches OR compute it on the fly if this messes with I/O
+    float* GW = (float*) malloc(PATCH_SIZE*PATCH_SIZE * sizeof(float));
     get_gaussian(3.3, PATCH_SIZE, GW);
 
     // store wavelet responses
@@ -36,37 +44,39 @@ void get_descriptor(int keyp_x, int keyp_y, int scale, float* iimage, int height
         for (int j=0; j<PATCH_SIZE; j++) { // y coordinate
             float gw = GW[i*PATCH_SIZE + j];
 
-            // compute needed corners of the 2sx2s patch
-            // c1 c2 c3 
-            // c4 ij c5
-            // c6 c7 c8
+            // compute needed corners of the [2*scale x 2*scale] patch 
+            // centered at (ipoint_x, ipoint_y)
 
-            // TODO: check if indices correct
-            // TODO: check for out of bounds
-            // int ij = (j*width+i)*scale;
-            int c1 = top_right + ((j)*scale-1)*width+((i)*scale-1);
-            int c2 = top_right + ((j)*scale-1)*width+((i+1)*scale-1);
-            int c3 = top_right + ((j)*scale-1)*width+((i+2)*scale-1);
-            int c4 = top_right + ((j+1)*scale-1)*width+((i)*scale-1);
-            int c6 = top_right + ((j+2)*scale-1)*width+((i)*scale-1);
-            int c5 = top_right + ((j+1)*scale-1)*width+((i+2)*scale-1);
-            int c7 = top_right + ((j+2)*scale-1)*width+((i+1)*scale-1);
-            int c8 = top_right + ((j+2)*scale-1)*width+((i+2)*scale-1);
 
-            // TODO: (Sebastian) Check if correct!
-            dx[i][j] = gw * (iimage[c8] + iimage[c4] - iimage[c5] - iimage[c6] - (iimage[c5] + iimage[c1] - iimage[c3] - iimage[c4]));
-            dy[i][j] = gw * (iimage[c8] + iimage[c2] - iimage[c3] - iimage[c7] - (iimage[c7] + iimage[c1] - iimage[c2] - iimage[c6]));
+            // c1 XX c2 XX 
+            // XX XX XX XX
+            // c4 XX XX XX
+            // XX XX XX XX
 
-            // dx[i][j] = gw*(patch[(i+1)*PATCH_SIZE + j] - patch[i*PATCH_SIZE + j] + patch[(i+1)*PATCH_SIZE + j+1] - patch[i*PATCH_SIZE + j+1]);
-            // dy[i][j] = gw*(patch[i*PATCH_SIZE + j+1] - patch[i*PATCH_SIZE + j] + patch[(i+1)*PATCH_SIZE + j+1] - patch[(i+1)*PATCH_SIZE + j]);
+            int c1_row = round(col_offset + (j)*scale);
+            int c1_col = round(row_offset + (i)*scale);
+
+            int c2_row = round(col_offset + (j)*scale);
+            int c2_col = round(row_offset + (i+1)*scale);
+
+            int c4_row = round(col_offset + (j+1)*scale);
+            int c4_col = round(row_offset + (i)*scale);
+
+            dx[i][j] = gw * (box_integral(iimage, c1_row, c1_col, round(scale), round(2*scale)) 
+                            - box_integral(iimage, c2_row, c2_col, round(scale), round(2*scale)));
+
+            dx[i][j] = gw * (box_integral(iimage, c1_row, c1_col, round(2*scale), round(scale)) 
+                            - box_integral(iimage, c4_row, c4_col, round(2*scale), round(scale)));
         }
     }
 
+    free(GW);
+
     // build descriptor
-    float *descriptor = (float *) malloc(64 * sizeof(float));
+    float* descriptor = ipoint->descriptor; //(float *) malloc(64 * sizeof(float));
     int desc_idx = 0;
     float sum_of_squares = 0;
-    // TODO: (Sebastian) Check if this has to be relative to patch size
+
     for (int i=0; i<4; i++) {
         for (int j=0; j<4; j++) { // iterate over 4x4 sub_patches 
             descriptor[desc_idx] = 0;
@@ -97,8 +107,5 @@ void get_descriptor(int keyp_x, int keyp_y, int scale, float* iimage, int height
     float norm_factor = 1./sqrt(sum_of_squares);
     for (int i=0; i<64; i++) 
         descriptor[i] *= norm_factor;
-
-    // assign descriptor to return variable 
-    *ret_descriptor = descriptor;
 
 }

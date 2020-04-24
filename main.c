@@ -38,11 +38,22 @@ int main(int argc, char const *argv[])
 	// Non-maximum supression interest points
 	// TODO
 
-	// Detector stuff
-	// TODO
+	// Descriptor stuff
+	// for (ipoint in interest_points)
+    //     get_descriptor(iimage, point);
 
-	// Post-processing
-	// TODO
+	// Write results to file
+    // dummy code:
+    // FILE * fp = fopen("desc.txt","w");
+	// for (ipoint in interest_points) {
+    //     printf("%f %f ", ipoint->x, ipoint->y);
+    //     // printf("%f ", BLOB_ORIENTATION); 
+    //     for(int i = 0; i < 64; i++) {
+    //         fprintf(fp, "%f ", ipoint->descriptor[i]);
+    //     }
+    //     printf("/n");
+    // }
+    // fclose(fp);
 
 	// Free memory
 	stbi_image_free(image); // possibly move this to create_integral_img
