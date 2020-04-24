@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "tsc_x86.h"
+#include "benchmarking.h"
 
 
 int main(int argc, char const *argv[])
@@ -24,24 +24,10 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
-	int start, end;
-	double cycles = 0.;
-	FILE *fptr_int_img;
-	// Creates a file "fptr_int_img" 
-    // with file acccess as write mode 
-	fptr_int_img = fopen("benchmarking_files/integral_img.txt","w");
-
 	// Calculate integral image
-	start = start_tsc();
 	struct integral_image* iimage = create_integral_img(image, width, height);
-	end = stop_tsc(start);
-	cycles = (double)end;
-
-    fprintf(fptr_int_img,"%lf \n",cycles);
-
-	// closes the file pointed by fptr_int_img 
-    fclose(fptr_int_img); 
-
+	bench_integral_img(image, width, height);
+	
 	// Fast-Hessian
 	/*struct fasthessian* fh = create_fast_hessian(iimage);
 
