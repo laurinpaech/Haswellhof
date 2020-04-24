@@ -6,13 +6,13 @@
 #include <stdbool.h>
 
 // #define NUM_OCTAVES 4
-// #define NUM_LAYER 10
+// #define NUM_LAYER 10 // careful with NUM_LAYERS != NUM_TOTAL_LAYERS
 // #define INITIAL_STEP 2
 // #define THRESHOLD 0.0004f
 
 static const int NUM_OCTAVES = 3;
-static const int NUM_LAYER = 4;
-static const int NUM_LAYERS = 8;
+static const int NUM_LAYERS = 4;
+static const int NUM_TOTAL_LAYERS = 8;
 static const float THRESHOLD = 0.0004f;     // default threshold of hessian response for non-maximum suppression
 static const int INITIAL_STEP = 2;
 
@@ -22,7 +22,7 @@ struct fasthessian {
     struct integral_image* iimage;
 
     // Response stack of determinant of hessian values
-    struct response_layer* response_map[NUM_LAYERS];
+    struct response_layer* response_map[NUM_TOTAL_LAYERS];
 
     // Number of Octaves
     int octaves;
@@ -48,6 +48,9 @@ void create_response_map(struct fasthessian* fh);
 void compute_response_layer(struct response_layer* layer, struct integral_image *iimage);
 
 struct response_layer* initialise_response_layer(int filter_size, int width, int height, int init_step);
+
+// getting interest points
+void get_interest_points(struct fasthessian *fh);
 
 // checking if (row, col) is maximum in 3x3x3 neighborhood
 bool is_extremum(struct fasthessian *fh, int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom);

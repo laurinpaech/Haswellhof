@@ -18,7 +18,7 @@ struct fasthessian* create_fast_hessian(struct integral_image *iimage) {
 
     // Set Variables
     fh->octaves = NUM_OCTAVES;
-    fh->layers = NUM_LAYER;
+    fh->layers = NUM_LAYERS;
     fh->step = INITIAL_STEP;
     fh->thresh = THRESHOLD;
 
@@ -112,6 +112,55 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
 
 }
 
+void get_interest_points(struct fasthessian *fh) {
+
+    assert(fh != NULL);
+
+    // filter index map
+    const int filter_map[NUM_OCTAVES][NUM_LAYERS] = {
+        {0, 1, 2, 3}, 
+        {1, 3, 4, 5}, 
+        {3, 5, 6, 7}, 
+        //{5, 7, 8, 9}, 
+        //{7, 9, 10, 11}
+    };
+
+    // getting response layers 
+    struct response_layer *bottom;
+    struct response_layer *middle;
+    struct response_layer *top;
+    
+    // iterating through all octaves and each layer of octave in window of three (top, middle, bottom)
+    for (int o = 0; o < fh->octaves; ++o) {
+
+        // TODO: (Sebastian) allow for fh->layers != 4 as well (note that fh->layers>=3 has to hold)
+        for (int i = 0; i <= 1; ++i) {
+
+            // assigning respective bottom, middle and top response layer
+            bottom = fh->response_map[filter_map[o][i]];
+            middle = fh->response_map[filter_map[o][i+1]];
+            top = fh->response_map[filter_map[o][i+2]];
+
+            // iterating over middle response layer at density of the most sparse layer (always top),
+            // to find maxima accreoss scale and space
+            for (int r = 0; r < top->height; ++r) {
+                for (int c = 0; c < top->width; ++c) {
+
+                    // checking if current pixel position is local maximum in 3x3x3 maximum and above threshold
+                    if (is_extremum(fh, r, c, top, middle, bottom)) {
+                        
+                        // sub-pixel interpolating local maxium and adding to resulting interest point list if
+                        interpolate_extremum(r, c, top, middle, bottom);
+
+                    }
+
+                }
+            }
+
+        }
+    }
+
+}
 
 bool is_extremum(struct fasthessian *fh, int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom) {
 
