@@ -25,26 +25,25 @@ struct response_layer {
 
 };
 
-/*
-inline bool get_laplacian(struct response_layer *rl, int row, int col) {
+static inline bool get_laplacian(struct response_layer *rl, int row, int col) {
     assert(rl != NULL && rl->laplacian != NULL);
     return rl->laplacian[row * rl->width + col];
 }
 
-inline bool get_laplacian(struct response_layer *rl, int row, int col, struct response_layer *src) {
+static inline bool get_laplacian_relative(struct response_layer *rl, int row, int col, struct response_layer *src) {
     assert(rl != NULL && rl->laplacian != NULL && src != NULL);
     int scale = rl->width / src->width;
     return rl->laplacian[(scale * row) * rl->width + (scale * col)];
 }
 
-inline float get_response(struct response_layer *rl, int row, int col) {
+static inline float get_response(struct response_layer *rl, int row, int col) {
     assert(rl != NULL && rl->response != NULL);
     return rl->response[row * rl->width + col];
 }
 
-inline float get_response(struct response_layer *rl, int row, int col, struct response_layer *src) {
+static inline float get_response_relative(struct response_layer *rl, int row, int col, struct response_layer *src) {
     assert(rl != NULL && rl->response != NULL && src != NULL);
     int scale = rl->width / src->width;
     return rl->response[(scale * row) * rl->width + (scale * col)];
 }
-*/
+

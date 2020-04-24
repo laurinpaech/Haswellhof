@@ -1,5 +1,7 @@
 #include "fasthessian.h"
 #include "integral_image.h"
+#include "interest_point.h"
+#include "helper.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -110,13 +112,13 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
 
 }
 
-/*
-bool is_extremum(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom) {
+
+bool is_extremum(struct fasthessian *fh, int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom) {
 
     assert(top != NULL && middle != NULL && bottom != NULL);
 
     // TODO: (Sebastian) Don't quite understand this with the steps in there...
-    int layer_border = (top->filter_size + 1) / (2 * top->step)
+    int layer_border = (top->filter_size + 1) / (2 * top->step);
 
     // checking if row or col are out of bounds
     if (row <= layer_border || top->height - layer_border <= row
@@ -125,10 +127,10 @@ bool is_extremum(int row, int col, struct response_layer *top, struct response_l
     }
 
     // getting candidate point in middle layer
-    float candidate = middle->get_response(row, col, top);
+    float candidate = get_response_relative(middle, row, col, top);
 
     // checking if it passes the threshold
-    if (candidate < threshold) {
+    if (candidate < fh->thresh) {
         return false;
     }
 
@@ -136,9 +138,9 @@ bool is_extremum(int row, int col, struct response_layer *top, struct response_l
     for (int rr = -1; rr <= 1; ++rr) {
         for (int cc = -1; cc <= 1; ++cc) {
             // checking if any other response in the 3x3x3 neighborhood has a higher hessian response than the candidate
-            if (candidate <= top->get_response(row+rr, col+cc)
-                || ((rr != 0 || cc != 0) && candidate <= middle->get_response(row+rr, col+cc, top))
-                || candidate <= bottom->get_response(row+rr, col+cc, top)) {
+            if (candidate <= get_response(top, row+rr, col+cc)
+                || ((rr != 0 || cc != 0) && candidate <= get_response_relative(middle, row+rr, col+cc, top))
+                || candidate <= get_response_relative(bottom, row+rr, col+cc, top)) {
                 return false;
             }
         }
@@ -170,15 +172,15 @@ void interpolate_extremum(int row, int col, struct response_layer *top, struct r
     if (fabs(dx) < 0.5f && fabs(dy) < 0.5f && fabs(ds) < 0.5f) {
 
         // initializing interest point
-        struct interest_point ip;
-        ip.x = (float) ((col + dx) * top->step);
-        ip.y = (float) ((row + dy) * top->step);
-        ip.scale = (float) ((0.1333f) * (middle->filter_size + ds * filter_step));
-        ip.laplacian = middle->get_laplacian(row, col, top);
-
-        // TODO: (Sebastian) Only valid for U-SURF
-        ip.orientation = 0.0;
-        ip.upright = true;
+        struct interest_point ipt = { 
+            .x = (float) ((col + dx) * top->step), 
+            .y = (float) ((row + dy) * top->step), 
+            .scale = (float) ((0.1333f) * (middle->filter_size + ds * filter_step)),
+            .orientation = 0.0f,
+            .upright = true,
+            .laplacian = get_laplacian_relative(middle, row, col, top),
+            .descriptor = {0}
+        };
 
         // TODO: (Sebastian) Add interest point to list
         // ...
@@ -196,19 +198,19 @@ void interpolate_step(int row, int col,
 
     float hessian[9];
     {
-        float v = middle->get_response(row, col, top);
+        float v = get_response_relative(middle, row, col, top);
 
         // computing second order partial derivatives in xy position, as well as scale direction
-        float dxx = middle->get_response(row, col + 1, top) + middle->get_response(row, col - 1, top) - 2.0f * v;
-        float dyy = middle->get_response(row + 1, col, top) + middle->get_response(row - 1, col, top) - 2.0f * v;
-        float dss = top->get_response(row, col) + bottom->get_response(row, col, top) - 2.0f * v;
+        float dxx = get_response_relative(middle, row, col + 1, top) + get_response_relative(middle, row, col - 1, top) - 2.0f * v;
+        float dyy = get_response_relative(middle, row + 1, col, top) + get_response_relative(middle, row - 1, col, top) - 2.0f * v;
+        float dss = get_response(top, row, col) + get_response_relative(bottom, row, col, top) - 2.0f * v;
 
-        float dxy = (middle->get_response(row + 1, col + 1, top) - middle->get_response(row + 1, col - 1, top) -
-                     middle->get_response(row - 1, col + 1, top) + middle->get_response(row - 1, col - 1, top)) / 4.0f;
-        float dxs = (top->get_response(row, col + 1) - top->get_response(row, col - 1) -
-                     bottom->get_response(row, col + 1, top) + bottom->get_response(row, col - 1, top)) / 4.0f;
-        float dys = (top->get_response(row + 1, col) - top->get_response(row - 1, col) -
-                     bottom->get_response(row + 1, col, top) + bottom->get_response(row - 1, col, top)) / 4.0f;
+        float dxy = (get_response_relative(middle, row + 1, col + 1, top) - get_response_relative(middle, row + 1, col - 1, top) -
+                     get_response_relative(middle, row - 1, col + 1, top) + get_response_relative(middle, row - 1, col - 1, top)) / 4.0f;
+        float dxs = (get_response(top, row, col + 1) - get_response(top, row, col - 1) -
+                     get_response_relative(bottom, row, col + 1, top) + get_response_relative(bottom, row, col - 1, top)) / 4.0f;
+        float dys = (get_response(top, row + 1, col) - get_response(top, row - 1, col) -
+                     get_response_relative(bottom, row + 1, col, top) + get_response_relative(bottom, row - 1, col, top)) / 4.0f;
 
         // constructing hessian 3x3 matrix:
         // dxx dxy dxs
@@ -227,9 +229,9 @@ void interpolate_step(int row, int col,
 
     float neg_gradient[3];
     {
-        float dx = (middle->get_response(row, col + 1, top) - middle->get_response(row, col - 1, top)) / 2.0f;
-        float dy = (middle->get_response(row + 1, col, top) - middle->get_response(row - 1, col, top)) / 2.0f;
-        float ds = (top->get_response(row, col) - bottom->get_response(row, col, top)) / 2.0f;
+        float dx = (get_response_relative(middle, row, col + 1, top) - get_response_relative(middle, row, col - 1, top)) / 2.0f;
+        float dy = (get_response_relative(middle, row + 1, col, top) - get_response_relative(middle, row - 1, col, top)) / 2.0f;
+        float ds = (get_response(top, row, col) - get_response_relative(bottom, row, col, top)) / 2.0f;
 
         // constructing negative gradient 3x1 vector
         neg_gradient[0] = -dx;
@@ -242,4 +244,3 @@ void interpolate_step(int row, int col,
 
 }
 
-*/
