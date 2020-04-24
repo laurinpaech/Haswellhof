@@ -2,31 +2,31 @@
 #include <stdio.h>
 
 
-struct integral_image* create_integral_img(float* gray_image, unsigned width, unsigned height){
+struct integral_image* create_integral_img(float* gray_image, int width, int height){
 
     struct integral_image* integral_img = (struct integral_image *)malloc(sizeof(struct integral_image));
-    integral_img-> height = height;
-    integral_img-> width = width;
+    integral_img->height = height;
+    integral_img->width = width;
     float *data = (float*)malloc(width * height * sizeof(float));
-   
+
     float row_sum = 0.0f;
 
     /* sum up the first row */
 
-    for(int i=0; i<width; i++) 
+    for(int i=0; i<width; i++)
     {
         /* previous rows are 0 */
-        row_sum += gray_image[i]; 
+        row_sum += gray_image[i];
         data[i] = row_sum;
     }
 
     /* sum all remaining rows*/
-    for(int i=1; i<height; ++i) 
+    for(int i=1; i<height; ++i)
     {
         row_sum = 0.0f;
-        for(int j=0; j<width; ++j) 
+        for(int j=0; j<width; ++j)
         {
-            row_sum += gray_image[i*width+j]; 
+            row_sum += gray_image[i*width+j];
             /*add sum of current row until current idx to sum of all previous rows until current index */
             data[i*width+j] = row_sum + data[(i-1)*width+j];
         }
@@ -35,7 +35,7 @@ struct integral_image* create_integral_img(float* gray_image, unsigned width, un
     integral_img->data = data;
 
     return integral_img;
-        
+
 }
 
 float box_integral(struct integral_image *iimage, int row, int col, int rows, int cols) {
@@ -45,10 +45,16 @@ float box_integral(struct integral_image *iimage, int row, int col, int rows, in
     int height = iimage->height;
 
     // subtracting by one for row/col because row/col is inclusive.
-    int r0 = fmin(row, height) - 1;
-    int c0 = fmin(col, width) - 1;
-    int r1 = fmin(row + rows, height) - 1;
-    int c1 = fmin(col + cols, width) - 1;
+    int r0 = fmin(row, height) - 1;         // r - 3
+    int c0 = fmin(col, width) - 1;          // c - b - 1
+    int r1 = fmin(row + rows, height) - 1;  // r - 3 + 5
+    int c1 = fmin(col + cols, width) - 1;   // c - b + filter_size - 1
+
+    // Example with 9x9 filter at (0,0)
+    // A: (-3, -5)
+    // B: (-3, 8)
+    // C: (2, -1)
+    // D: (2, 4)
 
     float A = 0.0f;
     float B = 0.0f;

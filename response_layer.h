@@ -1,6 +1,8 @@
 #pragma once
 
 #include <assert.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 struct response_layer {
 
@@ -23,6 +25,7 @@ struct response_layer {
 
 };
 
+/*
 inline bool get_laplacian(struct response_layer *rl, int row, int col) {
     assert(rl != NULL && rl->laplacian != NULL);
     return rl->laplacian[row * rl->width + col];
@@ -44,3 +47,4 @@ inline float get_response(struct response_layer *rl, int row, int col, struct re
     int scale = rl->width / src->width;
     return rl->response[(scale * row) * rl->width + (scale * col)];
 }
+*/

@@ -1,14 +1,14 @@
 #include "fasthessian.h"
-
-#include "interest_point.h"
-#include "helper.h"
+#include "integral_image.h"
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <math.h>
 #include <assert.h>
 
 struct fasthessian* create_fast_hessian(struct integral_image *iimage) {
 
+    // malloc fast hessian struct
     struct fasthessian* fh = (struct fasthessian*) malloc(sizeof(struct fasthessian));
 
     // Interest Image
@@ -23,81 +23,94 @@ struct fasthessian* create_fast_hessian(struct integral_image *iimage) {
     return fh;
 }
 
-void create_response_map(struct fasthessian* fh, struct integral_image *iimage) {
+struct response_layer* initialise_response_layer(int filter_size, int width, int height, int init_step){
+    // initialise memory for struct
+    struct response_layer* layer = (struct response_layer *) malloc(sizeof(struct response_layer));
+
+    // set variables
+    layer->filter_size = filter_size;
+    layer->width = width;
+    layer->height = height;
+    layer->step = init_step;
+
+    // malloc arrays
+    layer->response = (float*) malloc(width * height * sizeof(float));
+    layer->laplacian = (bool*) malloc(width * height * sizeof(bool));
+
+    return layer;
+}
+
+void create_response_map(struct fasthessian* fh) {
     int img_width = (fh->iimage)->width;
     int img_height = (fh->iimage)->height;
     int init_step = fh->step;
 
     int w = img_width / init_step;
-    int h = (i_height / init_step);
+    int h = img_height / init_step;
 
     // Octave 1 - 9, 15, 21, 27
-    struct response_layer* layer0 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer0->filter_size = 9;
-    layer0->width = w;
-    layer0->height = h;
-    layer0->step = init_step;
-
-    struct response_layer* layer1 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer1->filter_size = 15;
-    layer1->width = w;
-    layer1->height = h;
-    layer1->step = init_step;
-
-    struct response_layer* layer2 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer2->filter_size = 21;
-    layer2->width = w;
-    layer2->height = h;
-    layer2->step = init_step;
-
-    struct response_layer* layer3 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer3->filter_size = 27;
-    layer3->width = w;
-    layer3->height = h;
-    layer3->step = init_step;
-
-    fh->response_map[0] = layer0;
-    fh->response_map[1] = layer1;
-    fh->response_map[2] = layer2;
-    fh->response_map[3] = layer3;
+    fh->response_map[0] = initialise_response_layer(9, w, h, init_step);
+    fh->response_map[1] = initialise_response_layer(15, w, h, init_step);
+    fh->response_map[2] = initialise_response_layer(21, w, h, init_step);
+    fh->response_map[3] = initialise_response_layer(27, w, h, init_step);
 
     // Octave 2 - 15, 27, 39, 51
-    struct response_layer* layer4 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer4->filter_size = 39;
-    layer4->width = w/2;
-    layer4->height = h/2;
-    layer4->step = init_step*2;
-
-    struct response_layer* layer5 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer5->filter_size = 51;
-    layer5->width = w/2;
-    layer5->height = h/2;
-    layer5->step = init_step*2;
-
-    fh->response_map[4] = layer4;
-    fh->response_map[5] = layer5;
+    fh->response_map[4] = initialise_response_layer(39, w/2, h/2, init_step*2);
+    fh->response_map[5] = initialise_response_layer(51, w/2, h/2, init_step*2);
 
     // Octave 3 - 27, 51, 75, 99
-    struct response_layer* layer6 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer6->filter_size = 75;
-    layer6->width = w/4;
-    layer6->height = h/4;
-    layer6->step = init_step*4;
-
-    struct response_layer* layer7 = (struct response_layer *) malloc(sizeof(struct response_layer));
-    layer7->filter_size = 99;
-    layer7->width = w/4;
-    layer7->height = h/4;
-    layer7->step = init_step*4;
-
-    fh->response_map[6] = layer6;
-    fh->response_map[7] = layer7;
+    fh->response_map[4] = initialise_response_layer(75, w/4, h/4, init_step*4);
+    fh->response_map[5] = initialise_response_layer(99, w/4, h/4, init_step*4);
 }
 
-void compute_response_layer(struct response_layer* layer) {
+void compute_response_layer(struct response_layer* layer, struct integral_image* iimage) {
+    float Dxx, Dyy, Dxy;
+    int x, y;
+
+    float* response = layer->response;
+    bool* laplacian = layer->laplacian;
+
+    int step = layer->step;
+    int filter_size = layer->filter_size;
+    int height = layer->height;
+    int width = layer->width;
+
+    int lobe = filter_size/3;
+    int border = (filter_size-1)/2;
+    float inv_area = 1.f/(filter_size*filter_size);
+
+    for (int i = 0, ind = 0; i < height; i++) {
+        for (int j = 0; j < width; j++, ind++) {
+            // Image coordinates
+            x = i*step;
+            y = j*step;
+
+            // Calculate Dxx, Dyy, Dxy with Box Filter
+            Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                    - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+            Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
+                    - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
+            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
+                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
+        }
+    }
 
 }
 
+/*
 bool is_extremum(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom) {
 
     assert(top != NULL && middle != NULL && bottom != NULL);
@@ -228,3 +241,5 @@ void interpolate_step(int row, int col,
     solve_linear_3x3_system(hessian, neg_gradient, offsets);
 
 }
+
+*/

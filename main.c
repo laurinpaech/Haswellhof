@@ -3,7 +3,7 @@
 
 #include "stb_image.h"
 #include "integral_image.h"
-//#include "fasthessian.h"
+#include "fasthessian.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,8 +31,8 @@ int main(int argc, char const *argv[])
 	create_response_map(fh);
 
 	// Compute responses for every layer
-	for (size_t i = 0; i < fh->; i++) {
-		compute_response_layer(fh);
+	for (size_t i = 0; i < fh->layers; i++) {
+		compute_response_layer(fh->response_map[i], iimage);
 	}
 
 	// Non-maximum supression interest points
@@ -44,9 +44,12 @@ int main(int argc, char const *argv[])
 	// Post-processing
 	// TODO
 
-	stbi_image_free(image);
-	free(iimage->data);
+	// Free memory
+	free(iimage->data);  // TODO: move this into integral image
 	free(iimage);
+	for (size_t i = 0; i < NUM_LAYERS; i++) {
+		free(fh->response_map[i]);
+	}
 	free(fh);
 
 	return 0;

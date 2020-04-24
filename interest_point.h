@@ -1,10 +1,10 @@
 #pragma once
 
 #include <stdlib.h>
-#include <stdbool.h> 
+#include <stdbool.h>
 
 struct interest_point {
-    
+
     // Detected (sub) pixel position
     float x;
     float y;
@@ -13,10 +13,10 @@ struct interest_point {
     float scale;
 
     // Detected orientation [radiant] (with 0.0 == upright)
-    float orientation = 0.0f;
+    float orientation; // 0.0f
 
     // Flag indicating if U-SURF is used
-    bool upright = true;
+    bool upright; // true
 
     // Flag indicating if laplacian Dxx + Dyy >= 0
     bool laplacian;
