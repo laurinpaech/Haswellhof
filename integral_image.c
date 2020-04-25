@@ -7,9 +7,16 @@ struct integral_image* create_integral_img(float* gray_image, int width, int hei
     struct integral_image* integral_img = (struct integral_image *)malloc(sizeof(struct integral_image));
     integral_img->height = height;
     integral_img->width = width;
-    float *data = (float*)malloc(width * height * sizeof(float));
+    float *data = (float*) malloc(width * height * sizeof(float));
 
     float row_sum = 0.0f;
+
+    // TESTING
+    // for (int i = 0; i < width; i++) {
+    //     for (int j = 0; j < height; j++) {
+    //         printf("%i, %i - %f\n", i, j, gray_image[i*width+j]);
+    //     }
+    // }
 
     /* sum up the first row */
 
@@ -29,6 +36,10 @@ struct integral_image* create_integral_img(float* gray_image, int width, int hei
             row_sum += gray_image[i*width+j];
             /*add sum of current row until current idx to sum of all previous rows until current index */
             data[i*width+j] = row_sum + data[(i-1)*width+j];
+
+            // TESTING
+            // printf("%i, %i - %f\n", i, j, data[i*width+j]);
+            // TESTING
         }
     }
 

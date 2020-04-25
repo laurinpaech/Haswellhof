@@ -13,7 +13,7 @@ int main(int argc, char const *argv[])
 	int width, height, channels;
 
 	// Load image
-	// stbi_ldr_to_hdr_gamma(1.0f)
+	stbi_ldr_to_hdr_gamma(1.0f);
 	float* image = stbi_loadf("test.png", &width, &height, &channels, STBI_grey);
 
     if(!image) {
@@ -31,9 +31,21 @@ int main(int argc, char const *argv[])
 	create_response_map(fh);
 
 	// Compute responses for every layer
-	for (size_t i = 0; i < fh->layers; i++) {
+	for (int i = 0; i < fh->total_layers; i++) {
+		// printf("%i\n", i);
 		compute_response_layer(fh->response_map[i], iimage);
 	}
+
+	// TESTING
+	// int num_rl = 6;
+	// struct response_layer* rm = fh->response_map[num_rl];
+	//
+	// for (int ind = 0; ind < 1000; ind++) {
+	// 	float responses = rm->response[ind];
+	// 	float laplacian = rm->laplacian[ind];
+	// 	printf("response %i: %f\nlaplacian %i: %f\n\n", ind, responses, laplacian);
+	// }
+	// TESTING
 
 	// Non-maximum supression interest points
 	// TODO
@@ -47,7 +59,7 @@ int main(int argc, char const *argv[])
     // FILE * fp = fopen("desc.txt","w");
 	// for (ipoint in interest_points) {
     //     printf("%f %f ", ipoint->x, ipoint->y);
-    //     // printf("%f ", BLOB_ORIENTATION); 
+    //     // printf("%f ", BLOB_ORIENTATION);
     //     for(int i = 0; i < 64; i++) {
     //         fprintf(fp, "%f ", ipoint->descriptor[i]);
     //     }
