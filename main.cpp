@@ -4,9 +4,12 @@
 #include "stb_image.h"
 #include "integral_image.h"
 #include "fasthessian.h"
+#include "interest_point.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <vector>
 
 int main(int argc, char const *argv[])
 {
@@ -35,8 +38,9 @@ int main(int argc, char const *argv[])
 		compute_response_layer(fh->response_map[i], iimage);
 	}
 
-	// Non-maximum supression interest points
-	// TODO
+	// Getting interest points with non-maximum supression
+	std::vector<struct interest_point> interest_points;
+	get_interest_points(fh, &interest_points);
 
 	// Descriptor stuff
 	// for (ipoint in interest_points)
