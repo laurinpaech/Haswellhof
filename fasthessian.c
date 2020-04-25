@@ -120,7 +120,7 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
 }
 
 void get_interest_points(struct fasthessian *fh) {
-
+    printf("getIpoints\n");
     assert(fh != NULL);
 
     // filter index map
@@ -143,10 +143,13 @@ void get_interest_points(struct fasthessian *fh) {
         // TODO: (Sebastian) allow for fh->layers != 4 as well (note that fh->layers>=3 has to hold)
         for (int i = 0; i <= 1; ++i) {
 
+
             // assigning respective bottom, middle and top response layer
             bottom = fh->response_map[filter_map[o][i]];
             middle = fh->response_map[filter_map[o][i+1]];
             top = fh->response_map[filter_map[o][i+2]];
+
+            printf("\nfilterstep %i, top filter size: %i, middle filter size: %i, bottom filter size: %i\n",(middle->filter_size - bottom->filter_size), top->filter_size, middle->filter_size, bottom->filter_size );
 
             // iterating over middle response layer at density of the most sparse layer (always top),
             // to find maxima accreoss scale and space
@@ -201,7 +204,7 @@ bool is_extremum(struct fasthessian *fh, int row, int col, struct response_layer
             }
         }
     }
-
+    printf("%f ", candidate);
     return true;
 
 }
@@ -238,6 +241,7 @@ void interpolate_extremum(int row, int col, struct response_layer *top, struct r
             .descriptor = {0}
         };
 
+        printf("[%f,%f] %d; ", ipt.x, ipt.y, ipt.laplacian);
         // TODO: (Sebastian) Add interest point to list
         // ...
 

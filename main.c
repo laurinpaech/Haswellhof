@@ -48,6 +48,7 @@ int main(int argc, char const *argv[])
 	// TESTING
 
 	// Non-maximum supression interest points
+	get_interest_points(fh);
 	// TODO
 
 	// Descriptor stuff

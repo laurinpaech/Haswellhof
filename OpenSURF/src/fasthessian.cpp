@@ -95,7 +95,7 @@ void FastHessian::getIpoints()
 {
   // filter index map
   static const int filter_map [OCTAVES][INTERVALS] = {{0,1,2,3}, {1,3,4,5}, {3,5,6,7}, {5,7,8,9}, {7,9,10,11}};
-
+  printf("getIpoints");
   // Clear the vector of exisiting ipts
   ipts.clear();
 
@@ -109,6 +109,9 @@ void FastHessian::getIpoints()
     b = responseMap.at(filter_map[o][i]);
     m = responseMap.at(filter_map[o][i+1]);
     t = responseMap.at(filter_map[o][i+2]);
+
+    printf("\nfilterstep %i, top filter size: %i, middle filter size: %i, bottom filter size: %i\n",(m->filter - b->filter), t->filter, m->filter, b->filter );
+
 
     // loop over middle response layer at density of the most
     // sparse layer (always top), to find maxima across scale and space
@@ -258,6 +261,7 @@ void FastHessian::buildResponseLayer(ResponseLayer *rl)
 //! Non Maximal Suppression function
 int FastHessian::isExtremum(int r, int c, ResponseLayer *t, ResponseLayer *m, ResponseLayer *b)
 {
+
   // bounds check
   int layerBorder = (t->filter + 1) / (2 * t->step);
   if (r <= layerBorder || r >= t->height - layerBorder || c <= layerBorder || c >= t->width - layerBorder)
@@ -281,7 +285,7 @@ int FastHessian::isExtremum(int r, int c, ResponseLayer *t, ResponseLayer *m, Re
         return 0;
     }
   }
-
+  printf("%f ", candidate);
   return 1;
 }
 
@@ -308,7 +312,10 @@ void FastHessian::interpolateExtremum(int r, int c, ResponseLayer *t, ResponseLa
     ipt.scale = static_cast<float>((0.1333f) * (m->filter + xi * filterStep));
     ipt.laplacian = static_cast<int>(m->getLaplacian(r,c,t));
     ipts.push_back(ipt);
+    printf("[%f,%f] %d; ", ipt.x, ipt.y, ipt.laplacian);
+
   }
+
 }
 
 //-------------------------------------------------------

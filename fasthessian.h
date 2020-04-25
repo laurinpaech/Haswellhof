@@ -10,9 +10,13 @@
 // #define INITIAL_STEP 2
 // #define THRESHOLD 0.0004f
 
-static const int NUM_OCTAVES = 3;
-static const int NUM_LAYERS = 4;
-static const int NUM_TOTAL_LAYERS = 8;
+#define NUM_OCTAVES 3
+#define NUM_LAYERS 4
+#define NUM_TOTAL_LAYERS 8
+
+//static const int NUM_OCTAVES = 3;
+//static const int NUM_LAYERS = 4;
+//static const int NUM_TOTAL_LAYERS = 8;
 static const float THRESHOLD = 0.0004f;     // default threshold of hessian response for non-maximum suppression
 static const int INITIAL_STEP = 2;
 
