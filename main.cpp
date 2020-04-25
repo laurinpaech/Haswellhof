@@ -5,6 +5,7 @@
 #include "integral_image.h"
 #include "fasthessian.h"
 #include "interest_point.h"
+#include "descriptor.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +18,7 @@ int main(int argc, char const *argv[])
 
 	// Load image
 	// stbi_ldr_to_hdr_gamma(1.0f)
-	float* image = stbi_loadf("test.png", &width, &height, &channels, STBI_grey);
+	float* image = stbi_loadf("images/img1.png", &width, &height, &channels, STBI_grey);
 
     if(!image) {
 		printf("Could not open or find image\n");
@@ -43,21 +44,23 @@ int main(int argc, char const *argv[])
 	get_interest_points(fh, &interest_points);
 
 	// Descriptor stuff
-	// for (ipoint in interest_points)
-    //     get_descriptor(iimage, point);
+    static float* GW = get_gaussian(3.3);
+	for (int i=0; i<interest_points.size(); i++)
+        get_descriptor(iimage, &interest_points[i], GW);
+    
+    free(GW);
 
 	// Write results to file
-    // dummy code:
-    // FILE * fp = fopen("desc.txt","w");
-	// for (ipoint in interest_points) {
-    //     printf("%f %f ", ipoint->x, ipoint->y);
-    //     // printf("%f ", BLOB_ORIENTATION); 
-    //     for(int i = 0; i < 64; i++) {
-    //         fprintf(fp, "%f ", ipoint->descriptor[i]);
-    //     }
-    //     printf("/n");
-    // }
-    // fclose(fp);
+    FILE * fp = fopen("desc.txt","w");
+	for (int i=0; i<interest_points.size(); i++) {
+        printf("%f %f ", interest_points[i].x, interest_points[i].y);
+        // printf("%f ", BLOB_ORIENTATION); // TODO: how to get this value
+        for(int j = 0; j < 64; j++) {
+            fprintf(fp, "%f ", interest_points[i].descriptor[j]);
+        }
+        printf("\n");
+    }
+    fclose(fp);
 
 	// Free memory
 	stbi_image_free(image); // possibly move this to create_integral_img
