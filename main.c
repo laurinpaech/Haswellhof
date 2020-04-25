@@ -35,6 +35,7 @@ int main(int argc, char const *argv[])
 		compute_response_layer(fh->response_map[i], iimage);
 	}
 
+	get_interest_points(fh);
 	// Non-maximum supression interest points
 	// TODO
 

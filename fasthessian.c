@@ -3,6 +3,7 @@
 #include "interest_point.h"
 #include "helper.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
@@ -61,8 +62,8 @@ void create_response_map(struct fasthessian* fh) {
     fh->response_map[5] = initialise_response_layer(51, w/2, h/2, init_step*2);
 
     // Octave 3 - 27, 51, 75, 99
-    fh->response_map[4] = initialise_response_layer(75, w/4, h/4, init_step*4);
-    fh->response_map[5] = initialise_response_layer(99, w/4, h/4, init_step*4);
+    fh->response_map[6] = initialise_response_layer(75, w/4, h/4, init_step*4);
+    fh->response_map[7] = initialise_response_layer(99, w/4, h/4, init_step*4);
 }
 
 void compute_response_layer(struct response_layer* layer, struct integral_image* iimage) {
@@ -140,6 +141,8 @@ void get_interest_points(struct fasthessian *fh) {
             bottom = fh->response_map[filter_map[o][i]];
             middle = fh->response_map[filter_map[o][i+1]];
             top = fh->response_map[filter_map[o][i+2]];
+
+            printf("filterstep %i, top filter size: %i, middle filter size: %i, bottom filter size: %i\n",(middle->filter_size - bottom->filter_size), top->filter_size, middle->filter_size, bottom->filter_size );
 
             // iterating over middle response layer at density of the most sparse layer (always top),
             // to find maxima accreoss scale and space
