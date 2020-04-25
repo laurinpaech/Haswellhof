@@ -34,6 +34,9 @@ struct fasthessian {
     // Number of layers per octave
     int layers;
 
+    // Number of layers in total
+    int total_layers;
+
     // Initial sampling step for Interest Point detection
     int step;
 
@@ -65,4 +68,3 @@ void interpolate_extremum(int row, int col, struct response_layer *top, struct r
 
 // constructing hessian and negative gaussian to solve 3x3 linear system and get sub-pixel offsets
 void interpolate_step(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets[3]);
-

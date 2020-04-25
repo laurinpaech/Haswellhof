@@ -17,7 +17,7 @@ int main(int argc, char const *argv[])
 	int width, height, channels;
 
 	// Load image
-	// stbi_ldr_to_hdr_gamma(1.0f)
+	stbi_ldr_to_hdr_gamma(1.0f);
 	float* image = stbi_loadf("images/img1.png", &width, &height, &channels, STBI_grey);
 
     if(!image) {
@@ -35,7 +35,7 @@ int main(int argc, char const *argv[])
 	create_response_map(fh);
 
 	// Compute responses for every layer
-	for (size_t i = 0; i < fh->layers; i++) {
+	for (size_t i = 0; i < fh->total_layers; i++) {
 		compute_response_layer(fh->response_map[i], iimage);
 	}
 
@@ -47,7 +47,7 @@ int main(int argc, char const *argv[])
     static float* GW = get_gaussian(3.3);
 	for (int i=0; i<interest_points.size(); i++)
         get_descriptor(iimage, &interest_points[i], GW);
-    
+
     free(GW);
 
 	// Write results to file
