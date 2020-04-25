@@ -68,6 +68,7 @@ double perf_test_integral_img(struct integral_image* (*function)(float*, int, in
 
 
     cycles = total_cycles;//cyclesList.front();
+    free(cyclesList);
     return  round((100.0 * flops) / cycles) / 100.0;
 }
 
