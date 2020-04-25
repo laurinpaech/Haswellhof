@@ -1,6 +1,4 @@
 #include "fasthessian.h"
-#include "integral_image.h"
-#include "interest_point.h"
 #include "helper.h"
 
 #include <stdio.h>
@@ -20,6 +18,7 @@ struct fasthessian* create_fast_hessian(struct integral_image *iimage) {
     // Set Variables
     fh->octaves = NUM_OCTAVES;
     fh->layers = NUM_LAYERS;
+    fh->total_layers = NUM_TOTAL_LAYERS;
     fh->step = INITIAL_STEP;
     fh->thresh = THRESHOLD;
 
@@ -82,8 +81,8 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
     int border = (filter_size-1)/2;
     float inv_area = 1.f/(filter_size*filter_size);
 
-    for (int i = 0, ind = 0; i < height; i++) {
-        for (int j = 0; j < width; j++, ind++) {
+    for (int i = 0, ind = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j, ind++) {
             // Image coordinates
             x = i*step;
             y = j*step;
@@ -113,24 +112,25 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
 
 }
 
-void get_interest_points(struct fasthessian *fh) {
+void get_interest_points(struct fasthessian *fh, std::vector<struct interest_point> *interest_points) {
 
     assert(fh != NULL);
+    assert(interest_points != NULL);
 
     // filter index map
     const int filter_map[NUM_OCTAVES][NUM_LAYERS] = {
-        {0, 1, 2, 3}, 
-        {1, 3, 4, 5}, 
-        {3, 5, 6, 7}, 
-        //{5, 7, 8, 9}, 
+        {0, 1, 2, 3},
+        {1, 3, 4, 5},
+        {3, 5, 6, 7},
+        //{5, 7, 8, 9},
         //{7, 9, 10, 11}
     };
 
-    // getting response layers 
+    // getting response layers
     struct response_layer *bottom;
     struct response_layer *middle;
     struct response_layer *top;
-    
+
     // iterating through all octaves and each layer of octave in window of three (top, middle, bottom)
     for (int o = 0; o < fh->octaves; ++o) {
 
@@ -150,10 +150,10 @@ void get_interest_points(struct fasthessian *fh) {
                 for (int c = 0; c < top->width; ++c) {
 
                     // checking if current pixel position is local maximum in 3x3x3 maximum and above threshold
-                    if (is_extremum(fh, r, c, top, middle, bottom)) {
-                        
-                        // sub-pixel interpolating local maxium and adding to resulting interest point list if
-                        interpolate_extremum(r, c, top, middle, bottom);
+                    if (is_extremum(r, c, top, middle, bottom, fh->thresh)) {
+
+                        // sub-pixel interpolating local maxium and adding to resulting interest point vector
+                        interpolate_extremum(r, c, top, middle, bottom, interest_points);
 
                     }
 
@@ -165,7 +165,9 @@ void get_interest_points(struct fasthessian *fh) {
 
 }
 
-bool is_extremum(struct fasthessian *fh, int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom) {
+bool is_extremum(int row, int col,
+                 struct response_layer *top, struct response_layer *middle, struct response_layer *bottom,
+                 float thresh) {
 
     assert(top != NULL && middle != NULL && bottom != NULL);
 
@@ -182,7 +184,7 @@ bool is_extremum(struct fasthessian *fh, int row, int col, struct response_layer
     float candidate = get_response_relative(middle, row, col, top);
 
     // checking if it passes the threshold
-    if (candidate < fh->thresh) {
+    if (candidate < thresh) {
         return false;
     }
 
@@ -202,7 +204,12 @@ bool is_extremum(struct fasthessian *fh, int row, int col, struct response_layer
 
 }
 
-void interpolate_extremum(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom) {
+void interpolate_extremum(int row, int col,
+                          struct response_layer *top, struct response_layer *middle, struct response_layer *bottom,
+                          std::vector<struct interest_point> *interest_points) {
+
+    assert(top != NULL && middle != NULL && bottom != NULL);
+    assert(interest_points != NULL);
 
     // getting step distance between filters
     int filter_step = (middle->filter_size - bottom->filter_size);
@@ -224,9 +231,9 @@ void interpolate_extremum(int row, int col, struct response_layer *top, struct r
     if (fabs(dx) < 0.5f && fabs(dy) < 0.5f && fabs(ds) < 0.5f) {
 
         // initializing interest point
-        struct interest_point ipt = { 
-            .x = (float) ((col + dx) * top->step), 
-            .y = (float) ((row + dy) * top->step), 
+        struct interest_point ip = {
+            .x = (float) ((col + dx) * top->step),
+            .y = (float) ((row + dy) * top->step),
             .scale = (float) ((0.1333f) * (middle->filter_size + ds * filter_step)),
             .orientation = 0.0f,
             .upright = true,
@@ -234,8 +241,8 @@ void interpolate_extremum(int row, int col, struct response_layer *top, struct r
             .descriptor = {0}
         };
 
-        // TODO: (Sebastian) Add interest point to list
-        // ...
+        // Add interest point to vector
+        interest_points->push_back(ip);
 
     }
 
@@ -295,4 +302,3 @@ void interpolate_step(int row, int col,
     solve_linear_3x3_system(hessian, neg_gradient, offsets);
 
 }
-

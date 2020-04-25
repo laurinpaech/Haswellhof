@@ -1,24 +1,31 @@
+#pragma once 
+
 #include <math.h>
 #include <stdlib.h>
 #include "integral_image.h"
 #include "interest_point.h"
 
-void get_gaussian(float sigma, int size, float* dest) {
+// initializing patch size
+int PATCH_SIZE = 20;
+
+static inline float* get_gaussian(float sigma) {
     /* computes matrix of shape (size x size) containing prob values of
     2d gaussian with std=sigma and mean=(size/2, size/2) */
+    int size = PATCH_SIZE;
+    float* GW = (float*) malloc(size*size * sizeof(float));
+
     float variance = sigma*sigma;
     float normalization = 1/(2*M_PI*variance);
     for (int i=0; i<size; i++) {
         for (int j=0; j<size; j++) {
-            dest[j*size + i] = normalization * exp(-((i-size/2)*(i-size/2)+(j-size/2)*(j-size/2))/(2*variance));
+            GW[j*size + i] = normalization * exp(-((i-size/2)*(i-size/2)+(j-size/2)*(j-size/2))/(2*variance));
         }
     }
+
+    return GW;
 }
 
-void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint) {
-
-    // initializing patch size
-    int PATCH_SIZE = 20;
+static inline void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
     int width = iimage->width;
     int height = iimage->height;
@@ -29,11 +36,6 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
 
     float col_offset = ipoint_x-PATCH_SIZE*scale/2;
     float row_offset = ipoint_y-PATCH_SIZE*scale/2;
-
-    // compute/load gaussian weighting matrix GW for PATCH_SIZE here 
-    // TODO: move to main as it is to resued over all patches OR compute it on the fly if this messes with I/O
-    float* GW = (float*) malloc(PATCH_SIZE*PATCH_SIZE * sizeof(float));
-    get_gaussian(3.3, PATCH_SIZE, GW);
 
     // store wavelet responses
     float dx[PATCH_SIZE][PATCH_SIZE];
@@ -46,7 +48,6 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
 
             // compute needed corners of the [2*scale x 2*scale] patch 
             // centered at (ipoint_x, ipoint_y)
-
 
             // c1 XX c2 XX 
             // XX XX XX XX
@@ -69,8 +70,6 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
                             - box_integral(iimage, c4_row, c4_col, round(2*scale), round(scale)));
         }
     }
-
-    free(GW);
 
     // build descriptor
     float* descriptor = ipoint->descriptor; //(float *) malloc(64 * sizeof(float));

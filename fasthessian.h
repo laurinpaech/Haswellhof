@@ -1,11 +1,13 @@
 #pragma once
 
 #include "response_layer.h"
+#include "integral_image.h"
+#include "interest_point.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
 
-
+#include <vector>
 
 // #define NUM_OCTAVES 4
 // #define NUM_LAYER 10 // careful with NUM_LAYERS != NUM_TOTAL_LAYERS
@@ -36,6 +38,9 @@ struct fasthessian {
     // Number of layers per octave
     int layers;
 
+    // Number of layers in total
+    int total_layers;
+
     // Initial sampling step for Interest Point detection
     int step;
 
@@ -55,16 +60,15 @@ void compute_response_layer(struct response_layer* layer, struct integral_image 
 
 struct response_layer* initialise_response_layer(int filter_size, int width, int height, int init_step);
 
-// getting interest points
-void get_interest_points(struct fasthessian *fh);
+// getting interest points and storing them in return argument vector
+void get_interest_points(struct fasthessian *fh, std::vector<struct interest_point> *interest_points);
 
 // checking if (row, col) is maximum in 3x3x3 neighborhood
-bool is_extremum(struct fasthessian *fh, int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom);
+bool is_extremum(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float thresh);
 
 // interpolating maximum at (row, col) with quadratic in 3x3x3 neighborhood to get sub-pixel location
 // and storing potential interest point if interpolation remains fairly 'close' to pixel location
-void interpolate_extremum(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom);
+void interpolate_extremum(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, std::vector<struct interest_point> *interest_points);
 
 // constructing hessian and negative gaussian to solve 3x3 linear system and get sub-pixel offsets
 void interpolate_step(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets[3]);
-
