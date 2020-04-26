@@ -142,8 +142,6 @@ void get_interest_points(struct fasthessian *fh, std::vector<struct interest_poi
             middle = fh->response_map[filter_map[o][i+1]];
             top = fh->response_map[filter_map[o][i+2]];
 
-            printf("filterstep %i, top filter size: %i, middle filter size: %i, bottom filter size: %i\n",(middle->filter_size - bottom->filter_size), top->filter_size, middle->filter_size, bottom->filter_size );
-
             // iterating over middle response layer at density of the most sparse layer (always top),
             // to find maxima accreoss scale and space
             for (int r = 0; r < top->height; ++r) {

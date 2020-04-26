@@ -6,6 +6,7 @@
 #include "fasthessian.h"
 #include "interest_point.h"
 #include "descriptor.h"
+#include "benchmarking.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,6 +28,7 @@ int main(int argc, char const *argv[])
 
 	// Calculate integral image
 	struct integral_image* iimage = create_integral_img(image, width, height);
+	//bench_integral_img(image, width, height);
 
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);
