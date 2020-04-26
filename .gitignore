@@ -52,4 +52,10 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Build folders
+build/
+cmake-build-*
+
+# IDE configuration files  
 .vscode/
+.idea/
