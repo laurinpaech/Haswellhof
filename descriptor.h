@@ -83,7 +83,7 @@ static inline void get_descriptor(struct integral_image* iimage, struct interest
             descriptor[desc_idx+2] = 0;
             descriptor[desc_idx+3] = 0;
             for (int k=i*5; k<i*5+5; k++) {
-                for (int l=j*5; k<j*5+5; j++) { // iterate over 5x5 sample points sub_patch[i][j]
+                for (int l=j*5; l<j*5+5; l++) { // iterate over 5x5 sample points sub_patch[i][j]
                     float x = dx[k][l]; 
                     float y = dy[k][l]; 
 
