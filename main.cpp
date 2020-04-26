@@ -53,12 +53,12 @@ int main(int argc, char const *argv[])
 	// Write results to file
     FILE * fp = fopen("desc.txt","w");
 	for (int i=0; i<interest_points.size(); i++) {
-        printf("%f %f ", interest_points[i].x, interest_points[i].y);
+        fprintf(fp, "%f %f ", interest_points[i].x, interest_points[i].y);
         // printf("%f ", BLOB_ORIENTATION); // TODO: how to get this value
         for(int j = 0; j < 64; j++) {
             fprintf(fp, "%f ", interest_points[i].descriptor[j]);
         }
-        printf("\n");
+        fprintf(fp, "\n");
     }
     fclose(fp);
 
