@@ -39,6 +39,9 @@ int main(int argc, char const *argv[])
 	// Compute responses for every layer
 	for (size_t i = 0; i < fh->total_layers; i++) {
 		compute_response_layer(fh->response_map[i], iimage);
+		if(i==0){
+			bench_compute_response_layer(fh->response_map[i], iimage, width, height);
+		}
 	}
 
 	// Getting interest points with non-maximum supression

@@ -12,8 +12,12 @@
 #define REP 50
 #define EPS (1e-3)
 
+
+
+
+
 /*
-* Checks the given function for validity. If valid, then computes and
+* 
 * reports and returns the number of cycles required per iteration
 */
 double perf_test_integral_img(struct integral_image* (*function)(float*, int, int), float* gray_image, int width, int height,int flops)
@@ -78,6 +82,69 @@ void bench_integral_img(float* image, int width, int height){
 	double flops_per_cycle  = perf_test_integral_img(create_integral_img, image, width, height, flops);
     save_performance_file(flops_per_cycle, "/integral_img");
 }
+
+
+
+
+double perf_test_compute_response_layer(void (*function)(struct response_layer*, struct integral_image*), struct response_layer* layer,struct integral_image* iimage, int flops){
+    double cycles = 0.;
+    long num_runs = 100;
+    double multiplier = 1;
+    int start, end;
+
+    // Warm-up phase: we determine a number of executions that allows
+    // the code to be executed for at least CYCLES_REQUIRED cycles.
+    // This helps excluding timing overhead when measuring small runtimes.
+    do {
+        num_runs = num_runs * multiplier;
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; i++) {
+            (*function)(layer, iimage);           
+        }
+        end = stop_tsc(start);
+
+        cycles = (double)end;
+        multiplier = (CYCLES_REQUIRED) / (cycles);
+        
+    } while (multiplier > 2);
+
+
+
+    float *cyclesList = (float*)malloc(REP * sizeof(float));
+
+
+    // Actual performance measurements repeated REP times.
+    // We simply store all results and compute medians during post-processing.
+    double total_cycles = 0;
+    for (size_t j = 0; j < REP; j++) {
+
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; ++i) {
+            (*function)(layer, iimage);           
+        }
+        end = stop_tsc(start);
+
+        cycles = ((double)end) / num_runs;
+        total_cycles += cycles;
+
+        cyclesList[REP-j-1]=(cycles);
+    }
+    total_cycles /= REP;
+
+    cycles = total_cycles;//cyclesList.front();
+    free(cyclesList);
+    return  round((100.0 * flops) / cycles) / 100.0;
+}
+
+// time the function compute_response_layer and write it to a file
+void bench_compute_response_layer(struct response_layer* layer, struct integral_image* iimage, int width, int height){
+    int flops = 1 + height*width*13;
+	double flops_per_cycle  = perf_test_compute_response_layer(compute_response_layer, layer, iimage, flops);
+    save_performance_file(flops_per_cycle, "/compute_response_layer");
+}
+
+
+
 
 void save_performance_file(double flops_per_cycle, const char *file_name){   
     // create the folder if it doesn't exist   
