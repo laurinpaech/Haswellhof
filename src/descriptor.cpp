@@ -6,24 +6,22 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 
 void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
-    // int width = iimage->width;
-    // int height = iimage->height;
-
     float scale = ipoint->scale;
-    float ipoint_x = ipoint->x;
-    float ipoint_y = ipoint->y;
+    int ipoint_x = (int) (ipoint->x - 0.5);
+    int ipoint_y = (int) (ipoint->y - 0.5);
 
-    float col_offset = ipoint_x-PATCH_SIZE*scale/2;
-    float row_offset = ipoint_y-PATCH_SIZE*scale/2;
+    int step = MAX((int)(scale/2 + 0.5),1); // rounding is done this way in the original implementaion
 
-    // printf("%f %f %f %f\n", col_offset, row_offset, ipoint_x, ipoint_y);
+    int col_offset = ipoint_x-step*10; //10 = PATCH_SIZE/2;
+    int row_offset = ipoint_y-step*10;
 
     // build descriptor
-    float* descriptor = ipoint->descriptor; //(float *) malloc(64 * sizeof(float));
+    float* descriptor = ipoint->descriptor;
     int desc_idx = 0;
     float sum_of_squares = 0;
 
@@ -46,26 +44,20 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
                     // c4 XX XX XX
                     // XX XX XX XX
 
-                    int c1_row = round(row_offset +  l   *scale);
-                    int c1_col = round(col_offset +  k   *scale);
+                    int c1_row = row_offset +  l   *step;
+                    int c1_col = col_offset +  k   *step;
 
-                    // int c2_row = round(row_offset +  l   *scale);
-                    int c2_col = round(col_offset + (k+1)*scale);
-
-                    int c4_row = round(row_offset + (l+1)*scale);
-                    // int c4_col = round(col_offset +  k   *scale);
+                    int c2_col = col_offset + (k+1)*step;
+                    int c4_row = row_offset + (l+1)*step;
 
                     // haarX
-                    // printf("haarX\n");
-                    float x = gw * (box_integral(iimage, c1_row, c1_col, round(2*scale), round(scale))
-                                    - box_integral(iimage, c1_row, c2_col, round(2*scale), round(scale)));
+                    float x = gw * (box_integral(iimage, c1_row, c1_col, 2*step, step)
+                                    - box_integral(iimage, c1_row, c2_col, 2*step, step));
 
                     // haarY
-                    // printf("haarY\n");
-                    float y = gw * (box_integral(iimage, c1_row, c1_col, round(scale), round(2*scale)) 
-                                    - box_integral(iimage, c4_row, c1_col, round(scale), round(2*scale)));
+                    float y = gw * (box_integral(iimage, c1_row, c1_col, step, 2*step) 
+                                    - box_integral(iimage, c4_row, c1_col, step, 2*step));
 
-                    // printf("c1:(%d %d) c2_col:%d c4_row:%d x:%f y:%f gw:%f\n", c1_row, c1_col, c2_col, c4_row, x, y, gw);
 
                     descriptor[desc_idx] += x; // sum(x)
                     descriptor[desc_idx+1] += y; // sum(y)
@@ -84,7 +76,6 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
 
     // rescale to unit vector
     float norm_factor = 1./sqrt(sum_of_squares);
-    // printf("%f %f \n", sum_of_squares, norm_factor);
 
     for (int i=0; i<64; ++i) 
         descriptor[i] *= norm_factor;

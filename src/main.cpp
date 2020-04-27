@@ -19,7 +19,7 @@ int main(int argc, char const *argv[])
 
 	// Load image
 	stbi_ldr_to_hdr_gamma(1.0f);
-	float* image = stbi_loadf("../images/img1.png", &width, &height, &channels, STBI_grey);
+	float* image = stbi_loadf("../images/pumpkin1.jpg", &width, &height, &channels, STBI_grey);
 
     if(!image) {
 		printf("Could not open or find image\n");
@@ -37,7 +37,7 @@ int main(int argc, char const *argv[])
 	create_response_map(fh);
 
 	// Compute responses for every layer
-	for (size_t i = 0; i < fh->total_layers; i++) {
+	for (int i = 0; i < fh->total_layers; i++) {
 		compute_response_layer(fh->response_map[i], iimage);
 	}
 
@@ -47,17 +47,17 @@ int main(int argc, char const *argv[])
 
 	// Descriptor stuff
     static float* GW = get_gaussian(3.3);
-	for (int i=0; i<interest_points.size(); i++)
+	for (size_t i=0; i<interest_points.size(); ++i)
         get_descriptor(iimage, &interest_points[i], GW);
 
     free(GW);
 
 	// Write results to file
-    FILE * fp = fopen("desc.txt","w");
-	for (int i=0; i<interest_points.size(); i++) {
-        fprintf(fp, "%f %f ", interest_points[i].x, interest_points[i].y);
-        // printf("%f ", BLOB_ORIENTATION); // TODO: how to get this value
-        for(int j = 0; j < 64; j++) {
+    FILE * fp = fopen("pumpkin1_desc.txt","w");
+    printf("%d %d %d\n", iimage->width, iimage->height, channels);
+	for (size_t i=0; i<interest_points.size(); ++i) {
+        fprintf(fp, "%f %f %f %f ", interest_points[i].x, interest_points[i].y, interest_points[i].scale, interest_points[i].laplacian);
+        for(size_t j = 0; j < 64; j++) {
             fprintf(fp, "%f ", interest_points[i].descriptor[j]);
         }
         fprintf(fp, "\n");
