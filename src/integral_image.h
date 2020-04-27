@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -38,7 +37,6 @@ static inline float box_integral(struct integral_image *iimage, int row, int col
 
     if (r0 >= 0 && c0 >= 0) {
         A = data[r0 * width + c0];
-
     }
     if (r0 >= 0 && c1 >= 0) {
         B = data[r0 * width + c1];
