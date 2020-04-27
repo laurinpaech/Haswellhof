@@ -13,9 +13,6 @@
 #define EPS (1e-3)
 
 
-
-
-
 /*
 * 
 * reports and returns the number of cycles required per iteration
@@ -86,7 +83,7 @@ void bench_integral_img(float* image, int width, int height){
 
 
 
-double perf_test_compute_response_layer(void (*function)(struct response_layer*, struct integral_image*), struct response_layer* layer,struct integral_image* iimage, int flops){
+double perf_test_compute_response_layer(void (*function)(struct response_layer*, struct integral_image*), struct response_layer* layer,struct integral_image* iimage, long flops){
     double cycles = 0.;
     long num_runs = 100;
     double multiplier = 1;
@@ -138,12 +135,73 @@ double perf_test_compute_response_layer(void (*function)(struct response_layer*,
 
 // time the function compute_response_layer and write it to a file
 void bench_compute_response_layer(struct response_layer* layer, struct integral_image* iimage, int width, int height){
-    int flops = 1 + height*width*13;
+    long flops = 1 + height*width*13;
 	double flops_per_cycle  = perf_test_compute_response_layer(compute_response_layer, layer, iimage, flops);
     save_performance_file(flops_per_cycle, "/compute_response_layer");
 }
 
 
+//times the function get_interest_points from fasthessian and returns the flops per cycle
+double perf_test_get_interest_points(void (*function)(struct fasthessian*, std::vector<struct interest_point>*), struct fasthessian *fh, long flops){
+    double cycles = 0.;
+    long num_runs = 100;
+    double multiplier = 1;
+    int start, end;
+
+    // Warm-up phase: we determine a number of executions that allows
+    // the code to be executed for at least CYCLES_REQUIRED cycles.
+    // This helps excluding timing overhead when measuring small runtimes.
+    do {
+        num_runs = num_runs * multiplier;
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; i++) {
+            std::vector<struct interest_point> interest_points;
+            (*function)(fh, &interest_points);           
+        }
+        end = stop_tsc(start);
+
+        cycles = (double)end;
+        multiplier = (CYCLES_REQUIRED) / (cycles);
+        
+    } while (multiplier > 2);
+
+
+
+    float *cyclesList = (float*)malloc(REP * sizeof(float));
+
+
+    // Actual performance measurements repeated REP times.
+    // We simply store all results and compute medians during post-processing.
+    double total_cycles = 0;
+    for (size_t j = 0; j < REP; j++) {
+
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; ++i) {
+            std::vector<struct interest_point> interest_points;
+            (*function)(fh, &interest_points);           
+        }
+        end = stop_tsc(start);
+
+        cycles = ((double)end) / num_runs;
+        total_cycles += cycles;
+
+        cyclesList[REP-j-1]=(cycles);
+    }
+    total_cycles /= REP;
+
+    cycles = total_cycles;//cyclesList.front();
+    free(cyclesList);
+    printf("%li", cycles);
+    return  round((100.0 * flops) / cycles) / 100.0;
+}
+//times the function get_interest_points from fasthessian and saves the output to a file
+void bench_get_interest_points(struct fasthessian *fh, int width, int height, int initial_step){
+    long flops = 12.25*((height * width)/4) * 109;
+    //printf("%li", flops);
+    printf("bench_get_interest_points %li\n", flops);
+	double flops_per_cycle  = perf_test_get_interest_points(get_interest_points, fh, flops);
+    save_performance_file(flops_per_cycle, "/get_interest_points");
+}
 
 
 void save_performance_file(double flops_per_cycle, const char *file_name){   
@@ -153,6 +211,7 @@ void save_performance_file(double flops_per_cycle, const char *file_name){
     if (stat(folder_name, &st) == -1) {
         mkdir(folder_name, 0700);
     }
+
 
 	// Creates a file "fptr_int_img" 
     // with file acccess as write mode 

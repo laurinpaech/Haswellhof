@@ -39,12 +39,15 @@ int main(int argc, char const *argv[])
 	// Compute responses for every layer
 	for (size_t i = 0; i < fh->total_layers; i++) {
 		compute_response_layer(fh->response_map[i], iimage);
+		
 		if(i==0){
 			bench_compute_response_layer(fh->response_map[i], iimage, width, height);
 		}
+		
 	}
 
 	// Getting interest points with non-maximum supression
+	bench_get_interest_points(fh, width, height, fh->step);
 	std::vector<struct interest_point> interest_points;
 	get_interest_points(fh, &interest_points);
 
