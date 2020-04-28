@@ -44,9 +44,7 @@ void perf_test_integral_img(struct integral_image* (*function)(float*, int, int)
         
     } while (multiplier > 2);
 
-
     std::vector<uint64_t>cycleslist;
-
 
     // Actual performance measurements repeated REP times.
     // We simply store all results and compute medians during post-processing.
@@ -69,7 +67,6 @@ void perf_test_integral_img(struct integral_image* (*function)(float*, int, int)
     free(iimage->data);
 	free(iimage);
 
-
     cycles = total_cycles;//cyclesList.front();
     double flops_per_cycle = round((100.0 * data->num_flops) / cycles) / 100.0;
     std::sort(cycleslist.begin(), cycleslist.end());   
@@ -82,7 +79,9 @@ void perf_test_integral_img(struct integral_image* (*function)(float*, int, int)
 
 
 
-double perf_test_compute_response_layer(void (*function)(struct response_layer*, struct integral_image*), struct response_layer* layer,struct integral_image* iimage, long flops){
+void perf_test_compute_response_layer(void (*function)(struct response_layer*, struct integral_image*), struct response_layer* layer,struct integral_image* iimage, 
+struct benchmark_data* data){
+
     double cycles = 0.;
     long num_runs = 100;
     double multiplier = 1;
@@ -104,10 +103,7 @@ double perf_test_compute_response_layer(void (*function)(struct response_layer*,
         
     } while (multiplier > 2);
 
-
-
-    float *cyclesList = (float*)malloc(REP * sizeof(float));
-
+    std::vector<uint64_t>cycleslist;
 
     // Actual performance measurements repeated REP times.
     // We simply store all results and compute medians during post-processing.
@@ -123,25 +119,22 @@ double perf_test_compute_response_layer(void (*function)(struct response_layer*,
         cycles = ((double)end) / num_runs;
         total_cycles += cycles;
 
-        cyclesList[REP-j-1]=(cycles);
+        cycleslist.push_back(cycles);
     }
     total_cycles /= REP;
 
     cycles = total_cycles;//cyclesList.front();
-    free(cyclesList);
-    return  round((100.0 * flops) / cycles) / 100.0;
-}
-
-// time the function compute_response_layer and write it to a file
-void bench_compute_response_layer(struct response_layer* layer, struct integral_image* iimage, int width, int height){
-    long flops = 1 + height*width*13;
-	double flops_per_cycle  = perf_test_compute_response_layer(compute_response_layer, layer, iimage, flops);
-   // save_performance_file(flops_per_cycle, "/compute_response_layer");
+    double flops_per_cycle = round((100.0 * data->num_flops) / cycles) / 100.0;
+    std::sort(cycleslist.begin(), cycleslist.end());  
+    data->avg_cycles = cycles;
+    data->min_cycles = cycleslist.front();
+    data->max_cycles = cycleslist.back();
+    data->flops_per_cycle = flops_per_cycle;
 }
 
 
 //times the function get_interest_points from fasthessian and returns the flops per cycle
-double perf_test_get_interest_points(void (*function)(struct fasthessian*, std::vector<struct interest_point>*), struct fasthessian *fh, long flops){
+void perf_test_get_interest_points(void (*function)(struct fasthessian*, std::vector<struct interest_point>*), struct fasthessian *fh, struct benchmark_data* data){
     double cycles = 0.;
     long num_runs = 100;
     double multiplier = 1;
@@ -164,10 +157,7 @@ double perf_test_get_interest_points(void (*function)(struct fasthessian*, std::
         
     } while (multiplier > 2);
 
-
-
-    float *cyclesList = (float*)malloc(REP * sizeof(float));
-
+    std::vector<uint64_t>cycleslist;
 
     // Actual performance measurements repeated REP times.
     // We simply store all results and compute medians during post-processing.
@@ -184,23 +174,19 @@ double perf_test_get_interest_points(void (*function)(struct fasthessian*, std::
         cycles = ((double)end) / num_runs;
         total_cycles += cycles;
 
-        cyclesList[REP-j-1]=(cycles);
+        cycleslist.push_back(cycles);
     }
     total_cycles /= REP;
 
     cycles = total_cycles;//cyclesList.front();
-    free(cyclesList);
-    printf("%li", cycles);
-    return  round((100.0 * flops) / cycles) / 100.0;
+    double flops_per_cycle = round((100.0 * data->num_flops) / cycles) / 100.0;
+    std::sort(cycleslist.begin(), cycleslist.end());  
+    data->avg_cycles = cycles;
+    data->min_cycles = cycleslist.front();
+    data->max_cycles = cycleslist.back();
+    data->flops_per_cycle = flops_per_cycle;
 }
-//times the function get_interest_points from fasthessian and saves the output to a file
-void bench_get_interest_points(struct fasthessian *fh, int width, int height, int initial_step){
-    long flops = 12.25*((height * width)/4) * 109;
-    //printf("%li", flops);
-    printf("bench_get_interest_points %li\n", flops);
-	double flops_per_cycle  = perf_test_get_interest_points(get_interest_points, fh, flops);
-   // save_performance_file(flops_per_cycle, "/get_interest_points");
-}
+
 
 //times the function interpolate_step from fasthessian and returns the flops per cycle
 double perf_test_interpolate_step(void (*function)(int, int, struct response_layer*, struct response_layer*, struct response_layer*, float), int row, int col, 

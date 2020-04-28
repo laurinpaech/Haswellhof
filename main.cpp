@@ -13,8 +13,10 @@
 
 #include <vector>
 
+
 int main(int argc, char const *argv[])
 {
+
 	int width, height, channels;
 
 	// Load image

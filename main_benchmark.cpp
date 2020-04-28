@@ -24,11 +24,12 @@ const char* images[] = {
 int main(int argc, char const *argv[])
 {
     char file_ending[16] = ".png";
+    std::vector<struct benchmark_data*> all_benchmark_data;
+
     for (int i = 0; i < n_images; i++) {
         char image_name[32];
         strcpy(image_name, images[i]);
 
-        std::vector<struct benchmark_data*> all_benchmark_data;
         int width, height, channels;
 
         // Load image
@@ -47,39 +48,63 @@ int main(int argc, char const *argv[])
         printf("integral start\n");
         struct integral_image* iimage = create_integral_img(image, width, height);
 
-        //struct benchmark_data* benchmark_integral_img=(struct benchmark_data* )malloc(sizeof(struct benchmark_data));
-        struct benchmark_data benchmark_integral_img={.width= width, .height=height, .num_interest_points = -1, .num_flops = (width + 2*(height-1)*width)};
-        strcpy( benchmark_integral_img.image_name, image_name );
-        strcpy( benchmark_integral_img.function_name, "create_integral_img" );
+        struct benchmark_data* benchmark_integral_img=(struct benchmark_data* )malloc(sizeof(struct benchmark_data));
+        //struct benchmark_data benchmark_integral_img={.width= width, .height=height, .num_interest_points = -1, .num_flops = (width + 2*(height-1)*width)};
+        benchmark_integral_img->width = width;
+        benchmark_integral_img->height = height;
+        benchmark_integral_img->num_interest_points = -1;
+        benchmark_integral_img->num_flops=(width + 2*(height-1)*width);
+        strcpy(benchmark_integral_img->image_name, image_name);
+        strcpy(benchmark_integral_img->function_name, "create_integral_img");
 
 
-        perf_test_integral_img(create_integral_img, image, &benchmark_integral_img);
-        all_benchmark_data.push_back(&benchmark_integral_img);
+        perf_test_integral_img(create_integral_img, image, benchmark_integral_img);
+        all_benchmark_data.push_back(benchmark_integral_img);
         printf("integral done\n");
+        
         // Fast-Hessian
         struct fasthessian* fh = create_fast_hessian(iimage);
 
         // Create octaves with response layers
         create_response_map(fh);
+        
+        printf("compute_response_layer start\n");
+        struct benchmark_data* benchmark_compute_response_layer=(struct benchmark_data* )malloc(sizeof(struct benchmark_data));
+        benchmark_compute_response_layer->width=width;
+        benchmark_compute_response_layer->height=height;
+        benchmark_compute_response_layer->num_interest_points = -1;
+        benchmark_compute_response_layer->num_flops = (1 + height*width*13);
+        strcpy( benchmark_compute_response_layer->image_name, image_name );
+        strcpy( benchmark_compute_response_layer->function_name, "compute_response_layer");
+        perf_test_compute_response_layer(compute_response_layer, fh->response_map[0], iimage, benchmark_compute_response_layer);
+        all_benchmark_data.push_back(benchmark_compute_response_layer);
 
+        
         // Compute responses for every layer
         for (size_t i = 0; i < fh->total_layers; i++) {
-            compute_response_layer(fh->response_map[i], iimage);
-            /**
-            if(i==0){
-                bench_compute_response_layer(fh->response_map[i], iimage, width, height);
-            }
-            */
-            
+            compute_response_layer(fh->response_map[i], iimage);           
         }
+        printf("compute_response_layer end\n");
 
         // Getting interest points with non-maximum supression
         std::vector<struct interest_point> interest_points;
-        //get_interest_points(fh, &interest_points);
+        get_interest_points(fh, &interest_points);
+
+        printf("get_interest_points start\n");
+        printf("%i\n",109*interest_points.size());
+        long flops = 109*interest_points.size();
+        struct benchmark_data* benchmark_get_interest_points=(struct benchmark_data* )malloc(sizeof(struct benchmark_data));
+        benchmark_get_interest_points->width=width; 
+        benchmark_get_interest_points->height=height;
+        benchmark_get_interest_points->num_interest_points = -1;
+        benchmark_get_interest_points->num_flops = flops;
+        strcpy(benchmark_get_interest_points->image_name, image_name );
+        strcpy(benchmark_get_interest_points->function_name, "get_interest_points");
+        perf_test_get_interest_points(get_interest_points, fh, benchmark_get_interest_points);
+        all_benchmark_data.push_back(benchmark_get_interest_points);
+        printf("get_interest_points end\n");
 
     /**
-        bench_get_interest_points(fh, width, height, fh->step);
-
         // Descriptor stuff
         static float* GW = get_gaussian(3.3);
         for (int i=0; i<interest_points.size(); i++)
@@ -99,16 +124,19 @@ int main(int argc, char const *argv[])
         }
         fclose(fp);
     */
-        printf("write tor file start\n");
-        save_benchmark_data(all_benchmark_data);
+
         // Free memory
         stbi_image_free(image); // possibly move this to create_integral_img
         free(iimage->data);
         free(iimage);
+        
         for (size_t i = 0; i < NUM_LAYERS; i++) {
             free(fh->response_map[i]);
         }
         free(fh);
+        
     }
-	return 0;
+    printf("write tor file start\n");
+    save_benchmark_data(all_benchmark_data);
+    return 0;
 }
