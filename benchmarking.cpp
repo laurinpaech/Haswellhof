@@ -4,6 +4,9 @@
 #include <unistd.h>
 #include <time.h>
 #include <string.h>
+#include <vector>
+#include <algorithm> 
+
 
 #include "tsc_x86.h"
 #include "benchmarking.h"
@@ -17,7 +20,7 @@
 * 
 * reports and returns the number of cycles required per iteration
 */
-double perf_test_integral_img(struct integral_image* (*function)(float*, int, int), float* gray_image, int width, int height,int flops)
+void perf_test_integral_img(struct integral_image* (*function)(float*, int, int), float* gray_image, struct benchmark_data* data)
 {
     double cycles = 0.;
     long num_runs = 100;
@@ -32,7 +35,7 @@ double perf_test_integral_img(struct integral_image* (*function)(float*, int, in
         num_runs = num_runs * multiplier;
         start = start_tsc();
         for (size_t i = 0; i < num_runs; i++) {
-            iimage = (*function)(gray_image, width, height);           
+            iimage = (*function)(gray_image, data->width, data->height);           
         }
         end = stop_tsc(start);
 
@@ -42,8 +45,7 @@ double perf_test_integral_img(struct integral_image* (*function)(float*, int, in
     } while (multiplier > 2);
 
 
-
-    float *cyclesList = (float*)malloc(REP * sizeof(float));
+    std::vector<uint64_t>cycleslist;
 
 
     // Actual performance measurements repeated REP times.
@@ -53,14 +55,14 @@ double perf_test_integral_img(struct integral_image* (*function)(float*, int, in
 
         start = start_tsc();
         for (size_t i = 0; i < num_runs; ++i) {
-            iimage = (*function)(gray_image, width, height);                   
+            iimage = (*function)(gray_image, data->width, data->height);                   
         }
         end = stop_tsc(start);
 
         cycles = ((double)end) / num_runs;
         total_cycles += cycles;
 
-        cyclesList[REP-j-1]=(cycles);
+        cycleslist.push_back(cycles);
     }
     total_cycles /= REP;
 
@@ -69,15 +71,12 @@ double perf_test_integral_img(struct integral_image* (*function)(float*, int, in
 
 
     cycles = total_cycles;//cyclesList.front();
-    free(cyclesList);
-    return  round((100.0 * flops) / cycles) / 100.0;
-}
-
-// time the function create_integral_img and write it to a file
-void bench_integral_img(float* image, int width, int height){
-    int flops = width + 2*(height-1)*width;
-	double flops_per_cycle  = perf_test_integral_img(create_integral_img, image, width, height, flops);
-    save_performance_file(flops_per_cycle, "/integral_img");
+    double flops_per_cycle = round((100.0 * data->num_flops) / cycles) / 100.0;
+    std::sort(cycleslist.begin(), cycleslist.end());   
+    data->avg_cycles = cycles;
+    data->min_cycles = cycleslist.front();
+    data->max_cycles = cycleslist.back();
+    data->flops_per_cycle = flops_per_cycle;
 }
 
 
@@ -137,7 +136,7 @@ double perf_test_compute_response_layer(void (*function)(struct response_layer*,
 void bench_compute_response_layer(struct response_layer* layer, struct integral_image* iimage, int width, int height){
     long flops = 1 + height*width*13;
 	double flops_per_cycle  = perf_test_compute_response_layer(compute_response_layer, layer, iimage, flops);
-    save_performance_file(flops_per_cycle, "/compute_response_layer");
+   // save_performance_file(flops_per_cycle, "/compute_response_layer");
 }
 
 
@@ -200,10 +199,27 @@ void bench_get_interest_points(struct fasthessian *fh, int width, int height, in
     //printf("%li", flops);
     printf("bench_get_interest_points %li\n", flops);
 	double flops_per_cycle  = perf_test_get_interest_points(get_interest_points, fh, flops);
-    save_performance_file(flops_per_cycle, "/get_interest_points");
+   // save_performance_file(flops_per_cycle, "/get_interest_points");
 }
 
+//times the function interpolate_step from fasthessian and returns the flops per cycle
+double perf_test_interpolate_step(void (*function)(int, int, struct response_layer*, struct response_layer*, struct response_layer*, float), int row, int col, 
+    struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets, int flops){
+        
+    }
 
+
+
+//times the function interpolate_step from fasthessian and saves the output to a file
+void bench_interpolate_step(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets){
+    int flops = 109;
+    //printf("%li", flops);
+    printf("bench_get_interest_points %li\n", flops);
+	//double flops_per_cycle  = perf_test_interpolate_step(interpolate_step, row, col, top, middle, bottom, offsets, flops);
+    //save_performance_file(flops_per_cycle, "/interpolate_step");
+}
+
+/**
 void save_performance_file(double flops_per_cycle, const char *file_name){   
     // create the folder if it doesn't exist   
     char folder_name[] = "benchmarking_files";
@@ -247,3 +263,4 @@ char* concat(const char *s1, const char *s2)
     memcpy(result + len1, s2, len2 + 1); // +1 to copy the null-terminator
     return result;
 }
+*/

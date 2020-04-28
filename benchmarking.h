@@ -1,14 +1,49 @@
 #pragma once
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "integral_image.h"
 #include "fasthessian.h"
 
+struct benchmark_data {
+
+    // Image name
+    char image_name[256]; 
+
+    // Image width
+    int width;
+
+    // Image height
+    int height;
+
+    // Name of fucntion that has been benchmarked
+    char function_name[256]; 
+
+    // Number of interest points
+    int num_interest_points;
+
+    // Number of flops -1 if no flops
+    long num_flops;
+
+    // Number of average cycles
+    uint64_t avg_cycles;
+
+    // Minimum amount of cycles needed
+    uint64_t min_cycles;
+
+    // Maximum amount of cycles needed
+    uint64_t max_cycles;
+
+    // Number of flops per cycle -1 if no flops 
+    double flops_per_cycle;   
+
+};
+
+
 //times the function create_integral_img from integral_image and returns the flops per cycle
-double perf_test_integral_img(struct integral_image* (*function)(float*, int, int), float* gray_image, int width, int height,int flops);
-//times the function create_integral_img from integral_image and saves the output to a file
-void bench_integral_img(float* image, int width, int height);
+void perf_test_integral_img(struct integral_image* (*function)(float*, int, int), float* gray_image, struct benchmark_data* data);
+
 
 
 //times the function compute_response_layer from fasthessian and returns the flops per cycle
@@ -30,8 +65,5 @@ void bench_interpolate_step(int row, int col, struct response_layer *top, struct
 
 
 
-//saves a file containing the flops_per_cycle in the folder "benchmarking" under the specified file_name + the current datetime
-void save_performance_file(double flops_per_cycle, const char *file_name);
-//concatenates two given strings
-char* concat(const char *s1, const char *s2);
+
 
