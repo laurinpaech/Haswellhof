@@ -26,10 +26,10 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
 
     for (int i=0; i<4; ++i) {
         for (int j=0; j<4; ++j) { // iterate over 4x4 sub_patches 
-            descriptor[desc_idx] = 0;
-            descriptor[desc_idx+1] = 0;
-            descriptor[desc_idx+2] = 0;
-            descriptor[desc_idx+3] = 0;
+            float sum_x = 0;
+            float sum_y = 0;
+            float abs_x = 0;
+            float abs_y = 0;
             for (int k=i*5; k<i*5+5; ++k) {
                 for (int l=j*5; l<j*5+5; ++l) { 
                     // iterate over 5x5 sample points of sub_patch[i][j]
@@ -57,13 +57,16 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
                     float y = gw * (box_integral(iimage, c1_row, c1_col, step, 2*step) 
                                     - box_integral(iimage, c4_row, c1_col, step, 2*step));
 
-
-                    descriptor[desc_idx] += x; // sum(x)
-                    descriptor[desc_idx+1] += y; // sum(y)
-                    descriptor[desc_idx+2] += (float)fabs(x); // sum(abs(x))
-                    descriptor[desc_idx+3] += (float)fabs(y); // sum(abs(y))
-                }   
+                    sum_x += x; // sum(x)
+                    sum_y += y; // sum(y)
+                    abs_x += (float)fabs(x); // sum(abs(x))
+                    abs_y += (float)fabs(y); // sum(abs(y))
+                }
             }
+            descriptor[desc_idx] = sum_x;
+            descriptor[desc_idx+1] = sum_y;   
+            descriptor[desc_idx+2] = abs_x;
+            descriptor[desc_idx+3] = abs_y;
             
             // precompute for normaliztion
             for (int m=0; m<4; ++m) 
