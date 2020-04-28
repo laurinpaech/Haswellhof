@@ -9,7 +9,7 @@ import random
 
 show = True # show plots otherwise just save them
 max_matches = 100 # limit number matches shown in plot (None == no limit)
-max_kp = 25 # limit number keypoints shown in plot (None == no limit)
+max_kp = 250 # limit number keypoints shown in plot (None == no limit)
 
 executable = '../build/src/surf'
 img1_fp = "../images/pumpkin1.jpg"
