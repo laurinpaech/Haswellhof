@@ -11,6 +11,7 @@
 void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
     float scale = ipoint->scale;
+    // TODO: (Sebastian) Is this correct with  "- 0.5"?
     int ipoint_x = (int) (ipoint->x - 0.5);
     int ipoint_y = (int) (ipoint->y - 0.5);
 
@@ -22,14 +23,14 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
     // build descriptor
     float* descriptor = ipoint->descriptor;
     int desc_idx = 0;
-    float sum_of_squares = 0;
+    float sum_of_squares = 0.0f;
 
     for (int i=0; i<4; ++i) {
         for (int j=0; j<4; ++j) { // iterate over 4x4 sub_patches 
-            float sum_x = 0;
-            float sum_y = 0;
-            float abs_x = 0;
-            float abs_y = 0;
+            float sum_x = 0.0f;
+            float sum_y = 0.0f;
+            float abs_x = 0.0f;
+            float abs_y = 0.0f;
             for (int k=i*5; k<i*5+5; ++k) {
                 for (int l=j*5; l<j*5+5; ++l) { 
                     // iterate over 5x5 sample points of sub_patch[i][j]
@@ -59,6 +60,7 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
 
                     sum_x += x; // sum(x)
                     sum_y += y; // sum(y)
+                    // TODO: (Sebastian) Why cast here?
                     abs_x += (float)fabs(x); // sum(abs(x))
                     abs_y += (float)fabs(y); // sum(abs(y))
                 }
@@ -69,8 +71,10 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
             descriptor[desc_idx+3] = abs_y;
             
             // precompute for normaliztion
-            for (int m=0; m<4; ++m) 
-                sum_of_squares += descriptor[desc_idx+m]*descriptor[desc_idx+m];
+            //for (int m=0; m<4; ++m) 
+            //    sum_of_squares += descriptor[desc_idx+m]*descriptor[desc_idx+m];
+            sum_of_squares += sum_x * sum_x + sum_y * sum_y + abs_x * abs_x + abs_y * abs_y;
+
 
             desc_idx += 4;
         }
@@ -79,7 +83,10 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
     // rescale to unit vector
     float norm_factor = 1./sqrt(sum_of_squares);
 
-    for (int i=0; i<64; ++i) 
+    for (int i=0; i<64; ++i) {
         descriptor[i] *= norm_factor;
+    }
+
+}
 
 }
