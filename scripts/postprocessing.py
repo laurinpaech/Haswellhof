@@ -46,7 +46,7 @@ def visualize_matches(img1, img2, keypoints_1, keypoints_2, matches,
     if title is not None:
         plt.title(title)
     if save_fp is not None:
-        plt.savefig(save_fp)
+        plt.savefig(save_fp, bbox_inches='tight')
     if show:
         plt.show()
     else:
@@ -80,7 +80,7 @@ def draw_kp(img, kps, show=True, save_fp=None, n_max=None, title=None):
     if title is not None:
         plt.title(title)
     if save_fp is not None:
-        plt.savefig(save_fp)
+        plt.savefig(save_fp, bbox_inches='tight')
     if show:
         plt.show()
     else:
