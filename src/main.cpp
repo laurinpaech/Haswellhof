@@ -60,7 +60,7 @@ int main(int argc, char const *argv[])
     FILE * fp = fopen(argv[2],"w");
     printf("%d %d %d\n", iimage->width, iimage->height, channels);
 	for (size_t i=0; i<interest_points.size(); ++i) {
-        fprintf(fp, "%f %f %f %f ", interest_points[i].x, interest_points[i].y, interest_points[i].scale, interest_points[i].laplacian);
+        fprintf(fp, "%f %f %f %d ", interest_points[i].x, interest_points[i].y, interest_points[i].scale, interest_points[i].laplacian);
         for(size_t j = 0; j < 64; j++) {
             fprintf(fp, "%f ", interest_points[i].descriptor[j]);
         }
