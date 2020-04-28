@@ -15,11 +15,15 @@
 
 int main(int argc, char const *argv[])
 {
+    if (argc != 3) {
+        printf("Invaid argument count.\nUsage:\n\t./surf image_path descriptor_file_target_path\n");
+        return 1;
+    }
 	int width, height, channels;
 
 	// Load image
 	stbi_ldr_to_hdr_gamma(1.0f);
-	float* image = stbi_loadf("../images/pumpkin1.jpg", &width, &height, &channels, STBI_grey);
+	float* image = stbi_loadf(argv[1], &width, &height, &channels, STBI_grey);
 
     if(!image) {
 		printf("Could not open or find image\n");
@@ -53,7 +57,7 @@ int main(int argc, char const *argv[])
     free(GW);
 
 	// Write results to file
-    FILE * fp = fopen("pumpkin1_desc.txt","w");
+    FILE * fp = fopen(argv[2],"w");
     printf("%d %d %d\n", iimage->width, iimage->height, channels);
 	for (size_t i=0; i<interest_points.size(); ++i) {
         fprintf(fp, "%f %f %f %f ", interest_points[i].x, interest_points[i].y, interest_points[i].scale, interest_points[i].laplacian);
