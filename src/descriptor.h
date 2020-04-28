@@ -25,3 +25,5 @@ static inline float* get_gaussian(float sigma) {
 }
 
 void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW);
+
+void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* ipoint);
