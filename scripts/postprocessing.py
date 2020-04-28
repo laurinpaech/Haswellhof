@@ -2,6 +2,7 @@ import cv2
 import os
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib.patches as patches
 import numpy as np
 import random
 
@@ -60,11 +61,21 @@ def draw_kp(img, kps, show=True, save_fp=None, n_max=None, title=None):
         chosen = list(range(0, len(kps)))
         random.shuffle(chosen)
         kps = [kps[i] for i in chosen[:n_max]]
-        
+    
+    xs = []
+    ys = []
     for kp in kps:
-        circle = plt.Circle(kp.pt, kp.size, color='b', fill=False, lw=0.5)
-        ax.add_artist(circle)
+        x, y = kp.pt
+        xs.append(x)
+        ys.append(y)
+        # circle = plt.Circle(kp.pt, kp.size, color='b', fill=False, lw=0.5)
+        # ax.add_artist(circle)
+
+        rect = patches.Rectangle((kp.pt[0]-kp.size, kp.pt[1]-kp.size), 2*kp.size, 2*kp.size, color='b', fill=False, lw=0.5)
+        ax.add_patch(rect)
+
     ax.imshow(img1[:,:,[2,1,0]])
+    plt.scatter(xs, ys,s=2)
     plt.axis('off')
     if title is not None:
         plt.title(title)
@@ -100,7 +111,7 @@ if __name__ == "__main__":
     kp2_our, desc2_our = our2[:,:3], our2[:,4:]
 
     draw_kp(img1,
-            [cv2.KeyPoint(x,y,size) for x,y,size in kp1_our],
+            [cv2.KeyPoint(x,y,size*10) for x,y,size in kp1_our],
             n_max=max_kp,
             title="Keypoints from our implementation",
             save_fp=os.path.join(dest,"kps_ours.png")
