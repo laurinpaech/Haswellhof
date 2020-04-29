@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.1)
 project(surf)
 
 # Setting Release as build type if not defined otherwise
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
+if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
 
 # Setting optimization flags
