@@ -5,6 +5,8 @@
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
+#include <inttypes.h>
+
 
 #include "benchmark_data_to_file.h"
 
@@ -53,7 +55,7 @@ void save_performance_file(struct benchmark_data* data, char* folder_name){
     // open the file for reading and writing - create it if necessary
     FILE *fp = fopen(path_name, "a+");
     printf("opened %s\n", path_name);
-    fprintf(fp,"%i,\n%i,\n%i,\n%li,\n%u,\n%u,\n%u,\n%lf\n\n",data->width, data->height,data->num_interest_points, data->num_flops,data->avg_cycles, data->min_cycles, data->max_cycles, data->flops_per_cycle);
+    fprintf(fp,"%s,%d,%d,%d,%ld,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%lf\n",data->image_name, data->width, data->height,data->num_interest_points, data->num_flops,data->avg_cycles, data->min_cycles, data->max_cycles, data->flops_per_cycle);
 
 	// closes the file pointed by fptr_int_img 
     fclose(fp); 
