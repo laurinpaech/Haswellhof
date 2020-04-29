@@ -21,7 +21,7 @@ void perf_test_integral_img(struct integral_image* (*function)(float*, int, int)
     double cycles = 0.;
     long num_runs = 100;
     double multiplier = 1;
-    int start, end;
+    uint64_t start, end;
     struct integral_image* iimage;
 
     // Warm-up phase: we determine a number of executions that allows
@@ -81,7 +81,7 @@ struct benchmark_data* data){
     double cycles = 0.;
     long num_runs = 100;
     double multiplier = 1;
-    int start, end;
+    uint64_t start, end;
 
     // Warm-up phase: we determine a number of executions that allows
     // the code to be executed for at least CYCLES_REQUIRED cycles.
@@ -134,7 +134,7 @@ void perf_test_get_interest_points(void (*function)(struct fasthessian*, std::ve
     double cycles = 0.;
     long num_runs = 100;
     double multiplier = 1;
-    int start, end;
+    uint64_t start, end;
 
     // Warm-up phase: we determine a number of executions that allows
     // the code to be executed for at least CYCLES_REQUIRED cycles.
@@ -190,7 +190,7 @@ struct response_layer *middle, struct response_layer *bottom, struct benchmark_d
     double cycles = 0.;
     long num_runs = 100;
     double multiplier = 1;
-    int start, end;
+    uint64_t start, end;
 
     // Warm-up phase: we determine a number of executions that allows
     // the code to be executed for at least CYCLES_REQUIRED cycles.
@@ -233,10 +233,10 @@ struct response_layer *middle, struct response_layer *bottom, struct benchmark_d
     cycles = total_cycles;//cyclesList.front();
     double flops_per_cycle = round((100.0 * data->num_flops) / cycles) / 100.0;
     std::sort(cycleslist.begin(), cycleslist.end());  
-    data->avg_cycles = (uint64_t) cycles;
-    data->min_cycles = (uint64_t) cycleslist.front();
-    data->max_cycles = (uint64_t) cycleslist.back();
-    data->flops_per_cycle = flops_per_cycle;
+    data->avg_cycles += (uint64_t) cycles;
+    data->min_cycles += (uint64_t) cycleslist.front();
+    data->max_cycles += (uint64_t) cycleslist.back();
+    data->flops_per_cycle += flops_per_cycle;
 }
 
 
@@ -290,19 +290,17 @@ void bench_interpolate_step(struct fasthessian *fh, struct benchmark_data* data)
                             i = 2;
                             o = fh->octaves;
                         }
-                        printf("%i\n", counter);
                     }
-
                 }
             }
 
         }
     }
 
-    data->avg_cycles/=counter;
-    data->max_cycles/=counter;
-    data->min_cycles/=counter;
-    data->flops_per_cycle/=counter;
+    data->avg_cycles /= counter;
+    data->max_cycles /= counter;
+    data->min_cycles /= counter;
+    data->flops_per_cycle /= counter;
 }
 
 void bench_get_descriptor(struct integral_image* iimage,  std::vector<struct interest_point> *interest_points, float* GW, struct benchmark_data* data){
@@ -328,7 +326,7 @@ struct benchmark_data* data){
     double cycles = 0.;
     long num_runs = 100;
     double multiplier = 1;
-    int start, end;
+    uint64_t start, end;
 
     // Warm-up phase: we determine a number of executions that allows
     // the code to be executed for at least CYCLES_REQUIRED cycles.
