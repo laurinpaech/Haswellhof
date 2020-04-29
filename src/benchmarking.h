@@ -6,6 +6,7 @@
 
 #include "integral_image.h"
 #include "fasthessian.h"
+#include "descriptor.h"
 
 
 struct benchmark_data {
@@ -46,7 +47,7 @@ static inline struct benchmark_data* initialise_benchmark_data(char*image_name, 
     struct benchmark_data* benchmark_data=(struct benchmark_data* )malloc(sizeof(struct benchmark_data));
     benchmark_data->width=width; 
     benchmark_data->height=height;
-    benchmark_data->num_interest_points = -1;
+    benchmark_data->num_interest_points = num_interest_points;
     benchmark_data->num_flops = num_flops;
     strcpy(benchmark_data->image_name, image_name );
     strcpy(benchmark_data->function_name, function_name);
@@ -64,12 +65,19 @@ struct benchmark_data* data);
 //times the function get_interest_points from fasthessian and returns the flops per cycle
 void perf_test_get_interest_points(void (*function)(struct fasthessian*, std::vector<struct interest_point>*), struct fasthessian *fh, struct benchmark_data* data);
 
-void bench_interpolate_step(struct fasthessian *fh, std::vector<struct interest_point> *interest_points, struct benchmark_data* data);
+void bench_interpolate_step(struct fasthessian *fh, struct benchmark_data* data);
 
 
 //times the function create_integral_img from integral_image and returns the flops per cycle
 void perf_interpolate_step(void (*function)(int, int, struct response_layer*, struct response_layer *, struct response_layer*, float[3]),int row, int col, struct response_layer *top, struct response_layer *middle, 
 struct response_layer *bottom, struct benchmark_data* data);
+
+void bench_get_descriptor(struct integral_image* iimage, std::vector<struct interest_point> *interest_points, float* GW, struct benchmark_data* data);
+
+//times the function create_integral_img from integral_image and returns the flops per cycle
+void perf_get_descriptor(void (*function)(struct integral_image*, struct interest_point*, float*),struct integral_image* iimage, struct interest_point* ipoint, float* GW, struct benchmark_data* data);
+
+
 
 
 
