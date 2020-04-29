@@ -1,8 +1,4 @@
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <time.h>
 #include <string.h>
 #include <vector>
 #include <algorithm> 
@@ -188,65 +184,124 @@ void perf_test_get_interest_points(void (*function)(struct fasthessian*, std::ve
 }
 
 
-//times the function interpolate_step from fasthessian and returns the flops per cycle
-double perf_test_interpolate_step(void (*function)(int, int, struct response_layer*, struct response_layer*, struct response_layer*, float), int row, int col, 
-    struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets, int flops){
+void perf_interpolate_step(void (*function)(int, int, struct response_layer*, struct response_layer *, struct response_layer*, float[3]),int row, int col, struct response_layer *top, 
+struct response_layer *middle, struct response_layer *bottom, struct benchmark_data* data){
+
+    double cycles = 0.;
+    long num_runs = 100;
+    double multiplier = 1;
+    int start, end;
+
+    // Warm-up phase: we determine a number of executions that allows
+    // the code to be executed for at least CYCLES_REQUIRED cycles.
+    // This helps excluding timing overhead when measuring small runtimes.
+    do {
+        num_runs = num_runs * multiplier;
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; i++) {
+            float offsets[3];
+            (*function)(row, col, top, middle, bottom, offsets);           
+        }
+        end = stop_tsc(start);
+
+        cycles = (double)end;
+        multiplier = (CYCLES_REQUIRED) / (cycles);
         
+    } while (multiplier > 2);
+
+    std::vector<uint64_t>cycleslist;
+
+    // Actual performance measurements repeated REP times.
+    // We simply store all results and compute medians during post-processing.
+    double total_cycles = 0;
+    for (size_t j = 0; j < REP; j++) {
+
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; ++i) {
+            float offsets[3];
+            (*function)(row, col, top, middle, bottom, offsets);             
+        }
+        end = stop_tsc(start);
+
+        cycles = ((double)end) / num_runs;
+        total_cycles += cycles;
+
+        cycleslist.push_back(cycles);
+    }
+    total_cycles /= REP;
+
+    cycles = total_cycles;//cyclesList.front();
+    double flops_per_cycle = round((100.0 * data->num_flops) / cycles) / 100.0;
+    std::sort(cycleslist.begin(), cycleslist.end());  
+    data->avg_cycles = cycles;
+    data->min_cycles = cycleslist.front();
+    data->max_cycles = cycleslist.back();
+    data->flops_per_cycle = flops_per_cycle;
+}
+
+
+
+void bench_interpolate_step(struct fasthessian *fh, std::vector<struct interest_point> *interest_points, struct benchmark_data* data){
+
+
+    int counter = 0;
+    int limit = 3;
+
+    assert(fh != NULL);
+    assert(interest_points != NULL);
+
+    // filter index map
+    const int filter_map[NUM_OCTAVES][NUM_LAYERS] = {
+        {0, 1, 2, 3},
+        {1, 3, 4, 5},
+        {3, 5, 6, 7},
+        //{5, 7, 8, 9},
+        //{7, 9, 10, 11}
+    };
+
+    // getting response layers
+    struct response_layer *bottom;
+    struct response_layer *middle;
+    struct response_layer *top;
+
+    // iterating through all octaves and each layer of octave in window of three (top, middle, bottom)
+    for (int o = 0; o < fh->octaves; ++o) {
+
+        // TODO: (Sebastian) allow for fh->layers != 4 as well (note that fh->layers>=3 has to hold)
+        for (int i = 0; i <= 1; ++i) {
+
+            // assigning respective bottom, middle and top response layer
+            bottom = fh->response_map[filter_map[o][i]];
+            middle = fh->response_map[filter_map[o][i+1]];
+            top = fh->response_map[filter_map[o][i+2]];
+
+            // iterating over middle response layer at density of the most sparse layer (always top),
+            // to find maxima accreoss scale and space
+            for (int r = 0; r < top->height; ++r) {
+                for (int c = 0; c < top->width; ++c) {
+
+                    // checking if current pixel position is local maximum in 3x3x3 maximum and above threshold
+                    if (is_extremum(r, c, top, middle, bottom, fh->thresh)) {
+                        
+                        perf_interpolate_step(interpolate_step, r, c, top, middle, bottom, data);
+                        counter++;
+                        if(counter == limit){
+                            c = top->width;
+                            r = top->height;
+                            i = 2;
+                            o = fh->octaves;
+                        }
+                        printf("%i\n", counter);
+                    }
+
+                }
+            }
+
+        }
     }
 
-
-
-//times the function interpolate_step from fasthessian and saves the output to a file
-void bench_interpolate_step(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets){
-    int flops = 109;
-    //printf("%li", flops);
-    printf("bench_get_interest_points %li\n", flops);
-	//double flops_per_cycle  = perf_test_interpolate_step(interpolate_step, row, col, top, middle, bottom, offsets, flops);
-    //save_performance_file(flops_per_cycle, "/interpolate_step");
+    data->avg_cycles/=counter;
+    data->max_cycles/=counter;
+    data->min_cycles/=counter;
+    data->flops_per_cycle/=counter;
 }
-
-/**
-void save_performance_file(double flops_per_cycle, const char *file_name){   
-    // create the folder if it doesn't exist   
-    char folder_name[] = "benchmarking_files";
-    struct stat st = {0};
-    if (stat(folder_name, &st) == -1) {
-        mkdir(folder_name, 0700);
-    }
-
-
-	// Creates a file "fptr_int_img" 
-    // with file acccess as write mode 
-    FILE *fptr_int_img;
-
-    // get the current time
-    struct tm *timenow;
-    time_t now = time(NULL);
-    timenow = gmtime(&now);
-    char current_time[30];
-    strftime(current_time, sizeof(current_time), "_%Y-%m-%d_%H_%M.txt", timenow);
-
-    // concatenate the path in the form  "benchmarking_files/integral_img_CURRENT_DATE"
-    char* path_name = concat(folder_name, file_name);
-    path_name = concat(path_name, current_time);
-
-    // write to file
-    fptr_int_img =fopen(path_name,"w");
-    fprintf(fptr_int_img,"%lf \n",flops_per_cycle);
-
-	// closes the file pointed by fptr_int_img 
-    fclose(fptr_int_img); 
-    free(path_name);
-}
-
-char* concat(const char *s1, const char *s2)
-{
-    const size_t len1 = strlen(s1);
-    const size_t len2 = strlen(s2);
-    char *result = (char *)malloc(len1 + len2 + 1); // +1 for the null-terminator
-    // in real code you would check for errors in malloc here
-    memcpy(result, s1, len1);
-    memcpy(result + len1, s2, len2 + 1); // +1 to copy the null-terminator
-    return result;
-}
-*/

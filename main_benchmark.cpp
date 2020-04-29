@@ -7,6 +7,7 @@
 #include "interest_point.h"
 #include "descriptor.h"
 #include "benchmarking.h"
+#include "benchmark_interpolate_step.h"
 #include "benchmark_data_to_file.h"
 
 #include <stdio.h>
@@ -48,16 +49,7 @@ int main(int argc, char const *argv[])
         printf("integral start\n");
         struct integral_image* iimage = create_integral_img(image, width, height);
 
-        struct benchmark_data* benchmark_integral_img=(struct benchmark_data* )malloc(sizeof(struct benchmark_data));
-        //struct benchmark_data benchmark_integral_img={.width= width, .height=height, .num_interest_points = -1, .num_flops = (width + 2*(height-1)*width)};
-        benchmark_integral_img->width = width;
-        benchmark_integral_img->height = height;
-        benchmark_integral_img->num_interest_points = -1;
-        benchmark_integral_img->num_flops=(width + 2*(height-1)*width);
-        strcpy(benchmark_integral_img->image_name, image_name);
-        strcpy(benchmark_integral_img->function_name, "create_integral_img");
-
-
+        struct benchmark_data* benchmark_integral_img=initialise_benchmark_data(image_name, width, height, "create_integral_img", -1, (width + 2*(height-1)*width));
         perf_test_integral_img(create_integral_img, image, benchmark_integral_img);
         all_benchmark_data.push_back(benchmark_integral_img);
         printf("integral done\n");
@@ -69,16 +61,11 @@ int main(int argc, char const *argv[])
         create_response_map(fh);
         
         printf("compute_response_layer start\n");
-        struct benchmark_data* benchmark_compute_response_layer=(struct benchmark_data* )malloc(sizeof(struct benchmark_data));
-        benchmark_compute_response_layer->width=width;
-        benchmark_compute_response_layer->height=height;
-        benchmark_compute_response_layer->num_interest_points = -1;
-        benchmark_compute_response_layer->num_flops = (1 + height*width*13);
-        strcpy( benchmark_compute_response_layer->image_name, image_name );
-        strcpy( benchmark_compute_response_layer->function_name, "compute_response_layer");
+        /**
+        struct benchmark_data* benchmark_compute_response_layer=initialise_benchmark_data(image_name, width, height, "compute_response_layer", -1, (1 + height*width*13));
         perf_test_compute_response_layer(compute_response_layer, fh->response_map[0], iimage, benchmark_compute_response_layer);
         all_benchmark_data.push_back(benchmark_compute_response_layer);
-
+        **/
         
         // Compute responses for every layer
         for (size_t i = 0; i < fh->total_layers; i++) {
@@ -90,19 +77,23 @@ int main(int argc, char const *argv[])
         std::vector<struct interest_point> interest_points;
         get_interest_points(fh, &interest_points);
 
-        printf("get_interest_points start\n");
-        printf("%i\n",109*interest_points.size());
+
+        /**
+        printf("get_interest_points start\n");       
         long flops = 109*interest_points.size();
-        struct benchmark_data* benchmark_get_interest_points=(struct benchmark_data* )malloc(sizeof(struct benchmark_data));
-        benchmark_get_interest_points->width=width; 
-        benchmark_get_interest_points->height=height;
-        benchmark_get_interest_points->num_interest_points = -1;
-        benchmark_get_interest_points->num_flops = flops;
-        strcpy(benchmark_get_interest_points->image_name, image_name );
-        strcpy(benchmark_get_interest_points->function_name, "get_interest_points");
+        struct benchmark_data* benchmark_get_interest_points=initialise_benchmark_data(image_name, width, height, "get_interest_points", interest_points.size(), flops);
         perf_test_get_interest_points(get_interest_points, fh, benchmark_get_interest_points);
         all_benchmark_data.push_back(benchmark_get_interest_points);
         printf("get_interest_points end\n");
+        **/
+
+        printf("interpolate_step start\n");
+
+        struct benchmark_data* benchmark_interpolate_step=initialise_benchmark_data(image_name, width, height, "interpolate_step", interest_points.size(), 109);
+        bench_interpolate_step(fh, &interest_points, benchmark_interpolate_step);
+        all_benchmark_data.push_back(benchmark_interpolate_step);
+        printf("interpolate_step end\n");
+        
 
     /**
         // Descriptor stuff
@@ -138,5 +129,9 @@ int main(int argc, char const *argv[])
     }
     printf("write tor file start\n");
     save_benchmark_data(all_benchmark_data);
+    // free memory benchmarkdata
+    // https://stackoverflow.com/questions/10464992/c-delete-vector-objects-free-memory
+    std::vector<struct benchmark_data*>().swap(all_benchmark_data);
+
     return 0;
 }
