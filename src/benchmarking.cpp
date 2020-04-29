@@ -304,19 +304,16 @@ void bench_interpolate_step(struct fasthessian *fh, struct benchmark_data* data)
 }
 
 void bench_get_descriptor(struct integral_image* iimage,  std::vector<struct interest_point> *interest_points, float* GW, struct benchmark_data* data){
-    printf("bench_get_descriptor\n");
-    int counter = 3;
-    //min(5,data->num_interest_points) ;
-    printf("%i\n", counter);
+    int counter = MIN(5,data->num_interest_points) ;
     for (int i=0; i<counter; ++i){
             perf_get_descriptor(get_descriptor, iimage, &(interest_points->at(i)), GW, data);
-            printf("%i\n", i);
     }
-    data->avg_cycles /= counter;
-    data->max_cycles /= counter;
-    data->min_cycles /= counter;
-    data->flops_per_cycle /= counter;
-
+    if(counter != 0){
+        data->avg_cycles /= counter;
+        data->max_cycles /= counter;
+        data->min_cycles /= counter;
+        data->flops_per_cycle /= counter;
+    }
 }
 
 //times the function create_integral_img from integral_image and returns the flops per cycle

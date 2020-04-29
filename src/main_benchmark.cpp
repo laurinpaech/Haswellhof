@@ -19,14 +19,20 @@
 
 const char* images[] = {
     "../images/sunflower/sunflower_32.jpg",
-    "../images/sunflower/sunflower_64.jpg"
+    "../images/sunflower/sunflower_64.jpg",
+    "../images/sunflower/sunflower_128.jpg",
+    "../images/sunflower/sunflower_256.jpg",
+    "../images/sunflower/sunflower_512.jpg"
+    //"../images/sunflower/sunflower_1024.jpg",
+    //"../images/sunflower/sunflower_2048.jpg",
+   // "../images/sunflower/sunflower_4096.jpg"
 };
 #define n_images (sizeof (images) / sizeof (const char *))
-//#define BENCHMARK_INTEGRAL_IMAGE
-//#define BENCHMARK_CREATE_RESPONSE_MAP
-//#define BENCHMARK_INTEREST_POINTS
+#define BENCHMARK_INTEGRAL_IMAGE
+#define BENCHMARK_CREATE_RESPONSE_MAP
+#define BENCHMARK_INTEREST_POINTS
 #define BENCHMARK_INTERPOLATE_STEPS
-//#define BENCHMARK_GET_DESCRIPTORS
+#define BENCHMARK_GET_DESCRIPTORS
 
 int main(int argc, char const *argv[])
 {
@@ -100,11 +106,11 @@ int main(int argc, char const *argv[])
         float* GW = get_gaussian(3.3);
 
 #ifdef BENCHMARK_GET_DESCRIPTORS
-        printf("get_descriptor start");
+        printf("get_descriptor start\n");
         struct benchmark_data* benchmark_get_descriptor=initialise_benchmark_data(image_name, width, height, "get_descriptor", interest_points.size(), 5734);
         bench_get_descriptor(iimage, &interest_points, GW,benchmark_get_descriptor);
         all_benchmark_data.push_back(benchmark_get_descriptor);
-        printf("get_descriptor end");
+        printf("get_descriptor end\n");
 #endif
         for (size_t i=0; i<interest_points.size(); ++i)
             get_descriptor(iimage, &interest_points[i], GW);
