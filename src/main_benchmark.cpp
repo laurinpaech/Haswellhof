@@ -22,11 +22,11 @@ const char* images[] = {
     "../images/sunflower/sunflower_64.jpg"
 };
 #define n_images (sizeof (images) / sizeof (const char *))
-#define BENCHMARK_INTEGRAL_IMAGE
-#define BENCHMARK_CREATE_RESPONSE_MAP
+//#define BENCHMARK_INTEGRAL_IMAGE
+//#define BENCHMARK_CREATE_RESPONSE_MAP
 //#define BENCHMARK_INTEREST_POINTS
-//#define BENCHMARK_INTERPOLATE_STEPS
-#define BENCHMARK_GET_DESCRIPTORS
+#define BENCHMARK_INTERPOLATE_STEPS
+//#define BENCHMARK_GET_DESCRIPTORS
 
 int main(int argc, char const *argv[])
 {

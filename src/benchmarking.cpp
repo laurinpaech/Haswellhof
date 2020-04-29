@@ -244,8 +244,8 @@ struct response_layer *middle, struct response_layer *bottom, struct benchmark_d
 void bench_interpolate_step(struct fasthessian *fh, struct benchmark_data* data){
 
 
-    int counter = 0;
-    int limit = 3;
+    int counter = 1;
+    int limit = 4;
 
     assert(fh != NULL);
 
@@ -312,10 +312,10 @@ void bench_get_descriptor(struct integral_image* iimage,  std::vector<struct int
             perf_get_descriptor(get_descriptor, iimage, &(interest_points->at(i)), GW, data);
             printf("%i\n", i);
     }
-    data->avg_cycles/=counter;
-    data->max_cycles/=counter;
-    data->min_cycles/=counter;
-    data->flops_per_cycle/=counter;
+    data->avg_cycles /= counter;
+    data->max_cycles /= counter;
+    data->min_cycles /= counter;
+    data->flops_per_cycle /= counter;
 
 }
 
@@ -369,10 +369,10 @@ struct benchmark_data* data){
     cycles = total_cycles;//cyclesList.front();
     double flops_per_cycle = round((100.0 * data->num_flops) / cycles) / 100.0;
     std::sort(cycleslist.begin(), cycleslist.end());  
-    data->avg_cycles = (uint64_t) cycles;
-    data->min_cycles = (uint64_t) cycleslist.front();
-    data->max_cycles = (uint64_t) cycleslist.back();
-    data->flops_per_cycle = flops_per_cycle;
+    data->avg_cycles += (uint64_t) cycles;
+    data->min_cycles += (uint64_t) cycleslist.front();
+    data->max_cycles += (uint64_t) cycleslist.back();
+    data->flops_per_cycle += flops_per_cycle;
 
 }
 

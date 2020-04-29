@@ -27,6 +27,7 @@ target_include_directories(surf PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(surf)
 
 # Adding executable benchmark with SOURCES files
+# TODO: (cjancik) if the project structure changes - delete everything in build folder and call "cmake .." again.
 add_executable(benchmark 
     stb_image.h
     helper.h
