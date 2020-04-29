@@ -141,12 +141,15 @@ void perf_test_get_interest_points(void (*function)(struct fasthessian*, std::ve
     // This helps excluding timing overhead when measuring small runtimes.
     do {
         num_runs = num_runs * multiplier;
+        std::vector<struct interest_point> dummy_interest_points;
+        dummy_interest_points.reserve(num_runs * data->num_interest_points);
+
         start = start_tsc();
         for (size_t i = 0; i < num_runs; i++) {
-            std::vector<struct interest_point> interest_points;
-            (*function)(fh, &interest_points);           
+            (*function)(fh, &dummy_interest_points);   
         }
         end = stop_tsc(start);
+        dummy_interest_points.clear();        
 
         cycles = (double)end;
         multiplier = (CYCLES_REQUIRED) / (cycles);
@@ -159,13 +162,17 @@ void perf_test_get_interest_points(void (*function)(struct fasthessian*, std::ve
     // We simply store all results and compute medians during post-processing.
     double total_cycles = 0;
     for (size_t j = 0; j < REP; j++) {
-
+        std::vector<struct interest_point> dummy_interest_points;
+        dummy_interest_points.reserve(num_runs * data->num_interest_points);
+        
         start = start_tsc();
+
         for (size_t i = 0; i < num_runs; ++i) {
-            std::vector<struct interest_point> interest_points;
-            (*function)(fh, &interest_points);           
+            (*function)(fh, &dummy_interest_points);           
         }
         end = stop_tsc(start);
+
+        dummy_interest_points.clear();
 
         cycles = ((double)end) / num_runs;
         total_cycles += cycles;

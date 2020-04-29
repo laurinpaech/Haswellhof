@@ -18,14 +18,14 @@
 
 
 const char* images[] = {
-    "../images/sunflower/sunflower_32.jpg",
+    /**"../images/sunflower/sunflower_32.jpg",
     "../images/sunflower/sunflower_64.jpg",
     "../images/sunflower/sunflower_128.jpg",
     "../images/sunflower/sunflower_256.jpg",
-    "../images/sunflower/sunflower_512.jpg"
-    //"../images/sunflower/sunflower_1024.jpg",
-    //"../images/sunflower/sunflower_2048.jpg",
-   // "../images/sunflower/sunflower_4096.jpg"
+    "../images/sunflower/sunflower_512.jpg",
+    "../images/sunflower/sunflower_1024.jpg",
+    "../images/sunflower/sunflower_2048.jpg",*/
+    "../images/sunflower/sunflower_4096.jpg"
 };
 #define n_images (sizeof (images) / sizeof (const char *))
 #define BENCHMARK_INTEGRAL_IMAGE
@@ -60,7 +60,7 @@ int main(int argc, char const *argv[])
         struct benchmark_data* benchmark_integral_img=initialise_benchmark_data(image_name, width, height, "create_integral_img", -1, (width + 2*(height-1)*width));
         perf_test_integral_img(create_integral_img, image, benchmark_integral_img);
         all_benchmark_data.push_back(benchmark_integral_img);
-        printf("create_integral_img done\n");
+        printf("create_integral_img end\n");
 #endif
 
         // Fast-Hessian
@@ -70,9 +70,11 @@ int main(int argc, char const *argv[])
         create_response_map(fh);
 
 #ifdef BENCHMARK_CREATE_RESPONSE_MAP
+        printf("compute_response_layer start\n");
         struct benchmark_data* benchmark_compute_response_layer=initialise_benchmark_data(image_name, width, height, "compute_response_layer", -1, (1 + height*width*13));
         perf_test_compute_response_layer(compute_response_layer, fh->response_map[0], iimage, benchmark_compute_response_layer);
         all_benchmark_data.push_back(benchmark_compute_response_layer);
+        printf("compute_response_layer end\n");
 #endif
         // Compute responses for every layer
         for (int i = 0; i < fh->total_layers; i++) {
