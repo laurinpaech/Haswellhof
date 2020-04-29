@@ -53,7 +53,7 @@ void save_performance_file(struct benchmark_data *data, char *folder_name)
     path_name = concat(path_name, data->function_name);
 
     printf("%s\n", path_name);
-    path_name = concat(path_name, ".txt");
+    path_name = concat(path_name, ".csv");
     printf("%s\n", path_name);
 
     // open the file for reading and writing - create it if necessary

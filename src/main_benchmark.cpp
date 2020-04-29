@@ -18,11 +18,11 @@
 
 
 const char* images[] = {
-    "../images/img1.png",
-    "../images/img2.png"
+    "../images/sunflower/sunflower_32.jpg",
+    "../images/sunflower/sunflower_64.jpg"
 };
 #define n_images (sizeof (images) / sizeof (const char *))
-//#define BENCHMARK_INTEGRAL_IMAGE
+#define BENCHMARK_INTEGRAL_IMAGE
 #define BENCHMARK_CREATE_RESPONSE_MAP
 //#define BENCHMARK_INTEREST_POINTS
 //#define BENCHMARK_INTERPOLATE_STEPS
