@@ -40,7 +40,7 @@ void perf_test_integral_img(struct integral_image* (*function)(float*, int, int)
         
     } while (multiplier > 2);
 
-    std::vector<uint64_t>cycleslist;
+    std::vector<double>cycleslist;
 
     // Actual performance measurements repeated REP times.
     // We simply store all results and compute medians during post-processing.
@@ -66,9 +66,9 @@ void perf_test_integral_img(struct integral_image* (*function)(float*, int, int)
     cycles = total_cycles;//cyclesList.front();
     double flops_per_cycle = round((100.0 * data->num_flops) / cycles) / 100.0;
     std::sort(cycleslist.begin(), cycleslist.end());   
-    data->avg_cycles = cycles;
-    data->min_cycles = cycleslist.front();
-    data->max_cycles = cycleslist.back();
+    data->avg_cycles = (uint64_t) cycles;
+    data->min_cycles = (uint64_t) cycleslist.front();
+    data->max_cycles = (uint64_t) cycleslist.back();
     data->flops_per_cycle = flops_per_cycle;
 }
 
@@ -99,7 +99,7 @@ struct benchmark_data* data){
         
     } while (multiplier > 2);
 
-    std::vector<uint64_t>cycleslist;
+    std::vector<double>cycleslist;
 
     // Actual performance measurements repeated REP times.
     // We simply store all results and compute medians during post-processing.
@@ -122,9 +122,9 @@ struct benchmark_data* data){
     cycles = total_cycles;//cyclesList.front();
     double flops_per_cycle = round((100.0 * data->num_flops) / cycles) / 100.0;
     std::sort(cycleslist.begin(), cycleslist.end());  
-    data->avg_cycles = cycles;
-    data->min_cycles = cycleslist.front();
-    data->max_cycles = cycleslist.back();
+    data->avg_cycles = (uint64_t) cycles;
+    data->min_cycles = (uint64_t) cycleslist.front();
+    data->max_cycles = (uint64_t) cycleslist.back();
     data->flops_per_cycle = flops_per_cycle;
 }
 
@@ -153,7 +153,7 @@ void perf_test_get_interest_points(void (*function)(struct fasthessian*, std::ve
         
     } while (multiplier > 2);
 
-    std::vector<uint64_t>cycleslist;
+    std::vector<double>cycleslist;
 
     // Actual performance measurements repeated REP times.
     // We simply store all results and compute medians during post-processing.
@@ -177,9 +177,9 @@ void perf_test_get_interest_points(void (*function)(struct fasthessian*, std::ve
     cycles = total_cycles;//cyclesList.front();
     double flops_per_cycle = round((100.0 * data->num_flops) / cycles) / 100.0;
     std::sort(cycleslist.begin(), cycleslist.end());  
-    data->avg_cycles = cycles;
-    data->min_cycles = cycleslist.front();
-    data->max_cycles = cycleslist.back();
+    data->avg_cycles = (uint64_t) cycles;
+    data->min_cycles = (uint64_t) cycleslist.front();
+    data->max_cycles = (uint64_t) cycleslist.back();
     data->flops_per_cycle = flops_per_cycle;
 }
 
@@ -209,7 +209,7 @@ struct response_layer *middle, struct response_layer *bottom, struct benchmark_d
         
     } while (multiplier > 2);
 
-    std::vector<uint64_t>cycleslist;
+    std::vector<double>cycleslist;
 
     // Actual performance measurements repeated REP times.
     // We simply store all results and compute medians during post-processing.
@@ -233,9 +233,9 @@ struct response_layer *middle, struct response_layer *bottom, struct benchmark_d
     cycles = total_cycles;//cyclesList.front();
     double flops_per_cycle = round((100.0 * data->num_flops) / cycles) / 100.0;
     std::sort(cycleslist.begin(), cycleslist.end());  
-    data->avg_cycles = cycles;
-    data->min_cycles = cycleslist.front();
-    data->max_cycles = cycleslist.back();
+    data->avg_cycles = (uint64_t) cycles;
+    data->min_cycles = (uint64_t) cycleslist.front();
+    data->max_cycles = (uint64_t) cycleslist.back();
     data->flops_per_cycle = flops_per_cycle;
 }
 
