@@ -23,7 +23,7 @@ def myticks(x,pos):
 outputFileName = 'performance_plot.png'
 
 # Name of input files with performance data, etc.
-inputFileNames = ['img1-get_integral_image', 'img2-get_interest_points']
+inputFileNames = ['date/get_integral_image.csv', 'date/get_interest_points.csv']
 
 # Name of labels
 plotLabels = ['$\mathtt{ get_integral_image }$, img1', '$\mathtt{ get_interest_points }$, img2']
@@ -66,24 +66,24 @@ ax.tick_params(axis='both', which='major', labelsize=8)
 # Iterating through all input files and plotting each as a line
 for i in range(0, len(inputFileNames)):
 
-    substrings = inputFileNames[i].split('-')
+    substrings = inputFileNames[i].split('.')
 
-    # Getting image name and function name from file name
-    imageName = substrings[0]
-    functionName = substrings[1]
+    # Getting function name from file name
+    functionName = substrings[0]
 
     # Reading csv data from input file 
     data = np.genfromtxt(inputFileNames[i], delimiter=',')
 
     # Getting width, height, number of interest points, average/min/max cycles, flops per cycles
-    width = data[:, 0]
-    height = data[:, 1]
-    num_interest_points = data[:, 2]
-    avg_cycles = data[:, 3]
-    min_cycles = data[:, 4]
-    max_cycles = data[:, 5]
-    flops_per_cycles = data[:, 6]
-    flops = data[:, 7]
+    imageName = data[:, 0]
+    width = data[:, 1]
+    height = data[:, 2]
+    num_interest_points = data[:, 3]
+    num_flops = data[:, 4]
+    avg_cycles = data[:, 5]
+    min_cycles = data[:, 6]
+    max_cycles = data[:, 7]
+    flops_per_cycles = data[:, 8]
 
     # Plotting  flops per cycles performance
     plt.plot(width, flops_per_cycle, label=plotLabels[i], color=colors[i], marker='o')
