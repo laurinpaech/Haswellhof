@@ -58,7 +58,6 @@ int main(int argc, char const *argv[])
 #ifdef BENCHMARK_INTEGRAL_IMAGE
         printf("create_integral_img start\n");
         struct benchmark_data* benchmark_integral_img=initialise_benchmark_data(image_name, width, height, "create_integral_img", -1, (width + 2*(height-1)*width));
-        printf("benchmark data integral_img: %s\n",benchmark_integral_img->image_name);
         perf_test_integral_img(create_integral_img, image, benchmark_integral_img);
         all_benchmark_data.push_back(benchmark_integral_img);
         printf("create_integral_img done\n");
