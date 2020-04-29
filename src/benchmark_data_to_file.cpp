@@ -13,7 +13,7 @@ void save_benchmark_data(std::vector<struct benchmark_data*> all_benchmark_data)
     struct tm *timenow;
     time_t now = time(NULL);
     timenow = gmtime(&now);
-    char folder_name[32]="benchmarking_files";
+    char folder_name[32]="../benchmarking_files";
     create_folder(folder_name);
     printf("created first folder\n");
 

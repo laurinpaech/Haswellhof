@@ -35,7 +35,7 @@ int main(int argc, char const *argv[])
 
         // Load image
         stbi_ldr_to_hdr_gamma(1.0f);
-        char* path_name = concat("images/", image_name);
+        char* path_name = concat("../images/", image_name);
         path_name = concat(path_name, file_ending);
         printf("%s\n",path_name);
         float* image = stbi_loadf(path_name, &width, &height, &channels, STBI_grey);
