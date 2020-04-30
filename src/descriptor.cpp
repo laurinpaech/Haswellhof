@@ -7,20 +7,20 @@
 #include <math.h>
 #include <stdlib.h>
 
- #define MAX(a,b) (((a)>(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 
 void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
     float scale = ipoint->scale;
     // TODO: (Sebastian) Is this correct with  "- 0.5"?
-    int ipoint_x = (int) (ipoint->x - 0.5);
-    int ipoint_y = (int) (ipoint->y - 0.5);
+    int ipoint_x = (int) (ipoint->x + 0.5);
+    int ipoint_y = (int) (ipoint->y + 0.5);
 
     int step = MAX((int)(scale/2 + 0.5),1); // rounding is done this way in the original implementaion
 
-    int col_offset = ipoint_x-step*10; //10 = PATCH_SIZE/2;
-    int row_offset = ipoint_y-step*10;
+    int col_offset = ipoint_x-step*11; //10 - 1 = PATCH_SIZE/2 + (shift to obtain upper left);
+    int row_offset = ipoint_y-step*11;
 
     // build descriptor
     float* descriptor = ipoint->descriptor;

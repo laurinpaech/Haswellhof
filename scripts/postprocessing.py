@@ -68,11 +68,11 @@ def draw_kp(img, kps, show=True, save_fp=None, n_max=None, title=None):
         x, y = kp.pt
         xs.append(x)
         ys.append(y)
-        # circle = plt.Circle(kp.pt, kp.size, color='b', fill=False, lw=0.5)
-        # ax.add_artist(circle)
+        circle = plt.Circle(kp.pt, kp.size, color='b', fill=False, lw=0.5)
+        ax.add_artist(circle)
 
-        rect = patches.Rectangle((kp.pt[0]-kp.size, kp.pt[1]-kp.size), 2*kp.size, 2*kp.size, color='b', fill=False, lw=0.5)
-        ax.add_patch(rect)
+        # rect = patches.Rectangle((kp.pt[0]-kp.size, kp.pt[1]-kp.size), 2*kp.size, 2*kp.size, color='b', fill=False, lw=0.5)
+        # ax.add_patch(rect)
 
     ax.imshow(img1[:,:,[2,1,0]])
     plt.scatter(xs, ys,s=2)

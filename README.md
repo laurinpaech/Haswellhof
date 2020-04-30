@@ -24,7 +24,7 @@ cd build
 - Run [CMake](https://cmake.org/download/) to create project structure: 
 
 ```
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release
 ```
 
 Note that with CMake is compatible with many IDEs and can e.g. create an Xcode project by adding the flag `-G Xcode`. For more information have a look at the CMake Documentation.
@@ -35,13 +35,13 @@ Note that with CMake is compatible with many IDEs and can e.g. create an Xcode p
 make
 ```
 
-- If all went smoothly and everything compiled and linked correctly, you can now execute the program the following way:
+- If all went smoothly and everything compiled and linked correctly, you can now execute the program `surf` the following way:
 
 ```
 ./src/surf
 ```
 
-- Note that everytime you change something in the project structure, you need to call `cmake ..`. If something isn't working correctly it is sometimes also helpful to delete the current `build` folder and redo all the above steps again.
+- Note that everytime you change something in the project structure, you need to call `cmake ..` again. If something isn't working correctly it is sometimes also helpful to delete the current `build` folder and redo all the above steps again.
 
  
 
