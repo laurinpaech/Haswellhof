@@ -54,7 +54,7 @@ int main(int argc, char const *argv[])
 
 #if !USE_MSURF
 	// Descriptor stuff
-    static float* GW = get_gaussian(3.3);
+    float* GW = get_gaussian(3.3);
 	for (size_t i=0; i<interest_points.size(); ++i)
         get_descriptor(iimage, &interest_points[i], GW);
 
