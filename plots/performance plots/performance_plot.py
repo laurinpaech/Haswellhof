@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 import seaborn as sns
 sns.set()
@@ -19,14 +20,17 @@ def myticks(x,pos):
         return r'${{ {:2d} }}$'.format(value)
 '''
 
+def myticks(x,pos):
+    return r'${{ {:2d} }}$'.format(x)
+
 # Name of output file to save the plot to
 outputFileName = 'performance_plot.png'
 
 # Name of input files with performance data, etc.
-inputFileNames = ['date/get_integral_image.csv', 'date/get_interest_points.csv']
+inputFileNames = ['2020_04_29_16_11/create_integral_img.csv', '2020_04_29_16_11/interpolate_step.csv']
 
 # Name of labels
-plotLabels = ['$\mathtt{ get_integral_image }$, img1', '$\mathtt{ get_interest_points }$, img2']
+plotLabels = ['$\mathtt{ create\_integral\_img }$', '$\mathtt{ interpolate\_step }$']
 
 # Getting current axis
 ax = plt.gca()
@@ -45,9 +49,9 @@ plt.xscale('log')
 
 # Initializing and setting axis ticks
 ticks_x = []
-for i in range(4, 13):
+for i in range(5, 13):
     ticks_x.append(2**(i))
-ticks_y = [0, 2, 4, 6, 8, 10]
+ticks_y = [0, 2, 4, 6]
 
 plt.xticks(ticks_x, va='center')
 plt.yticks(ticks_y)
@@ -57,7 +61,7 @@ plt.xlim(ticks_x[0] / 2.0, ticks_x[len(ticks_x) - 1] * 2.0)
 plt.ylim(ticks_y[0] - 1, ticks_y[len(ticks_y) - 1] + 1)
 
 # Setting axis ticks formatter
-#ax.xaxis.set_major_formatter(ticker.FuncFormatter(myticks))
+ax.xaxis.set_major_formatter(ticker.FuncFormatter(myticks))
 #ax.yaxis.set_major_formatter(ticker.FuncFormatter(myticks))
 
 # Setting label size
@@ -86,7 +90,7 @@ for i in range(0, len(inputFileNames)):
     flops_per_cycles = data[:, 8]
 
     # Plotting  flops per cycles performance
-    plt.plot(width, flops_per_cycle, label=plotLabels[i], color=colors[i], marker='o')
+    plt.plot(width, flops_per_cycles, label=plotLabels[i], color=colors[i], marker='o')
 
 # Adding legend to plot
 plt.legend()
