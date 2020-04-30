@@ -32,9 +32,10 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
-	// Calculate integral image
-	struct integral_image* iimage = create_integral_img(image, width, height);
-	//bench_integral_img(image, width, height);
+	// Create integral image
+	struct integral_image* iimage = create_integral_img(width, height);
+	// Compute integral image
+	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
 
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);

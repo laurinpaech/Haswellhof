@@ -1,39 +1,36 @@
 #include "integral_image.h"
+
 #include <stdio.h>
 
+// Creates the struct of the integral image with empty data
+struct integral_image *create_integral_img(int width, int height) {
+    struct integral_image *iimage = (struct integral_image *)malloc(sizeof(struct integral_image));
+    iimage->height = height;
+    iimage->width = width;
+    iimage->data = (float *)malloc(width * height * sizeof(float));
 
-struct integral_image* create_integral_img(float* gray_image, int width, int height){
+    return iimage;
+}
 
-    struct integral_image* integral_img = (struct integral_image *)malloc(sizeof(struct integral_image));
-    integral_img->height = height;
-    integral_img->width = width;
-    float *data = (float*)malloc(width * height * sizeof(float));
-
+// Computes the integral image
+void compute_integral_img(float *gray_image, int width, int height, float *iimage_data) {
     float row_sum = 0.0f;
 
     /* sum up the first row */
 
-    for(int i=0; i<width; i++)
-    {
+    for (int i = 0; i < width; i++) {
         /* previous rows are 0 */
         row_sum += gray_image[i];
-        data[i] = row_sum;
+        iimage_data[i] = row_sum;
     }
 
     /* sum all remaining rows*/
-    for(int i=1; i<height; ++i)
-    {
+    for (int i = 1; i < height; ++i) {
         row_sum = 0.0f;
-        for(int j=0; j<width; ++j)
-        {
-            row_sum += gray_image[i*width+j];
+        for (int j = 0; j < width; ++j) {
+            row_sum += gray_image[i * width + j];
             /*add sum of current row until current idx to sum of all previous rows until current index */
-            data[i*width+j] = row_sum + data[(i-1)*width+j];
+            iimage_data[i * width + j] = row_sum + iimage_data[(i - 1) * width + j];
         }
     }
-
-    integral_img->data = data;
-
-    return integral_img;
-
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdlib.h>
 #include <math.h>
+#include <stdlib.h>
 
 struct integral_image {
     int width;
@@ -10,11 +10,14 @@ struct integral_image {
     float *data;
 };
 
-struct integral_image* create_integral_img(float* gray_image, int width, int height);
+// Creates the struct of the integral image with empty data
+struct integral_image *create_integral_img(int width, int height);
+
+// Computes the integral image
+void compute_integral_img(float *gray_image, int width, int height, float *iimage_data);
 
 static inline float box_integral(struct integral_image *iimage, int row, int col, int rows, int cols) {
-
-    float *data = (float *) iimage->data;
+    float *data = (float *)iimage->data;
     int width = iimage->width;
     int height = iimage->height;
 
@@ -49,5 +52,4 @@ static inline float box_integral(struct integral_image *iimage, int row, int col
     }
 
     return fmax(0.0f, A - B - C + D);
-
 }
