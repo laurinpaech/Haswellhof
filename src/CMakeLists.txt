@@ -5,50 +5,93 @@ project(surf)
 # Defining SOURCES as all header and source project files in current directory
 FILE(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
-# Adding executable surf with SOURCES files
+# Adding executable surf
 add_executable(surf 
-    stb_image.h
-    helper.h
-    integral_image.h
-    integral_image.cpp
-    interest_point.h
-    response_layer.h
-    fasthessian.h
-    fasthessian.cpp
-    descriptor.h
-    descriptor.cpp
-    main.cpp
+    base/stb_image.h
+    base/helper.h
+    base/integral_image.h
+    base/integral_image.cpp
+    base/interest_point.h
+    base/response_layer.h
+    base/fasthessian.h
+    base/fasthessian.cpp
+    base/descriptor.h
+    base/descriptor.cpp
+    base/main.cpp
 )
 
 # Adding include directories for executable surf
-target_include_directories(surf PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(surf 
+    PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/base
+)
 
 # Adding libraries to be linked with executable surf
 target_link_libraries(surf)
 
-# Adding executable benchmark with SOURCES files
+# Adding executable benchmark
 # TODO: (cjancik) if the project structure changes - delete everything in build folder and call "cmake .." again.
 add_executable(benchmark 
-    stb_image.h
-    helper.h
-    integral_image.h
-    integral_image.cpp
-    interest_point.h
-    response_layer.h
-    fasthessian.h
-    fasthessian.cpp
-    descriptor.h
-    descriptor.cpp
-    benchmark_data_to_file.h
-    benchmark_data_to_file.cpp
-    benchmarking.h
-    benchmarking.cpp
-    tsc_x86.h
-    main_benchmark.cpp
+    base/stb_image.h
+    base/helper.h
+    base/integral_image.h
+    base/integral_image.cpp
+    base/interest_point.h
+    base/response_layer.h
+    base/fasthessian.h
+    base/fasthessian.cpp
+    base/descriptor.h
+    base/descriptor.cpp
+    benchmark/benchmark_data_to_file.h
+    benchmark/benchmark_data_to_file.cpp
+    benchmark/benchmarking.h
+    benchmark/benchmarking.cpp
+    benchmark/tsc_x86.h
+    benchmark/main_benchmark.cpp
 )
 
 # Adding include directories for executable benchmark
-target_include_directories(benchmark PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(benchmark 
+    PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/base
+    ${CMAKE_CURRENT_SOURCE_DIR}/benchmark 
+)
 
 # Adding libraries to be linked with executable benchmark
 target_link_libraries(benchmark)
+
+# Adding executable optimization
+add_executable(optimization 
+    base/stb_image.h
+    base/helper.h
+    base/integral_image.h
+    base/integral_image.cpp
+    base/interest_point.h
+    base/response_layer.h
+    base/fasthessian.h
+    base/fasthessian.cpp
+    base/descriptor.h
+    base/descriptor.cpp
+    benchmark/benchmark_data_to_file.h
+    benchmark/benchmark_data_to_file.cpp
+    benchmark/benchmarking.h
+    benchmark/benchmarking.cpp
+    benchmark/tsc_x86.h
+    # Add optimization header and source files here
+    optimization/fasthessian_opt.h
+    optimization/fasthessian_opt.cpp
+    optimization/main_opt.cpp
+)
+
+# Adding include directories for executable optimization
+target_include_directories(optimization 
+    PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/base 
+    ${CMAKE_CURRENT_SOURCE_DIR}/benchmark
+    ${CMAKE_CURRENT_SOURCE_DIR}/optimization
+)
+
+# Adding libraries to be linked with executable optimization
+target_link_libraries(optimization)
+
+

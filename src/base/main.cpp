@@ -8,7 +8,6 @@
 #include "fasthessian.h"
 #include "interest_point.h"
 #include "descriptor.h"
-#include "benchmarking.h"
 
 #include <stdio.h>
 #include <stdlib.h>
