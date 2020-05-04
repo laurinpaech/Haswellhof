@@ -81,6 +81,8 @@ add_executable(optimization
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
     optimization/main_opt.cpp
+    optimization/descriptor_opt.h
+    optimization/descriptor_opt.cpp
 )
 
 # Adding include directories for executable optimization

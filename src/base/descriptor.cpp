@@ -19,7 +19,7 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
 
     int step = MAX((int)(scale/2 + 0.5),1); // rounding is done this way in the original implementaion
 
-    int col_offset = ipoint_x-step*11; //10 - 1 = PATCH_SIZE/2 + (shift to obtain upper left);
+    int col_offset = ipoint_x-step*11; //10 - 1 = PATCH_SIZE/2 + (shift to obtain upper left corner of haar wavelet filter);
     int row_offset = ipoint_y-step*11;
 
     // build descriptor
@@ -62,7 +62,7 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
 
                     sum_x += x; // sum(x)
                     sum_y += y; // sum(y)
-                    // TODO: (Sebastian) Why cast here?
+                    // TODO: (Sebastian) Why cast here? -> in pure c this returns double
                     abs_x += (float)fabs(x); // sum(abs(x))
                     abs_y += (float)fabs(y); // sum(abs(y))
                 }
