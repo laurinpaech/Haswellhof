@@ -13,14 +13,13 @@
 void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
     float scale = ipoint->scale;
-    // TODO: (Sebastian) Is this correct with  "- 0.5"?
     int ipoint_x = (int) (ipoint->x + 0.5);
     int ipoint_y = (int) (ipoint->y + 0.5);
 
-    int step = MAX((int)(scale/2 + 0.5),1); // rounding is done this way in the original implementaion
+    int step = MAX((int)(scale + 0.5),1); // rounding is done this way in the original implementaion
 
-    int col_offset = ipoint_x-step*11; //10 - 1 = PATCH_SIZE/2 + (shift to obtain upper left corner of haar wavelet filter);
-    int row_offset = ipoint_y-step*11;
+    int col_offset = ipoint_x-step*10 - step/2; //should this be 10.5 = 10 - 1 = PATCH_SIZE/2 + (shift to obtain upper left corner of haar wavelet filter) ??
+    int row_offset = ipoint_y-step*10 - step/2;
 
     // build descriptor
     float* descriptor = ipoint->descriptor;
@@ -157,13 +156,12 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
                     //float rx = haarX(sample_y, sample_x, (int) 2.0 * round(scale));
                     //float ry = haarY(sample_y, sample_x, (int) 2.0 * round(scale));
                     int s = (int) round(scale);
-                    float rx = gauss_s1 * box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
-                    float ry = gauss_s1 * box_integral(iimage, sample_y, sample_x-s, s, 2*s) - box_integral(iimage, sample_y-s, sample_x-s, s, 2*s);
+                    float rx = box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
+                    float ry = box_integral(iimage, sample_y, sample_x-s, s, 2*s) - box_integral(iimage, sample_y-s, sample_x-s, s, 2*s);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     //float rrx = gauss_s1*(-rx*si + ry*co);
                     //float rry = gauss_s1*(rx*co + ry*si);
-                    // TODO: (Sebastian) This seems weird...
                     float rrx = gauss_s1 * (ry);
                     float rry = gauss_s1 * (rx);
 
