@@ -1,7 +1,7 @@
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
-#define USE_MSURF 0
+#define USE_MSURF 1
 
 #include "stb_image.h"
 #include "integral_image.h"
@@ -56,13 +56,13 @@ int main(int argc, char const *argv[])
     // Descriptor stuff
     float* GW = get_gaussian(3.3);
     for (size_t i=0; i<interest_points.size(); ++i)
-        get_descriptor_opt(iimage, &interest_points[i], GW);
+        get_descriptor_inlinedHaarWavelets(iimage, &interest_points[i], GW);
 
     free(GW);
 #else
     // Alternative M-SURF descriptors as in OpenSURF
     for (size_t i=0; i<interest_points.size(); ++i)
-        get_msurf_descriptor(iimage, &interest_points[i]);
+        get_msurf_descriptor_inlinedHaarWavelets(iimage, &interest_points[i]);
 #endif
 
     // Write results to file
