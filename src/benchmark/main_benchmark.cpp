@@ -117,11 +117,15 @@ int main(int argc, char const *argv[]) {
         all_benchmark_data.push_back(benchmark_get_descriptor);
         printf("get_descriptor end\n");
 #endif
-        for (size_t i = 0; i < interest_points.size(); ++i) get_descriptor(iimage, &interest_points[i], GW);
+        for (size_t i = 0; i < interest_points.size(); ++i) {
+            get_descriptor(iimage, &interest_points[i], GW);
+        }
         free(GW);
 #else
         // Alternative M-SURF descriptors as in OpenSURF
-        for (size_t i = 0; i < interest_points.size(); ++i) get_msurf_descriptor(iimage, &interest_points[i]);
+        for (size_t i = 0; i < interest_points.size(); ++i) {
+            get_msurf_descriptor(iimage, &interest_points[i]);
+        }
 #endif
 
         // Free memory

@@ -26,7 +26,7 @@ int main(int argc, char const *argv[])
 	stbi_ldr_to_hdr_gamma(1.0f);
 	float* image = stbi_loadf(argv[1], &width, &height, &channels, STBI_grey);
 
-    if(!image) {
+    if (!image) {
 		printf("Could not open or find image\n");
         return -1;
     }
@@ -54,14 +54,16 @@ int main(int argc, char const *argv[])
 #if !USE_MSURF
 	// Descriptor stuff
     float* GW = get_gaussian(3.3);
-	for (size_t i=0; i<interest_points.size(); ++i)
+	for (size_t i=0; i<interest_points.size(); ++i) {
         get_descriptor(iimage, &interest_points[i], GW);
+	}
 
     free(GW);
 #else
 	// Alternative M-SURF descriptors as in OpenSURF
-	for (size_t i=0; i<interest_points.size(); ++i)
+	for (size_t i=0; i<interest_points.size(); ++i) {
         get_msurf_descriptor(iimage, &interest_points[i]);
+	}
 #endif
 
 	// Write results to file

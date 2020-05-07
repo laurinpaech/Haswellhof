@@ -27,7 +27,7 @@ int main(int argc, char const *argv[])
     stbi_ldr_to_hdr_gamma(1.0f);
     float* image = stbi_loadf(argv[1], &width, &height, &channels, STBI_grey);
 
-    if(!image) {
+    if (!image) {
         printf("Could not open or find image\n");
         return -1;
     }
