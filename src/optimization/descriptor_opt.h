@@ -4,8 +4,7 @@
 #include <stdlib.h>
 #include "integral_image.h"
 #include "interest_point.h"
-
-#define MIN(a,b) (((a)<(b))?(a):(b))
+#include "helper.h"
 
 // #define PATCH_SIZE 20
 

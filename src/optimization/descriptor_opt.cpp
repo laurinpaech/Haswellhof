@@ -11,9 +11,6 @@
 
 #define PRECHECK_BOUNDARIES 1
 
-#define MAX(a,b) (((a)>(b))?(a):(b))
-#define MIN(a,b) (((a)<(b))?(a):(b))
-
 void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
     float scale = ipoint->scale;

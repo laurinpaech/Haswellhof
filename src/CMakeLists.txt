@@ -9,6 +9,7 @@ FILE(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.
 add_executable(surf 
     base/stb_image.h
     base/helper.h
+    base/helper.cpp
     base/integral_image.h
     base/integral_image.cpp
     base/interest_point.h
@@ -34,6 +35,7 @@ target_link_libraries(surf)
 add_executable(benchmark 
     base/stb_image.h
     base/helper.h
+    base/helper.cpp
     base/integral_image.h
     base/integral_image.cpp
     base/interest_point.h
@@ -64,6 +66,7 @@ target_link_libraries(benchmark)
 add_executable(optimization 
     base/stb_image.h
     base/helper.h
+    base/helper.cpp
     base/integral_image.h
     base/integral_image.cpp
     base/interest_point.h

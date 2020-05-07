@@ -6,9 +6,7 @@
 
 #include <math.h>
 #include <stdlib.h>
-
-#define MAX(a,b) (((a)>(b))?(a):(b))
-
+#include <helper.h>
 
 void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
