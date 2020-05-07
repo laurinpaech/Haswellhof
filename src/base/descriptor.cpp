@@ -147,18 +147,11 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
                     int sample_y = (int) round(ipoint_y + l * scale);
 
                     //Get the gaussian weighted x and y responses
-                    //float gauss_s1 = gaussian(xs-sample_x, ys-sample_y, 2.5f * scale);
-                    //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig))
-                    float g_factor = 0.08f / (scale*scale); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
-                    float g_x = xs - sample_x;
-                    float g_y = ys - sample_y;
-                    float gauss_s1 = M_1_PI * g_factor * exp(-g_factor * (g_x*g_x + g_y*g_y));
-                    
-                    //float rx = haarX(sample_y, sample_x, (int) 2.0 * round(scale));
-                    //float ry = haarY(sample_y, sample_x, (int) 2.0 * round(scale));
-                    int s = (int) round(scale);
-                    float rx = gauss_s1 * box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
-                    float ry = gauss_s1 * box_integral(iimage, sample_y, sample_x-s, s, 2*s) - box_integral(iimage, sample_y-s, sample_x-s, s, 2*s);
+                    // TODO: (Sebastian) Precompute this...
+                    float gauss_s1 = gaussian((float) xs-sample_x, (float) ys-sample_y, 2.5f * scale);
+                                        
+                    float rx = haarX(iimage, sample_y, sample_x, (int) 2.0 * round(scale));
+                    float ry = haarY(iimage, sample_y, sample_x, (int) 2.0 * round(scale));
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     //float rrx = gauss_s1*(-rx*si + ry*co);
@@ -176,12 +169,7 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
             }
 
             // TODO: (Sebastian) Precompute this...
-            //float gauss_s2 = gaussian(cx-2.0f,cy-2.0f,1.5f);
-            //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig));
-            float g_factor = 1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
-            float g_x = cx - 2.0f;
-            float g_y = cy - 2.0f;
-            float gauss_s2 = M_1_PI * g_factor * exp(-g_factor * (g_x*g_x + g_y*g_y));
+            float gauss_s2 = gaussian(cx-2.0f, cy-2.0f, 1.5f);
 
             // add the values to the descriptor vector
             descriptor[desc_idx] = dx * gauss_s2;
