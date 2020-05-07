@@ -13,14 +13,13 @@
 void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
     float scale = ipoint->scale;
-    // TODO: (Sebastian) Is this correct with  "- 0.5"?
     int ipoint_x = (int) (ipoint->x + 0.5);
     int ipoint_y = (int) (ipoint->y + 0.5);
 
-    int step = MAX((int)(scale/2 + 0.5),1); // rounding is done this way in the original implementaion
+    int step = MAX((int)(scale + 0.5),1); // rounding is done this way in the original implementaion
 
-    int col_offset = ipoint_x-step*11; //10 - 1 = PATCH_SIZE/2 + (shift to obtain upper left);
-    int row_offset = ipoint_y-step*11;
+    int col_offset = ipoint_x-step*10 - step/2; //should this be 10.5 = 10 - 1 = PATCH_SIZE/2 + (shift to obtain upper left corner of haar wavelet filter) ??
+    int row_offset = ipoint_y-step*10 - step/2;
 
     // build descriptor
     float* descriptor = ipoint->descriptor;
@@ -62,7 +61,7 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
 
                     sum_x += x; // sum(x)
                     sum_y += y; // sum(y)
-                    // TODO: (Sebastian) Why cast here?
+                    // TODO: (Sebastian) Why cast here? -> in pure c this returns double
                     abs_x += (float)fabs(x); // sum(abs(x))
                     abs_y += (float)fabs(y); // sum(abs(y))
                 }

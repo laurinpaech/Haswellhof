@@ -8,6 +8,7 @@
 #include "fasthessian.h"
 #include "interest_point.h"
 #include "descriptor.h"
+#include "descriptor_opt.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,7 +56,7 @@ int main(int argc, char const *argv[])
     // Descriptor stuff
     float* GW = get_gaussian(3.3);
     for (size_t i=0; i<interest_points.size(); ++i)
-        get_descriptor(iimage, &interest_points[i], GW);
+        get_descriptor_opt(iimage, &interest_points[i], GW);
 
     free(GW);
 #else
