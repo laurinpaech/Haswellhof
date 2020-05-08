@@ -153,8 +153,10 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
 
             //int xs = (int) round(ipoint_x + ( -jx*scale*si + ix*scale*co));
             //int ys = (int) round(ipoint_y + ( jx*scale*co + ix*scale*si));
-            int xs = (int) round(ipoint_x + (i + 5) * scale);
-            int ys = (int) round(ipoint_y + (j + 5) * scale);
+            //int xs = (int) round(ipoint_x + (i + 5) * scale);
+            //int ys = (int) round(ipoint_y + (j + 5) * scale);
+            int xs = (int) round(ipoint_x + (i + 4) * scale);
+            int ys = (int) round(ipoint_y + (j + 4) * scale);
 
             for (int k = i; k < i + 9; ++k) {
                 for (int l = j; l < j + 9; ++l) {

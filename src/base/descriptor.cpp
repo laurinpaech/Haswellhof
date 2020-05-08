@@ -1,12 +1,12 @@
 #include "descriptor.h"
 #include "integral_image.h"
 #include "interest_point.h"
+#include "helper.h"
 
 #define _USE_MATH_DEFINES
 
 #include <math.h>
 #include <stdlib.h>
-#include <helper.h>
 
 void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
@@ -131,8 +131,11 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
 
             //int xs = (int) round(ipoint_x + ( -jx*scale*si + ix*scale*co));
             //int ys = (int) round(ipoint_y + ( jx*scale*co + ix*scale*si));
-            int xs = (int) round(ipoint_x + (i + 5) * scale);
-            int ys = (int) round(ipoint_y + (j + 5) * scale);
+            // TODO: (Sebastian) I think this should be i + 4 and j + 4 (OpenSURF also wrong)
+            //int xs = (int) round(ipoint_x + (i + 5) * scale);
+            //int ys = (int) round(ipoint_y + (j + 5) * scale);
+            int xs = (int) round(ipoint_x + (i + 4) * scale);
+            int ys = (int) round(ipoint_y + (j + 4) * scale);
 
             for (int k = i; k < i + 9; ++k) {
                 for (int l = j; l < j + 9; ++l) {
@@ -159,10 +162,10 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
 
                     dx += rrx;
                     dy += rry;
-                    mdx += fabs(rrx);
-                    mdy += fabs(rry);
+                    mdx += (float) fabs(rrx);
+                    mdy += (float) fabs(rry);
 
-                }
+                }      
             }
 
             // TODO: (Sebastian) Precompute this...
