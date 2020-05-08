@@ -8,7 +8,7 @@ import random
 
 # TODO: add command line args 
 
-show = True # show plots otherwise just save them
+show = False # show plots otherwise just save them
 max_matches = 100 # limit number matches shown in plot (None == no limit)
 max_kp = None # limit number keypoints shown in plot (None == no limit)
 
@@ -22,7 +22,7 @@ plot_OpenSURF = True
 kp_OpenSURF_fp1 = "../images/pumpkin1_OpenSURF_desc.txt"
 kp_OpenSURF_fp2 = "../images/pumpkin2_OpenSURF_desc.txt"
 
-dest = "../plots/MSurf"
+dest = "../plots/"
 
 def visualize_matches(img1, img2, keypoints_1, keypoints_2, matches,
                         save_fp=None, n_max=None, show=True, title=None):
@@ -94,7 +94,8 @@ def draw_kp(img, kps, laplacian=None, show=True, save_fp=None, n_max=None, title
         plt.clf()
         
 if __name__ == "__main__":
-    os.makedirs(dest, exist_ok=True)
+    if dest is not None:
+        os.makedirs(dest, exist_ok=True)
     # make paths absolute for executable call
     executable = os.path.abspath(executable)
     img1_fp = os.path.abspath(img1_fp)
@@ -124,7 +125,8 @@ if __name__ == "__main__":
             n_max=max_kp,
             title="Keypoints from our implementation",
             save_fp=os.path.join(dest,"kps_ours.png"),
-            rescale=2.5
+            rescale=2.5,
+            show=show
            )
     
     # feature matching
@@ -134,7 +136,8 @@ if __name__ == "__main__":
     visualize_matches(img1, img2, kp1_our[:,:2], kp2_our[:,:2], matches, 
         n_max=max_matches, 
         save_fp=os.path.join(dest,"matches_ours.png"), 
-        title="Matched features from our implementation")
+        title="Matched features from our implementation",
+        show=show)
     
     if plot_OpenSURF:
         # run OpenSURF implementation
@@ -153,7 +156,8 @@ if __name__ == "__main__":
                 n_max=max_kp,
                 title="Keypoints from OpenSURF implementation",
                 save_fp=os.path.join(dest,"kps_OpenSURF.png"),
-                rescale=2.5
+                rescale=2.5,
+                show=show
                )
 
         # feature matching
@@ -163,7 +167,8 @@ if __name__ == "__main__":
         visualize_matches(img1, img2, kp1_OpenSURF[:,:2], kp2_OpenSURF[:,:2], matches, 
             n_max=max_matches, 
             save_fp=os.path.join(dest,"matches_OpenSURF.png"), 
-            title="Matched features from OpenSURF implementation")
+            title="Matched features from OpenSURF implementation",
+            show=show)
     
 
     # SURF from OpenCV
@@ -179,7 +184,8 @@ if __name__ == "__main__":
             n_max=max_kp,
             title="Keypoints from OpenCV implementation",
             save_fp=os.path.join(dest,"kps_openCV.png"),
-            rescale=0.25
+            rescale=0.25,
+            show=show
            )
     
     kp1_openCV = np.asarray([kp.pt for kp in kp1_openCV])
@@ -191,5 +197,6 @@ if __name__ == "__main__":
     visualize_matches(img1, img2, kp1_openCV, kp2_openCV, matches, 
         n_max=max_matches, 
         save_fp=os.path.join(dest,"matches_openCV.png"),
-        title="Matched features from OpenCV implementation")
+        title="Matched features from OpenCV implementation",
+        show=show)
     
