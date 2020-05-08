@@ -10,13 +10,6 @@
         _a < _b ? _a : _b;      \
     })
 
-#define MAX(a, b)               \
-    ({                          \
-        __typeof__(a) _a = (a); \
-        __typeof__(b) _b = (b); \
-        _a > _b ? _a : _b;      \
-    })
-
 struct integral_image {
     int width;
     int height;
@@ -65,5 +58,5 @@ static inline float box_integral(struct integral_image *iimage, int row, int col
         D = data[r1 * width + c1];
     }
 
-    return MAX(0.0f, A - B - C + D);
+    return fmax(0.0f, A - B - C + D);
 }

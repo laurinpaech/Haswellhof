@@ -27,7 +27,7 @@ const char *images[] = {
     //"../images/sunflower/sunflower_4096.jpg"
 };
 #define n_images (sizeof(images) / sizeof(const char *))
-//#define BENCHMARK_INTEGRAL_IMAGE
+#define BENCHMARK_INTEGRAL_IMAGE
 //#define BENCHMARK_CREATE_RESPONSE_MAP
 //#define BENCHMARK_INTEREST_POINTS
 //#define BENCHMARK_INTERPOLATE_STEPS
@@ -58,15 +58,15 @@ int main(int argc, char const *argv[]) {
         compute_integral_img(image, iimage->width, iimage->height, iimage->data);
 
 #ifdef VALIDATE_INTEGRAL_IMAGE
-        printf("validate image\n");
-        bool is_equal = evaluate_iimage(compute_integral_img, compute_integral_img_faster_alg, width, height, image);
-        printf("before if\n");
+        printf("Validate image\n");
+        std::vector<void (*)(float *, int, int, float *)> optimized_iimage_functions {compute_integral_img_faster_alg};
+        bool is_equal = validate_iimage(compute_integral_img, optimized_iimage_functions, width, height, image);
         if(is_equal == false){
             printf("The integral images are not equal.\n");
         }else{
             printf("The integral images are equal\n");
         }
-        printf("After validating\n");
+        printf("After validating image\n");
 #endif
 
 #ifdef BENCHMARK_INTEGRAL_IMAGE
@@ -75,9 +75,14 @@ int main(int argc, char const *argv[]) {
             image_name, width, height, "compute_integral_img", -1, (width + 2 * (height - 1) * width));
         perf_test_integral_img(compute_integral_img, image, benchmark_integral_img);
         all_benchmark_data.push_back(benchmark_integral_img);
+
+        struct benchmark_data *benchmark_integral_img_opt = initialise_benchmark_data(
+            image_name, width, height, "compute_integral_img_faster_alg", -1, get_flops_compute_integral_img_faster_alg(width, height, 2));
+        perf_test_integral_img(compute_integral_img_faster_alg, image, benchmark_integral_img_opt);
+        all_benchmark_data.push_back(benchmark_integral_img_opt);
         printf("compute_integral_img end\n");
 #endif
-/**
+
         // Fast-Hessian
         struct fasthessian *fh = create_fast_hessian(iimage);
 
@@ -139,18 +144,18 @@ int main(int argc, char const *argv[]) {
         // Alternative M-SURF descriptors as in OpenSURF
         for (size_t i = 0; i < interest_points.size(); ++i) get_msurf_descriptor(iimage, &interest_points[i]);
 #endif
-*/
+
         // Free memory
         stbi_image_free(image);  // possibly move this to create_integral_img
 
         free(iimage->data);
         free(iimage);
-/*
+
         for (size_t i = 0; i < NUM_LAYERS; i++) {
             free(fh->response_map[i]);
         }
         free(fh);
-        */
+        
         free(image_name);
     }
     save_benchmark_data(all_benchmark_data);
