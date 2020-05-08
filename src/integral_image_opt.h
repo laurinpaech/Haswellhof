@@ -16,4 +16,5 @@ static inline long get_flops_compute_integral_img_faster_alg( int width, int hei
 
 // An optimized function to compute the integral image.
 // Parallelizes the additions which makes use of both addition ports.
+// Computes two rows simultaneously.
 void compute_integral_img_faster_alg(float *gray_image, int width, int height, float *iimage_data);
