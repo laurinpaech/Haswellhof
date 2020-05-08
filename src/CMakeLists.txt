@@ -81,6 +81,8 @@ add_executable(optimization
     benchmark/benchmarking.cpp
     benchmark/tsc_x86.h
     # Add optimization header and source files here
+    optimization/integral_image_opt.h
+    optimization/integral_image_opt.cpp
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
     optimization/main_opt.cpp
@@ -118,6 +120,8 @@ add_executable(validation
     benchmark/benchmarking.cpp
     benchmark/tsc_x86.h
     # Add optimization header and source files here
+    optimization/integral_image_opt.h
+    optimization/integral_image_opt.cpp
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
     optimization/descriptor_opt.h
@@ -125,6 +129,8 @@ add_executable(validation
     # Add validation header and source files here
     validation/validation.h
     validation/validation.cpp
+    validation/validation_integral_image.h
+    validation/validation_integral_image.cpp
     validation/main_validation.cpp
 )
 

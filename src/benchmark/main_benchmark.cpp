@@ -18,18 +18,19 @@
 
 const char *images[] = {
     "../images/sunflower/sunflower_32.jpg",  "../images/sunflower/sunflower_64.jpg",
-    "../images/sunflower/sunflower_128.jpg", "../images/sunflower/sunflower_256.jpg",
-    "../images/sunflower/sunflower_512.jpg",
+    "../images/sunflower/sunflower_128.jpg", "../images/sunflower/sunflower_256.jpg"
+    //"../images/sunflower/sunflower_512.jpg",
     //"../images/sunflower/sunflower_1024.jpg",
     //"../images/sunflower/sunflower_2048.jpg"
     //"../images/sunflower/sunflower_4096.jpg"
 };
 #define n_images (sizeof(images) / sizeof(const char *))
 #define BENCHMARK_INTEGRAL_IMAGE
-#define BENCHMARK_CREATE_RESPONSE_MAP
-#define BENCHMARK_INTEREST_POINTS
-#define BENCHMARK_INTERPOLATE_STEPS
-#define BENCHMARK_GET_DESCRIPTORS
+//#define BENCHMARK_CREATE_RESPONSE_MAP
+//#define BENCHMARK_INTEREST_POINTS
+//#define BENCHMARK_INTERPOLATE_STEPS
+//#define BENCHMARK_GET_DESCRIPTORS
+
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data *> all_benchmark_data;
@@ -53,12 +54,21 @@ int main(int argc, char const *argv[]) {
         // Compute integral image
         compute_integral_img(image, iimage->width, iimage->height, iimage->data);
 
+
+
 #ifdef BENCHMARK_INTEGRAL_IMAGE
         printf("compute_integral_img start\n");
         struct benchmark_data *benchmark_integral_img = initialise_benchmark_data(
             image_name, width, height, "compute_integral_img", -1, (width + 2 * (height - 1) * width));
         perf_test_integral_img(compute_integral_img, image, benchmark_integral_img);
         all_benchmark_data.push_back(benchmark_integral_img);
+
+        /*
+        struct benchmark_data *benchmark_integral_img_opt = initialise_benchmark_data(
+            image_name, width, height, "compute_integral_img_faster_alg", -1, get_flops_compute_integral_img_faster_alg(width, height, 2));
+        perf_test_integral_img(compute_integral_img_faster_alg, image, benchmark_integral_img_opt);
+        all_benchmark_data.push_back(benchmark_integral_img_opt);
+        */
         printf("compute_integral_img end\n");
 #endif
 
@@ -138,6 +148,7 @@ int main(int argc, char const *argv[]) {
             free(fh->response_map[i]);
         }
         free(fh);
+        
         free(image_name);
     }
     save_benchmark_data(all_benchmark_data);

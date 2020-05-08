@@ -1,9 +1,44 @@
 #include "validation.h"
-
 #include "helper.h"
 
+#include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+
+
+
+// Creates an integral image given an image, its corresponding height and width, the base function and a list of other functions. 
+// The results of the integral images are being compared.
+// If one of the results difers from the base implementation false is being returned.
+// Messages clarifying the equality of the results are being printed.
+bool validate_integral_image(void (*original_function)(float *, int, int, float *),
+                     const std::vector<void (*)(float *, int, int, float *)> &test_functions, int width, int height,
+                     float *image) {
+    // Create integral image
+    struct integral_image *original_iimage = create_integral_img(width, height);
+    // Compute integral image
+    original_function(image, original_iimage->width, original_iimage->height, original_iimage->data);
+    bool all_functions_equal = true;
+    for (auto optimized_function : test_functions) {
+        // Create integral image
+        struct integral_image *optimized_iimage = create_integral_img(width, height);
+        // Compute integral image
+        optimized_function(image, optimized_iimage->width, optimized_iimage->height, optimized_iimage->data);
+
+        if (!are_matrices_equal(original_iimage->data, optimized_iimage->data, width, height)) {
+            all_functions_equal = false;
+            printf("Error: The integral images are not equal.\n");
+        }
+
+        free(optimized_iimage->data);
+        free(optimized_iimage);
+    }
+
+    free(original_iimage->data);
+    free(original_iimage);
+
+    return all_functions_equal;
+}
 
 bool validate_compute_response_layer(void (*original_function)(struct response_layer *, struct integral_image *), 
                                      const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions,
@@ -48,3 +83,4 @@ bool validate_get_msurf_descriptors(void (*original_function)(struct integral_im
     return all_valid;
 
 }
+

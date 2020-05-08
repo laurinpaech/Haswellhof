@@ -40,3 +40,16 @@ static inline bool compare_arrays_close(float a[], float b[], int n, float epsil
     }
     return true;
 }
+
+// Compares two matrices and checks if the values are equal.
+// Returns true if all values of the matrix are equal, false otherwise.
+static inline bool are_matrices_equal(float* iimage1, float* iimage2, int width, int height){
+     for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            if (iimage1[i * width + j] != iimage2[i * width + j]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}

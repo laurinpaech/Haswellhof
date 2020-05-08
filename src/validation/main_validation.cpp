@@ -9,6 +9,7 @@
 #include "interest_point.h"
 #include "descriptor.h"
 
+#include "integral_image_opt.h"
 #include "descriptor_opt.h"
 
 #include "validation.h"
@@ -18,6 +19,10 @@
 #include <stdbool.h>
 
 #include <vector>
+
+#define VALIDATE_INTEGRAL_IMAGE
+#define VALIDATE_GET_MSURF_DESCRIPTORS
+
 
 int main(int argc, char const *argv[])
 {
@@ -38,6 +43,17 @@ int main(int argc, char const *argv[])
 
 	// Create integral image
 	struct integral_image* iimage = create_integral_img(width, height);
+
+#ifdef VALIDATE_INTEGRAL_IMAGE
+        printf("Validate image\n");
+        std::vector<void (*)(float *, int, int, float *)> optimized_iimage_functions {compute_integral_img_faster_alg};
+        bool is_equal = validate_integral_image(compute_integral_img, optimized_iimage_functions, width, height, image);
+        if(is_equal == false){
+            printf("The integral images are not equal.\n");
+        }
+        printf("After validating image\n");
+#endif
+
 	// Compute integral image
 	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
 
@@ -69,8 +85,9 @@ int main(int argc, char const *argv[])
 	for (size_t i=0; i<interest_points.size(); ++i) {
         get_msurf_descriptor(iimage, &interest_points[i]);
 	}
+#ifdef VALIDATE_GET_MSURF_DESCRIPTORS	
     std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
-    test_functions.push_back(get_msurf_descriptor_precompute_gauss_s2);
+    //test_functions.push_back(get_msurf_descriptor_precompute_gauss_s2);
 
     bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
     if (valid) {
@@ -78,6 +95,7 @@ int main(int argc, char const *argv[])
     } else {
         printf("FAILED!\n");
     }
+#endif
 #endif
 
 	// Write results to file

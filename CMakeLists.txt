@@ -8,8 +8,8 @@ endif()
 
 # Setting optimization flags
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -DNDEBUG")
 
 # Setting cmake module path for potential later findXXX cmake functionality
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
