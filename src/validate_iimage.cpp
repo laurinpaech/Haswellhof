@@ -8,7 +8,7 @@
 // If one of the results difers from the base implementation false is being returned.
 // Messages clarifying the equality of the results are being printed.
 bool validate_iimage(void (*original_function)(float *, int, int, float *),
-                     std::vector<void (*)(float *, int, int, float *)> test_functions, int width, int height,
+                     const std::vector<void (*)(float *, int, int, float *)> &test_functions, int width, int height,
                      float *image) {
     // Create integral image
     struct integral_image *original_iimage = create_integral_img(width, height);
@@ -21,14 +21,11 @@ bool validate_iimage(void (*original_function)(float *, int, int, float *),
         // Compute integral image
         optimized_function(image, optimized_iimage->width, optimized_iimage->height, optimized_iimage->data);
 
-        bool equal = are_equal(original_iimage->data, optimized_iimage->data, width, height);
-
-        if (equal == false) {
+        if (!are_matrices_equal(original_iimage->data, optimized_iimage->data, width, height)) {
             all_functions_equal = false;
             printf("Error: The integral images are not equal.\n");
-        } else {
-            printf("The integral images are equal\n");
         }
+
         free(optimized_iimage->data);
         free(optimized_iimage);
     }
@@ -44,8 +41,8 @@ bool validate_iimage(void (*original_function)(float *, int, int, float *),
 // The results of the integral images are being compared.
 // If one of the results difers from the base implementation false is being returned.
 // Messages clarifying the equality of the results are being printed.
-bool validate_iimage_custom_array(void (*original_function)(float *, int, int, float *),
-                                  std::vector<void (*)(float *, int, int, float *)> test_functions) {
+bool validate_iimage_custom_matrix(void (*original_function)(float *, int, int, float *),
+                                  const std::vector<void (*)(float *, int, int, float *)> &test_functions) {
     int width = 4, height = 4;
     float *image = (float *)malloc(height * width * sizeof(float));
     int counter = 0;
@@ -56,7 +53,6 @@ bool validate_iimage_custom_array(void (*original_function)(float *, int, int, f
         }
     }
 
-    // float image[height][width] = { { 1.0, 2.0, 3.0 }, { 4.0, 5.0, 6.0 }, { 7.0, 8.0, 9.0 } };
     bool all_functions_equal = true;
 
     // Create integral image
@@ -70,13 +66,11 @@ bool validate_iimage_custom_array(void (*original_function)(float *, int, int, f
         optimized_function(image, optimized_iimage->width, optimized_iimage->height, optimized_iimage->data);
 
         //print_debug(original_iimage->data, optimized_iimage->data, width, height);
-        bool equal = are_equal(original_iimage->data, optimized_iimage->data, width, height);
-        if (equal == false) {
+        if (!are_matrices_equal(original_iimage->data, optimized_iimage->data, width, height)) {
             all_functions_equal = false;
             printf("Error: The integral images are not equal.\n");
-        } else {
-            printf("The integral images are equal\n");
         }
+
         free(optimized_iimage->data);
         free(optimized_iimage);
     }
@@ -90,7 +84,7 @@ bool validate_iimage_custom_array(void (*original_function)(float *, int, int, f
 
 // Compares two matrices and checks if the values are equal.
 // Returns true if all values of the matrix are equal, false otherwise.
-bool are_equal(float *iimage1, float *iimage2, int width, int height) {
+bool are_matrices_equal(float *iimage1, float *iimage2, int width, int height) {
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (iimage1[i * width + j] != iimage2[i * width + j]) {

@@ -61,6 +61,7 @@ int main(int argc, char const *argv[]) {
         printf("Validate image\n");
         std::vector<void (*)(float *, int, int, float *)> optimized_iimage_functions {compute_integral_img_faster_alg};
         bool is_equal = validate_iimage(compute_integral_img, optimized_iimage_functions, width, height, image);
+        //bool is_equal = validate_iimage_custom_matrix(compute_integral_img, optimized_iimage_functions);
         if(is_equal == false){
             printf("The integral images are not equal.\n");
         }else{
