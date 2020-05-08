@@ -33,6 +33,8 @@ add_executable(benchmark
     helper.h
     integral_image.h
     integral_image.cpp
+    integral_image_opt.h
+    integral_image_opt.cpp
     interest_point.h
     response_layer.h
     fasthessian.h
@@ -43,6 +45,8 @@ add_executable(benchmark
     benchmark_data_to_file.cpp
     benchmarking.h
     benchmarking.cpp
+    validate_iimage.h
+    validate_iimage.cpp
     tsc_x86.h
     main_benchmark.cpp
 )

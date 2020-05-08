@@ -1,7 +1,7 @@
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
-#define USE_MSURF 0
+#define USE_MSURF 1
 
 #include "stb_image.h"
 #include "integral_image.h"
