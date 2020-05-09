@@ -71,7 +71,9 @@ int main(int argc, char const *argv[]) {
 
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER
     std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions{compute_response_layer};
-    bool valid = validate_compute_response_layer(compute_response_layer, test_functions, iimage);
+	//bool valid = validate_compute_response_layer(compute_response_layer, test_functions, iimage);
+
+    bool valid = validate_compute_response_layer_custom_matrix(compute_response_layer, test_functions);
     if (valid) {
         printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
     } else {

@@ -16,6 +16,9 @@
 bool validate_integral_image(void (*original_function)(float *, int, int, float *), const std::vector<void (*)(float *, int, int, float *)> &test_functions, 
 int width, int height, float* image);
 
+bool validate_compute_response_layer_custom_matrix(void (*original_function)(struct response_layer *, struct integral_image *), 
+                                     const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions);
+
 bool validate_compute_response_layer(void (*original_function)(struct response_layer *, struct integral_image *), 
                                      const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions,
                                      struct integral_image* iimage);
