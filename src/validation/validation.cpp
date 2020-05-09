@@ -7,6 +7,8 @@
 #include "helper.h"
 #include "validation_integral_image.h"
 
+//#define DEBUG_INFO
+
 // Creates an integral image given an image, its corresponding height and width, the base function and a list of other
 // functions. The results of the integral images are being compared. If one of the results difers from the base
 // implementation false is being returned. Messages clarifying the equality of the results are being printed.
@@ -79,7 +81,9 @@ bool validate_compute_response_layer(
 
     // Compute responses for every layer
     for (int i = 0; i < original_fh->total_layers; i++) {
+#ifdef DEBUG_INFO
         printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height, original_fh->response_map[i]->width);
+#endif
         original_function(original_fh->response_map[i], iimage);
         /**printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height, original_fh->response_map[i]->width);
         for (int l = 0; l <  original_fh->response_map[i]->height; l++) {
@@ -122,8 +126,9 @@ bool validate_compute_response_layer(
                 // If the sizes of layers don't match, don't do any further tests.
                 continue;
             }
-             print_debug(original_layer->response, optimized_layer->response, original_layer->height,
-             original_layer->width);
+#ifdef DEBUG_INFO
+            print_debug(original_layer->response, optimized_layer->response, original_layer->height,original_layer->width);
+#endif
 
             if (!are_float_matrices_equal(original_layer->response, optimized_layer->response, original_layer->height,
                                           original_layer->width) ||

@@ -12,7 +12,7 @@
  * Saves the data specified in all_benchmark_data to .csv files.
  * The timing information belonging to the same function (but different images) will be saved to the same .csv file.
  **/
-void save_benchmark_data(std::vector<struct benchmark_data *> all_benchmark_data) {
+void save_benchmark_data(const std::vector<struct benchmark_data> &all_benchmark_data) {
     // get the current time
     struct tm *timenow;
     time_t now = time(NULL);
@@ -43,10 +43,10 @@ void create_folder(const char *folder_name) {
     }
 }
 
-// Saves a file containing the information of benchmark_data tto the specified folder.
-void save_performance_file(struct benchmark_data *data, char *folder_name) {
+// Saves a file containing the information of benchmark_data to the specified folder.
+void save_performance_file(const struct benchmark_data &data, char *folder_name) {
     char *path_name = concat(folder_name, "/");
-    path_name = concat(path_name, data->function_name);
+    path_name = concat(path_name, data.function_name);
 
     printf("%s\n", path_name);
     path_name = concat(path_name, ".csv");
@@ -55,9 +55,17 @@ void save_performance_file(struct benchmark_data *data, char *folder_name) {
     // open the file for reading and appending - create it if necessary
     FILE *fp = fopen(path_name, "a+");
     printf("opened %s\n", path_name);
-    fprintf(fp, "%s,%d,%d,%d,%ld,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%lf\n", data->image_name, data->width,
-            data->height, data->num_interest_points, data->num_flops, data->avg_cycles, data->min_cycles,
-            data->max_cycles, data->flops_per_cycle);
+    fprintf(fp, "%s,%d,%d,%d,%ld,%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%lf\n", 
+        data.image_name, 
+        data.width,
+        data.height, 
+        data.num_interest_points, 
+        data.num_flops, 
+        data.avg_cycles, 
+        data.min_cycles,
+        data.max_cycles, 
+        data.flops_per_cycle
+    );
 
     // closes the file pointed to by fp
     fclose(fp);

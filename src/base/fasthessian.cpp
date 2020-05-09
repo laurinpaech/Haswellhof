@@ -65,6 +65,14 @@ void create_response_map(struct fasthessian* fh) {
     fh->response_map[7] = initialise_response_layer(99, w/4, h/4, init_step*4);
 }
 
+void compute_response_map(struct fasthessian* fh) {
+    
+    for (int i = 0; i < fh->total_layers; ++i) {
+		compute_response_layer(fh->response_map[i], fh->iimage);
+	}   
+
+}
+
 void compute_response_layer(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y;

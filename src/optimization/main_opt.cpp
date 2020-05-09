@@ -43,10 +43,8 @@ int main(int argc, char const *argv[])
     // Create octaves with response layers
     create_response_map(fh);
 
-    // Compute responses for every layer
-    for (int i = 0; i < fh->total_layers; i++) {
-        compute_response_layer(fh->response_map[i], iimage);
-    }
+	// Compute responses for every layer
+	compute_response_map(fh);
 
     // Getting interest points with non-maximum supression
     std::vector<struct interest_point> interest_points;
