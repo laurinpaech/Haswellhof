@@ -106,6 +106,219 @@ void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct in
 
 }
 
+void get_msurf_descriptor_improved(struct integral_image* iimage, struct interest_point* ipoint) {
+
+    float scale = ipoint->scale;
+    int ipoint_x = (int) lroundf(ipoint->x);
+    int ipoint_y = (int) lroundf(ipoint->y);
+
+    // build descriptor
+    float* descriptor = ipoint->descriptor;
+    int desc_idx = 0;
+    float sum_of_squares = 0.0f;
+    
+    // subregion centers for the 4x4 gaussian weighting
+    float cx = -0.5f;
+    float cy = 0.0f;
+
+    int i = -8;
+
+    // calculate descriptor for this interest point
+    while(i < 12) {
+
+        int j = -8;
+        i = i - 4;
+
+        cx += 1.0f;
+        cy = -0.5f;
+
+        while(j < 12) {
+            
+            float dx = 0.0f;
+            float dy = 0.0f; 
+            float mdx = 0.0f; 
+            float mdy = 0.0f;
+
+            cy += 1.0f;
+
+            j = j - 4;
+
+            // TODO: (Sebastian) I think this should be i + 4 and j + 4 (OpenSURF also wrong)
+            int xs = (int) lroundf(ipoint_x + (i + 4) * scale);
+            int ys = (int) lroundf(ipoint_y + (j + 4) * scale);
+
+            for (int k = i; k < i + 9; ++k) {
+                for (int l = j; l < j + 9; ++l) {
+
+                    //Get coords of sample point on the rotated axis
+                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    int sample_y = (int) lroundf(ipoint_y + l * scale);
+
+                    //Get the gaussian weighted x and y responses
+                    // TODO: (Sebastian) Precompute this...
+                    float gauss_s1 = gaussianf((float) xs-sample_x, (float) ys-sample_y, 2.5f * scale);
+                    
+                    float rx = haarX(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
+                    float ry = haarY(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
+                    
+                    //Get the gaussian weighted x and y responses on rotated axis
+                    float rrx = gauss_s1 * (ry);
+                    float rry = gauss_s1 * (rx);
+
+                    dx += rrx;
+                    dy += rry;
+                    // TODO: (Sebastian) Why cast here? -> in pure c this returns double
+                    // SOLVED: Use fabsf() instead!
+                    mdx += fabsf(rrx);
+                    mdy += fabsf(rry);
+
+                }
+                
+            }
+
+            // TODO: (Sebastian) Precompute this...
+            float gauss_s2 = gaussianf(cx-2.0f, cy-2.0f, 1.5f);
+
+            // add the values to the descriptor vector
+            descriptor[desc_idx] = dx * gauss_s2;
+            descriptor[desc_idx+1] = dy * gauss_s2;
+            descriptor[desc_idx+2] = mdx * gauss_s2;
+            descriptor[desc_idx+3] = mdy * gauss_s2;
+
+            // precompute for normaliztion
+            sum_of_squares += (dx*dx + dy*dy + mdx*mdx + mdy*mdy) * gauss_s2*gauss_s2;
+
+            desc_idx += 4;
+
+            j += 9;
+
+        }
+
+        i += 9;
+
+    }
+
+    // rescale to unit vector
+    // NOTE: using sqrtf() for floats
+    float norm_factor = 1.0f / sqrtf(sum_of_squares);
+
+    for (int i = 0; i < 64; ++i) {
+        descriptor[i] *= norm_factor;
+    }
+
+}
+
+void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest_point* ipoint) {
+
+    float scale = ipoint->scale;
+    int ipoint_x = (int) lroundf(ipoint->x);
+    int ipoint_y = (int) lroundf(ipoint->y);
+
+    // build descriptor
+    float* descriptor = ipoint->descriptor;
+    int desc_idx = 0;
+    float sum_of_squares = 0.0f;
+    
+    // subregion centers for the 4x4 gaussian weighting
+    float cx = -0.5f;
+    float cy = 0.0f;
+
+    int i = -8;
+
+    // calculate descriptor for this interest point
+    while(i < 12) {
+
+        int j = -8;
+        i = i - 4;
+
+        cx += 1.0f;
+        cy = -0.5f;
+
+        while(j < 12) {
+            
+            float dx = 0.0f;
+            float dy = 0.0f; 
+            float mdx = 0.0f; 
+            float mdy = 0.0f;
+
+            cy += 1.0f;
+
+            j = j - 4;
+
+            // TODO: (Sebastian) I think this should be i + 4 and j + 4 (OpenSURF also wrong)
+            int xs = (int) lroundf(ipoint_x + (i + 4) * scale);
+            int ys = (int) lroundf(ipoint_y + (j + 4) * scale);
+
+            for (int k = i; k < i + 9; ++k) {
+                for (int l = j; l < j + 9; ++l) {
+
+                    //Get coords of sample point on the rotated axis
+                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    int sample_y = (int) lroundf(ipoint_y + l * scale);
+
+                    //Get the gaussian weighted x and y responses
+                    //float gauss_s1 = gaussian(xs-sample_x, ys-sample_y, 2.5f * scale);
+                    //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig))
+                    float g_factor = 0.08f / (scale*scale); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
+                    float g_x = xs - sample_x;
+                    float g_y = ys - sample_y;
+                    // NOTE: We use expf here
+                    float gauss_s1 = M_1_PI * g_factor * expf(-g_factor * (g_x*g_x + g_y*g_y));
+                    
+                    float rx = haarX(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
+                    float ry = haarY(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
+                    
+                    //Get the gaussian weighted x and y responses on rotated axis
+                    float rrx = gauss_s1 * (ry);
+                    float rry = gauss_s1 * (rx);
+
+                    dx += rrx;
+                    dy += rry;
+                    // TODO: (Sebastian) Why cast here? -> in pure c this returns double
+                    // SOLVED: Use fabsf() instead!
+                    mdx += fabsf(rrx);
+                    mdy += fabsf(rry);
+
+                }
+                
+            }
+
+            // TODO: (Sebastian) Precompute this...
+            //float gauss_s2 = gaussian(cx-2.0f,cy-2.0f,1.5f);
+            //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig));
+            float g_factor = 1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
+            float g_x = cx - 2.0f;
+            float g_y = cy - 2.0f;
+            // NOTE: We use expf here
+            float gauss_s2 = M_1_PI * g_factor * expf(-g_factor * (g_x*g_x + g_y*g_y)); 
+
+            // add the values to the descriptor vector
+            descriptor[desc_idx] = dx * gauss_s2;
+            descriptor[desc_idx+1] = dy * gauss_s2;
+            descriptor[desc_idx+2] = mdx * gauss_s2;
+            descriptor[desc_idx+3] = mdy * gauss_s2;
+
+            // precompute for normaliztion
+            sum_of_squares += (dx*dx + dy*dy + mdx*mdx + mdy*mdy) * gauss_s2*gauss_s2;
+
+            desc_idx += 4;
+
+            j += 9;
+
+        }
+
+        i += 9;
+
+    }
+
+    // rescale to unit vector
+    float norm_factor = 1.0f / sqrtf(sum_of_squares);
+
+    for (int i = 0; i < 64; ++i) {
+        descriptor[i] *= norm_factor;
+    }
+
+}
 
 void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint) {
 
