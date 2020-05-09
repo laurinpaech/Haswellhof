@@ -55,14 +55,16 @@ int main(int argc, char const *argv[])
 #if !USE_MSURF
     // Descriptor stuff
     float* GW = get_gaussian(3.3);
-    for (size_t i=0; i<interest_points.size(); ++i)
+    for (size_t i=0; i<interest_points.size(); ++i) {
         get_descriptor_inlinedHaarWavelets(iimage, &interest_points[i], GW);
+    }
 
     free(GW);
 #else
     // Alternative M-SURF descriptors as in OpenSURF
-    for (size_t i=0; i<interest_points.size(); ++i)
+    for (size_t i=0; i<interest_points.size(); ++i) {
         get_msurf_descriptor_inlinedHaarWavelets(iimage, &interest_points[i]);
+    }
 #endif
 
     // Write results to file

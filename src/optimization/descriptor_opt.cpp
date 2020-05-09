@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define PRECHECK_BOUNDARIES 1
+#define PRECHECK_BOUNDARIES 0
 
 void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
@@ -65,8 +65,8 @@ void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct in
 
                     sum_x += x; // sum(x)
                     sum_y += y; // sum(y)
-                    abs_x += fabs(x); // sum(abs(x))
-                    abs_y += fabs(y); // sum(abs(y))
+                    abs_x += fabsf(x); // sum(abs(x))
+                    abs_y += fabsf(y); // sum(abs(y))
 
                     if (row <= 0 
                         || col <= 0 
@@ -95,7 +95,7 @@ void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct in
     }
 
     // rescale to unit vector
-    float norm_factor = 1./sqrt(sum_of_squares);
+    float norm_factor = 1./sqrtf(sum_of_squares);
 
     for (int i=0; i<64; i+=4) {
         descriptor[i] *= norm_factor;
@@ -110,8 +110,8 @@ void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct in
 void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint) {
 
     float scale = ipoint->scale;
-    int ipoint_x = (int) round(ipoint->x);
-    int ipoint_y = (int) round(ipoint->y);
+    int ipoint_x = (int) lroundf(ipoint->x);
+    int ipoint_y = (int) lroundf(ipoint->y);
 
     float *data = (float *)iimage->data;
     int width = iimage->width;
@@ -125,9 +125,6 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
     // subregion centers for the 4x4 gaussian weighting
     float cx = -0.5f;
     float cy = 0.0f;
-
-    //float co = 1;
-    //float si = 0;
 
     int i = -8;
 
@@ -151,21 +148,17 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
 
             j = j - 4;
 
-            //int xs = (int) round(ipoint_x + ( -jx*scale*si + ix*scale*co));
-            //int ys = (int) round(ipoint_y + ( jx*scale*co + ix*scale*si));
-            //int xs = (int) round(ipoint_x + (i + 5) * scale);
-            //int ys = (int) round(ipoint_y + (j + 5) * scale);
-            int xs = (int) round(ipoint_x + (i + 4) * scale);
-            int ys = (int) round(ipoint_y + (j + 4) * scale);
+            //int xs = (int) lroundf(ipoint_x + (i + 5) * scale);
+            //int ys = (int) lroundf(ipoint_y + (j + 5) * scale);
+            int xs = (int) lroundf(ipoint_x + (i + 4) * scale);
+            int ys = (int) lroundf(ipoint_y + (j + 4) * scale);
 
             for (int k = i; k < i + 9; ++k) {
                 for (int l = j; l < j + 9; ++l) {
 
                     //Get coords of sample point on the rotated axis
-                    //int sample_x = (int) round(ipoint_x + (-l*scale*si + k*scale*co));
-                    //int sample_y = (int) round(ipoint_y + ( l*scale*co + k*scale*si));
-                    int sample_x = (int) round(ipoint_x + k * scale);
-                    int sample_y = (int) round(ipoint_y + l * scale);
+                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    int sample_y = (int) lroundf(ipoint_y + l * scale);
 
                     //Get the gaussian weighted x and y responses
                     //float gauss_s1 = gaussian(xs-sample_x, ys-sample_y, 2.5f * scale);
@@ -173,11 +166,10 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
                     float g_factor = 0.08f / (scale*scale); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
                     float g_x = xs - sample_x;
                     float g_y = ys - sample_y;
-                    float gauss_s1 = M_1_PI * g_factor * exp(-g_factor * (g_x*g_x + g_y*g_y));
+                    // NOTE: We use expf here
+                    float gauss_s1 = M_1_PI * g_factor * expf(-g_factor * (g_x*g_x + g_y*g_y));
                     
-                    //float rx = haarX(sample_y, sample_x, (int) 2.0 * round(scale));
-                    //float ry = haarY(sample_y, sample_x, (int) 2.0 * round(scale));
-                    int s = (int) round(scale);
+                    int s = (int) lroundf(scale);
                     float rx = 0.0f; //box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
                     float ry = 0.0f; //box_integral(iimage, sample_y, sample_x-s, s, 2*s) - box_integral(iimage, sample_y-s, sample_x-s, s, 2*s);
 
@@ -195,8 +187,8 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
 
                     dx += rrx;
                     dy += rry;
-                    mdx += fabs(rrx);
-                    mdy += fabs(rry);
+                    mdx += fabsf(rrx);
+                    mdy += fabsf(rry);
 
                 }
             }
@@ -207,7 +199,8 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
             float g_factor = 1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
             float g_x = cx - 2.0f;
             float g_y = cy - 2.0f;
-            float gauss_s2 = M_1_PI * g_factor * exp(-g_factor * (g_x*g_x + g_y*g_y));
+            // NOTE: We use expf here
+            float gauss_s2 = M_1_PI * g_factor * expf(-g_factor * (g_x*g_x + g_y*g_y)); 
 
             // add the values to the descriptor vector
             descriptor[desc_idx] = dx * gauss_s2;
@@ -229,7 +222,7 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
     }
 
     // rescale to unit vector
-    float norm_factor = 1.0f / sqrt(sum_of_squares);
+    float norm_factor = 1.0f / sqrtf(sum_of_squares);
 
     for (int i = 0; i < 64; ++i) {
         descriptor[i] *= norm_factor;
