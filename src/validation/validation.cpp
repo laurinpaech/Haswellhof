@@ -8,6 +8,7 @@
 #include "validation_integral_image.h"
 
 //#define DEBUG_INFO
+#define VALIDATION_PRECISION (1e-3)
 
 // Creates an integral image given an image, its corresponding height and width, the base function and a list of other
 // functions. The results of the integral images are being compared. If one of the results difers from the base
@@ -162,6 +163,7 @@ bool validate_get_msurf_descriptors(
     bool all_valid = true;
 
     for (int i = 0; i < interest_points->size(); ++i) {
+        
         struct interest_point ref_ipoint = interest_points->at(i);
         original_function(iimage, &ref_ipoint);
 
@@ -171,9 +173,9 @@ bool validate_get_msurf_descriptors(
 
             test_functions[j](iimage, &test_ipoint);
 
-            bool valid = compare_arrays_close(ref_ipoint.descriptor, test_ipoint.descriptor, 64, EPSILON);
+            bool valid = compare_arrays_close(ref_ipoint.descriptor, test_ipoint.descriptor, 64, VALIDATION_PRECISION);
             if (!valid) {
-                printf("get_msurf_descriptor() test function %d does not match original function\n", j);
+                printf("ERROR: MSURF descriptor test function %d does not match original function\n", j);
             }
 
             // Updating flag indicating if all functions are valid

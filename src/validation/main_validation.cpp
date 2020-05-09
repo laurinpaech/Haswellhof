@@ -112,7 +112,7 @@ int main(int argc, char const *argv[])
         if (valid) {
             printf("MSURF DESCRIPTOR VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("MSURF DESCRIPTOR VALIDATION:  \033[1;31mFAILED!\033[0m;!\n");
+            printf("MSURF DESCRIPTOR VALIDATION:  \033[1;31mFAILED!\033[0m!\n");
         }
     }
 #endif
