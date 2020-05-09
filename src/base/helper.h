@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdlib.h>
-#include <stdbool.h>
 #include <math.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 // https://stackoverflow.com/questions/3437404/min-and-max-in-c
 #define MIN(a, b)               \
@@ -17,7 +17,7 @@
         __typeof__(a) _a = (a); \
         __typeof__(b) _b = (b); \
         _a > _b ? _a : _b;      \
-    }) 
+    })
 
 #define EPSILON (1e-3)
 
@@ -41,12 +41,25 @@ inline bool compare_arrays_close(float a[], float b[], int n, float epsilon = EP
     return true;
 }
 
-// Compares two matrices and checks if the values are equal.
+// Compares two matrices of floats and checks if the values are equal.
 // Returns true if all values of the matrix are equal, false otherwise.
-static inline bool are_matrices_equal(float* iimage1, float* iimage2, int width, int height){
-     for (int i = 0; i < height; i++) {
+static inline bool are_float_matrices_equal(float *matrix1, float *matrix2, int width, int height) {
+    for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            if (iimage1[i * width + j] != iimage2[i * width + j]) {
+            if (matrix1[i * width + j] != matrix2[i * width + j]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+// Compares two matrices of booleans and checks if the values are equal.
+// Returns true if all values of the matrix are equal, false otherwise.
+inline bool are_bool_matrices_equal(bool *matrix1, bool *matrix2, int width, int height) {
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            if (matrix1[i * width + j] != matrix2[i * width + j]) {
                 return false;
             }
         }

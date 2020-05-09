@@ -44,7 +44,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
     int border = (filter_size-1)/2;
     float inv_area = 1.f/(filter_size*filter_size);
 
-    int ind = 0  // oder alternativ (i+1)*j
+    int ind = 0;  // oder alternativ (i+1)*j
 
     float *data = (float*) iimage->data;  // brauch hier keinen cast weil es eig float sein sollte
     int iheight = iimage->height;

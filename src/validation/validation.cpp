@@ -1,5 +1,6 @@
 #include "validation.h"
 #include "helper.h"
+#include "validation_integral_image.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -25,7 +26,7 @@ bool validate_integral_image(void (*original_function)(float *, int, int, float 
         // Compute integral image
         optimized_function(image, optimized_iimage->width, optimized_iimage->height, optimized_iimage->data);
 
-        if (!are_matrices_equal(original_iimage->data, optimized_iimage->data, width, height)) {
+        if (!are_float_matrices_equal(original_iimage->data, optimized_iimage->data, width, height)) {
             all_functions_equal = false;
             printf("Error: The integral images are not equal.\n");
         }
@@ -42,10 +43,68 @@ bool validate_integral_image(void (*original_function)(float *, int, int, float 
 
 bool validate_compute_response_layer(void (*original_function)(struct response_layer *, struct integral_image *), 
                                      const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions,
-                                     struct response_layer* layer, struct integral_image* iimage) {
+                                     struct integral_image* iimage) {
+    bool all_valid = true;
 
 
+    // Fast-Hessian
+	struct fasthessian* original_fh = create_fast_hessian(iimage);
+	// Create octaves with response layers
+	create_response_map(original_fh);
 
+	// Compute responses for every layer
+	for (int i = 0; i < original_fh->total_layers; i++) {
+		original_function(original_fh->response_map[i], iimage);
+	}
+
+    for (int j = 0; j < test_functions.size(); ++j) {
+        // Fast-Hessian
+        struct fasthessian* optimized_fh = create_fast_hessian(iimage);
+        // Create octaves with response layers
+        create_response_map(optimized_fh);
+        // Compute responses for every layer
+	    for (int i = 0; i < optimized_fh->total_layers; i++) {
+		    test_functions[j](optimized_fh->response_map[i], iimage);
+	    }
+
+        if(original_fh->total_layers != optimized_fh->total_layers){
+            printf("compute_response_layer() test function %d does not match original function - the number of layers difer.\n", j);
+            all_valid = false;
+            // If the numbers of layers doesn't match, don't do any further tests.
+            continue;
+        }
+
+        // Compare each layer of each test function with the original 
+        for (int i = 0; i < original_fh->total_layers; i++) {
+		    struct response_layer* optimized_layer = optimized_fh->response_map[i];
+            struct response_layer* original_layer = original_fh->response_map[i];
+            if(original_layer->height != optimized_layer->height || original_layer->width != optimized_layer->width){
+                printf("compute_response_layer() test function %d does not match original function - the layer sizes difer.\n", j);
+                all_valid = false;
+                // If the sizes of layers don't match, don't do any further tests.
+                continue;
+            }
+            //print_debug(original_layer->response, optimized_layer->response, original_layer->height, original_layer->width);
+
+            if(!are_float_matrices_equal(original_layer->response, optimized_layer->response, original_layer->height, original_layer->width)||
+            !are_bool_matrices_equal(original_layer->laplacian, optimized_layer->laplacian, original_layer->height, original_layer->width)){
+                printf("compute_response_layer() test function %d does not match original function\n", j);
+                all_valid = false;
+            }
+	    }
+        for (size_t i = 0; i < NUM_LAYERS; i++) {
+		    free(optimized_fh->response_map[i]);
+	    }
+	    free(optimized_fh);
+
+    }
+
+    for (size_t i = 0; i < NUM_LAYERS; i++) {
+	    free(original_fh->response_map[i]);
+	}
+    free(original_fh);
+
+    return all_valid;
 }
 
 bool validate_get_msurf_descriptors(void (*original_function)(struct integral_image *, struct interest_point *),

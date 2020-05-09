@@ -35,7 +35,7 @@ bool validate_integral_image_custom_matrix(void (*original_function)(float *, in
         optimized_function(image, optimized_iimage->width, optimized_iimage->height, optimized_iimage->data);
 
         //print_debug(original_iimage->data, optimized_iimage->data, width, height);
-        if (!are_matrices_equal(original_iimage->data, optimized_iimage->data, width, height)) {
+        if (!are_float_matrices_equal(original_iimage->data, optimized_iimage->data, width, height)) {
             all_functions_equal = false;
             printf("Error: The integral images are not equal.\n");
         }
