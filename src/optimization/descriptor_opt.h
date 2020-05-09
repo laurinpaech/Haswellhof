@@ -123,3 +123,4 @@ static inline void haarXY_precheck_boundaries(float* ii_data, int height, int wi
     *haarY = r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0;
 }
 
+void get_msurf_descriptor_precompute_gauss_s2(struct integral_image* iimage, struct interest_point* ipoint);
