@@ -8,18 +8,23 @@ import random
 
 # TODO: add command line args 
 
-show = True # show plots otherwise just save them
+show = False # show plots otherwise just save them
 max_matches = 100 # limit number matches shown in plot (None == no limit)
-max_kp = 250 # limit number keypoints shown in plot (None == no limit)
+max_kp = None # limit number keypoints shown in plot (None == no limit)
 
 executable = '../build/src/surf'
 img1_fp = "../images/pumpkin1.jpg"
 img2_fp = "../images/pumpkin2.jpg"
 kp_fp1 = "../images/pumpkin1_desc.txt"
 kp_fp2 = "../images/pumpkin2_desc.txt"
+
+plot_OpenSURF = True
+kp_OpenSURF_fp1 = "../images/pumpkin1_OpenSURF_desc.txt"
+kp_OpenSURF_fp2 = "../images/pumpkin2_OpenSURF_desc.txt"
+
 dest = "../plots/"
 
-def visualize_matches(img1, img2, keypoints_1, keypoints_2, matches, 
+def visualize_matches(img1, img2, keypoints_1, keypoints_2, matches,
                         save_fp=None, n_max=None, show=True, title=None):
     height = max(img1.shape[0], img2.shape[0])
     width = img1.shape[1] + img2.shape[1]
@@ -52,7 +57,7 @@ def visualize_matches(img1, img2, keypoints_1, keypoints_2, matches,
     else:
         plt.clf()
         
-def draw_kp(img, kps, show=True, save_fp=None, n_max=None, title=None):
+def draw_kp(img, kps, laplacian=None, show=True, save_fp=None, n_max=None, title=None, rescale=1):
     ax = plt.gca()
     ax.cla()
 
@@ -64,11 +69,13 @@ def draw_kp(img, kps, show=True, save_fp=None, n_max=None, title=None):
     
     xs = []
     ys = []
-    for kp in kps:
+    for i, kp in enumerate(kps):
         x, y = kp.pt
         xs.append(x)
         ys.append(y)
-        circle = plt.Circle(kp.pt, kp.size, color='b', fill=False, lw=0.5)
+
+        c = 'r' if laplacian is not None and laplacian[i] else 'b'
+        circle = plt.Circle(kp.pt, kp.size*rescale, color=c, fill=False, lw=0.5)
         ax.add_artist(circle)
 
         # rect = patches.Rectangle((kp.pt[0]-kp.size, kp.pt[1]-kp.size), 2*kp.size, 2*kp.size, color='b', fill=False, lw=0.5)
@@ -87,6 +94,8 @@ def draw_kp(img, kps, show=True, save_fp=None, n_max=None, title=None):
         plt.clf()
         
 if __name__ == "__main__":
+    if dest is not None:
+        os.makedirs(dest, exist_ok=True)
     # make paths absolute for executable call
     executable = os.path.abspath(executable)
     img1_fp = os.path.abspath(img1_fp)
@@ -106,16 +115,20 @@ if __name__ == "__main__":
     
     # load txt files written from our implementation
     our1 = np.loadtxt(kp_fp1, dtype=np.float32)
-    kp1_our, desc1_our = our1[:,:3], our1[:,4:]
+    kp1_our, desc1_our = our1[:,:4], our1[:,4:]
     our2 = np.loadtxt(kp_fp2, dtype=np.float32)
-    kp2_our, desc2_our = our2[:,:3], our2[:,4:]
+    kp2_our, desc2_our = our2[:,:4], our2[:,4:]
 
     draw_kp(img1,
-            [cv2.KeyPoint(x,y,size*10) for x,y,size in kp1_our],
+            [cv2.KeyPoint(x,y,size) for x,y,size,_ in kp1_our],
+            laplacian=[lap for _,_,_,lap in kp1_our],
             n_max=max_kp,
             title="Keypoints from our implementation",
-            save_fp=os.path.join(dest,"kps_ours.png")
+            save_fp=os.path.join(dest,"kps_ours.png"),
+            rescale=2.5,
+            show=show
            )
+    
     # feature matching
     bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
     matches = bf.match(desc1_our,desc2_our)
@@ -123,7 +136,39 @@ if __name__ == "__main__":
     visualize_matches(img1, img2, kp1_our[:,:2], kp2_our[:,:2], matches, 
         n_max=max_matches, 
         save_fp=os.path.join(dest,"matches_ours.png"), 
-        title="Matched features from our implementation")
+        title="Matched features from our implementation",
+        show=show)
+    
+    if plot_OpenSURF:
+        # run OpenSURF implementation
+    #     os.system(f"{executable} {img1_fp} {kp_fp1}")
+    #     os.system(f"{executable} {img2_fp} {kp_fp2}")
+
+        # load txt files written from our implementation
+        data1 = np.loadtxt(kp_OpenSURF_fp1, dtype=np.float32)
+        kp1_OpenSURF, desc1_OpenSURF = data1[:,:4], data1[:,4:]
+        data2 = np.loadtxt(kp_OpenSURF_fp2, dtype=np.float32)
+        kp2_OpenSURF, desc2_OpenSURF = data2[:,:4], data2[:,4:]
+
+        draw_kp(img1,
+                [cv2.KeyPoint(x,y,size) for x,y,size,_ in kp1_OpenSURF],
+                laplacian=[lap for _,_,_,lap in kp1_OpenSURF],
+                n_max=max_kp,
+                title="Keypoints from OpenSURF implementation",
+                save_fp=os.path.join(dest,"kps_OpenSURF.png"),
+                rescale=2.5,
+                show=show
+               )
+
+        # feature matching
+        bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+        matches = bf.match(desc1_OpenSURF,desc2_OpenSURF)
+
+        visualize_matches(img1, img2, kp1_OpenSURF[:,:2], kp2_OpenSURF[:,:2], matches, 
+            n_max=max_matches, 
+            save_fp=os.path.join(dest,"matches_OpenSURF.png"), 
+            title="Matched features from OpenSURF implementation",
+            show=show)
     
 
     # SURF from OpenCV
@@ -138,7 +183,9 @@ if __name__ == "__main__":
             kp1_openCV,
             n_max=max_kp,
             title="Keypoints from OpenCV implementation",
-            save_fp=os.path.join(dest,"kps_openCV.png")
+            save_fp=os.path.join(dest,"kps_openCV.png"),
+            rescale=0.25,
+            show=show
            )
     
     kp1_openCV = np.asarray([kp.pt for kp in kp1_openCV])
@@ -150,7 +197,6 @@ if __name__ == "__main__":
     visualize_matches(img1, img2, kp1_openCV, kp2_openCV, matches, 
         n_max=max_matches, 
         save_fp=os.path.join(dest,"matches_openCV.png"),
-        title="Matched features from OpenCV implementation")
-    
-
+        title="Matched features from OpenCV implementation",
+        show=show)
     

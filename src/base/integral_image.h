@@ -3,6 +3,13 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define MIN(a, b)               \
+    ({                          \
+        __typeof__(a) _a = (a); \
+        __typeof__(b) _b = (b); \
+        _a < _b ? _a : _b;      \
+    })
+
 struct integral_image {
     int width;
     int height;
@@ -16,16 +23,16 @@ struct integral_image *create_integral_img(int width, int height);
 // Computes the integral image
 void compute_integral_img(float *gray_image, int width, int height, float *iimage_data);
 
-static inline float box_integral(struct integral_image *iimage, int row, int col, int rows, int cols) {
+inline float box_integral(struct integral_image *iimage, int row, int col, int rows, int cols) {
     float *data = (float *)iimage->data;
     int width = iimage->width;
     int height = iimage->height;
 
     // subtracting by one for row/col because row/col is inclusive.
-    int r0 = fmin(row, height) - 1;         // r - 3
-    int c0 = fmin(col, width) - 1;          // c - b - 1
-    int r1 = fmin(row + rows, height) - 1;  // r - 3 + 5
-    int c1 = fmin(col + cols, width) - 1;   // c - b + filter_size - 1
+    int r0 = MIN(row, height) - 1;         // r - 3
+    int c0 = MIN(col, width) - 1;          // c - b - 1
+    int r1 = MIN(row + rows, height) - 1;  // r - 3 + 5
+    int c1 = MIN(col + cols, width) - 1;   // c - b + filter_size - 1
 
     // Example with 9x9 filter at (0,0)
     // A: (-3, -5)

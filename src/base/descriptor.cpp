@@ -1,26 +1,23 @@
 #include "descriptor.h"
 #include "integral_image.h"
 #include "interest_point.h"
+#include "helper.h"
 
 #define _USE_MATH_DEFINES
 
 #include <math.h>
 #include <stdlib.h>
 
-#define MAX(a,b) (((a)>(b))?(a):(b))
-
-
 void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
     float scale = ipoint->scale;
-    // TODO: (Sebastian) Is this correct with  "- 0.5"?
     int ipoint_x = (int) (ipoint->x + 0.5);
     int ipoint_y = (int) (ipoint->y + 0.5);
 
-    int step = MAX((int)(scale/2 + 0.5),1); // rounding is done this way in the original implementaion
+    int step = MAX((int)(scale + 0.5),1); // rounding is done this way in the original implementaion
 
-    int col_offset = ipoint_x-step*11; //10 - 1 = PATCH_SIZE/2 + (shift to obtain upper left);
-    int row_offset = ipoint_y-step*11;
+    int col_offset = ipoint_x-step*10 - step/2; //should this be 10.5 = 10 - 1 = PATCH_SIZE/2 + (shift to obtain upper left corner of haar wavelet filter) ??
+    int row_offset = ipoint_y-step*10 - step/2;
 
     // build descriptor
     float* descriptor = ipoint->descriptor;
@@ -62,7 +59,7 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
 
                     sum_x += x; // sum(x)
                     sum_y += y; // sum(y)
-                    // TODO: (Sebastian) Why cast here?
+                    // TODO: (Sebastian) Why cast here? -> in pure c this returns double
                     abs_x += (float)fabs(x); // sum(abs(x))
                     abs_y += (float)fabs(y); // sum(abs(y))
                 }
@@ -134,8 +131,11 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
 
             //int xs = (int) round(ipoint_x + ( -jx*scale*si + ix*scale*co));
             //int ys = (int) round(ipoint_y + ( jx*scale*co + ix*scale*si));
-            int xs = (int) round(ipoint_x + (i + 5) * scale);
-            int ys = (int) round(ipoint_y + (j + 5) * scale);
+            // TODO: (Sebastian) I think this should be i + 4 and j + 4 (OpenSURF also wrong)
+            //int xs = (int) round(ipoint_x + (i + 5) * scale);
+            //int ys = (int) round(ipoint_y + (j + 5) * scale);
+            int xs = (int) round(ipoint_x + (i + 4) * scale);
+            int ys = (int) round(ipoint_y + (j + 4) * scale);
 
             for (int k = i; k < i + 9; ++k) {
                 for (int l = j; l < j + 9; ++l) {
@@ -147,18 +147,11 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
                     int sample_y = (int) round(ipoint_y + l * scale);
 
                     //Get the gaussian weighted x and y responses
-                    //float gauss_s1 = gaussian(xs-sample_x, ys-sample_y, 2.5f * scale);
-                    //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig))
-                    float g_factor = 0.08f / (scale*scale); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
-                    float g_x = xs - sample_x;
-                    float g_y = ys - sample_y;
-                    float gauss_s1 = M_1_PI * g_factor * exp(-g_factor * (g_x*g_x + g_y*g_y));
-                    
-                    //float rx = haarX(sample_y, sample_x, (int) 2.0 * round(scale));
-                    //float ry = haarY(sample_y, sample_x, (int) 2.0 * round(scale));
-                    int s = (int) round(scale);
-                    float rx = gauss_s1 * box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
-                    float ry = gauss_s1 * box_integral(iimage, sample_y, sample_x-s, s, 2*s) - box_integral(iimage, sample_y-s, sample_x-s, s, 2*s);
+                    // TODO: (Sebastian) Precompute this...
+                    float gauss_s1 = gaussian((float) xs-sample_x, (float) ys-sample_y, 2.5f * scale);
+                                        
+                    float rx = haarX(iimage, sample_y, sample_x, (int) 2.0 * round(scale));
+                    float ry = haarY(iimage, sample_y, sample_x, (int) 2.0 * round(scale));
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     //float rrx = gauss_s1*(-rx*si + ry*co);
@@ -169,19 +162,14 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
 
                     dx += rrx;
                     dy += rry;
-                    mdx += fabs(rrx);
-                    mdy += fabs(rry);
+                    mdx += (float) fabs(rrx);
+                    mdy += (float) fabs(rry);
 
-                }
+                }      
             }
 
             // TODO: (Sebastian) Precompute this...
-            //float gauss_s2 = gaussian(cx-2.0f,cy-2.0f,1.5f);
-            //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig));
-            float g_factor = 1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
-            float g_x = cx - 2.0f;
-            float g_y = cy - 2.0f;
-            float gauss_s2 = M_1_PI * g_factor * exp(-g_factor * (g_x*g_x + g_y*g_y));
+            float gauss_s2 = gaussian(cx-2.0f, cy-2.0f, 1.5f);
 
             // add the values to the descriptor vector
             descriptor[desc_idx] = dx * gauss_s2;

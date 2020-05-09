@@ -9,6 +9,7 @@ FILE(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.
 add_executable(surf 
     base/stb_image.h
     base/helper.h
+    base/helper.cpp
     base/integral_image.h
     base/integral_image.cpp
     base/interest_point.h
@@ -34,6 +35,7 @@ target_link_libraries(surf)
 add_executable(benchmark 
     base/stb_image.h
     base/helper.h
+    base/helper.cpp
     base/integral_image.h
     base/integral_image.cpp
     base/interest_point.h
@@ -64,6 +66,91 @@ target_link_libraries(benchmark)
 add_executable(optimization 
     base/stb_image.h
     base/helper.h
+    base/helper.cpp
+    base/integral_image.h
+    base/integral_image.cpp
+    base/interest_point.h
+    base/response_layer.h
+    base/fasthessian.h
+    base/fasthessian.cpp
+    base/descriptor.h
+    base/descriptor.cpp
+    benchmark/benchmark_data_to_file.h
+    benchmark/benchmark_data_to_file.cpp
+    benchmark/benchmarking.h
+    benchmark/benchmarking.cpp
+    benchmark/tsc_x86.h
+    # Add optimization header and source files here
+    optimization/integral_image_opt.h
+    optimization/integral_image_opt.cpp
+    optimization/fasthessian_opt.h
+    optimization/fasthessian_opt.cpp
+    optimization/main_opt.cpp
+    optimization/descriptor_opt.h
+    optimization/descriptor_opt.cpp
+)
+
+# Adding include directories for executable optimization
+target_include_directories(optimization 
+    PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/base 
+    ${CMAKE_CURRENT_SOURCE_DIR}/benchmark
+    ${CMAKE_CURRENT_SOURCE_DIR}/optimization
+)
+
+# Adding libraries to be linked with executable optimization
+target_link_libraries(optimization)
+
+# Adding executable validation
+add_executable(validation 
+    base/stb_image.h
+    base/helper.h
+    base/helper.cpp
+    base/integral_image.h
+    base/integral_image.cpp
+    base/interest_point.h
+    base/response_layer.h
+    base/fasthessian.h
+    base/fasthessian.cpp
+    base/descriptor.h
+    base/descriptor.cpp
+    benchmark/benchmark_data_to_file.h
+    benchmark/benchmark_data_to_file.cpp
+    benchmark/benchmarking.h
+    benchmark/benchmarking.cpp
+    benchmark/tsc_x86.h
+    # Add optimization header and source files here
+    optimization/integral_image_opt.h
+    optimization/integral_image_opt.cpp
+    optimization/fasthessian_opt.h
+    optimization/fasthessian_opt.cpp
+    optimization/descriptor_opt.h
+    optimization/descriptor_opt.cpp
+    # Add validation header and source files here
+    validation/validation.h
+    validation/validation.cpp
+    validation/validation_integral_image.h
+    validation/validation_integral_image.cpp
+    validation/main_validation.cpp
+)
+
+# Adding include directories for executable validation
+target_include_directories(validation 
+    PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/base 
+    ${CMAKE_CURRENT_SOURCE_DIR}/benchmark
+    ${CMAKE_CURRENT_SOURCE_DIR}/optimization
+    ${CMAKE_CURRENT_SOURCE_DIR}/validation
+)
+
+# Adding libraries to be linked with executable validation
+target_link_libraries(validation)
+
+# Adding executable playground
+add_executable(playground 
+    base/stb_image.h
+    base/helper.h
+    base/helper.cpp
     base/integral_image.h
     base/integral_image.cpp
     base/interest_point.h
@@ -80,18 +167,27 @@ add_executable(optimization
     # Add optimization header and source files here
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
-    optimization/main_opt.cpp
+    optimization/descriptor_opt.h
+    optimization/descriptor_opt.cpp
+    # Add validation header and source files here
+    validation/validation.h
+    validation/validation.cpp
+    # Add playground header and source files here
+    playground/playground.h
+    playground/playground.cpp
+    playground/main_playground.cpp
 )
 
-# Adding include directories for executable optimization
-target_include_directories(optimization 
+# Adding include directories for executable playground
+target_include_directories(playground 
     PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/base 
     ${CMAKE_CURRENT_SOURCE_DIR}/benchmark
     ${CMAKE_CURRENT_SOURCE_DIR}/optimization
+    ${CMAKE_CURRENT_SOURCE_DIR}/validation
+    ${CMAKE_CURRENT_SOURCE_DIR}/playground
 )
 
-# Adding libraries to be linked with executable optimization
-target_link_libraries(optimization)
-
+# Adding libraries to be linked with executable playground
+target_link_libraries(playground)
 

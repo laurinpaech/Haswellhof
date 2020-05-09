@@ -1,13 +1,14 @@
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
-#define USE_MSURF 0
+#define USE_MSURF 1
 
 #include "stb_image.h"
 #include "integral_image.h"
 #include "fasthessian.h"
 #include "interest_point.h"
 #include "descriptor.h"
+#include "descriptor_opt.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +27,7 @@ int main(int argc, char const *argv[])
     stbi_ldr_to_hdr_gamma(1.0f);
     float* image = stbi_loadf(argv[1], &width, &height, &channels, STBI_grey);
 
-    if(!image) {
+    if (!image) {
         printf("Could not open or find image\n");
         return -1;
     }
@@ -42,10 +43,8 @@ int main(int argc, char const *argv[])
     // Create octaves with response layers
     create_response_map(fh);
 
-    // Compute responses for every layer
-    for (int i = 0; i < fh->total_layers; i++) {
-        compute_response_layer(fh->response_map[i], iimage);
-    }
+	// Compute responses for every layer
+	compute_response_map(fh);
 
     // Getting interest points with non-maximum supression
     std::vector<struct interest_point> interest_points;
@@ -54,14 +53,16 @@ int main(int argc, char const *argv[])
 #if !USE_MSURF
     // Descriptor stuff
     float* GW = get_gaussian(3.3);
-    for (size_t i=0; i<interest_points.size(); ++i)
-        get_descriptor(iimage, &interest_points[i], GW);
+    for (size_t i=0; i<interest_points.size(); ++i) {
+        get_descriptor_inlinedHaarWavelets(iimage, &interest_points[i], GW);
+    }
 
     free(GW);
 #else
     // Alternative M-SURF descriptors as in OpenSURF
-    for (size_t i=0; i<interest_points.size(); ++i)
-        get_msurf_descriptor(iimage, &interest_points[i]);
+    for (size_t i=0; i<interest_points.size(); ++i) {
+        get_msurf_descriptor_inlinedHaarWavelets(iimage, &interest_points[i]);
+    }
 #endif
 
     // Write results to file

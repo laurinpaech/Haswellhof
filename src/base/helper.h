@@ -1,35 +1,68 @@
 #pragma once
 
+#include <math.h>
+#include <stdbool.h>
 #include <stdlib.h>
-#include <assert.h>
 
-void solve_linear_3x3_system(float A[9], float b[3], float ret_x[3]) {
+// https://stackoverflow.com/questions/3437404/min-and-max-in-c
+#define MIN(a, b)               \
+    ({                          \
+        __typeof__(a) _a = (a); \
+        __typeof__(b) _b = (b); \
+        _a < _b ? _a : _b;      \
+    })
 
-    assert((A != NULL) && (b != NULL) && (ret_x != NULL));
+#define MAX(a, b)               \
+    ({                          \
+        __typeof__(a) _a = (a); \
+        __typeof__(b) _b = (b); \
+        _a > _b ? _a : _b;      \
+    })
 
-    // computing determinant and inverse determinant of A
-    float det = 0.0f;
-    for (int i = 0; i < 3; ++i) {
-       det += A[0*3 + i] * (A[1*3 + (i+1)%3] * A[2*3 + (i+2)%3] - A[1*3 + (i+2)%3] * A[2*3 + (i+1)%3]);
-    }
-    float det_inv = 1.0f / det;
+#define EPSILON (1e-3)
 
-    // computing inverse of 3x3 matrix A with inverse determinant
-    float A_inv[9];
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            A_inv[i*3 + j] = det_inv * ((A[((j+1)%3)*3 + (i+1)%3] * A[((j+2)%3)*3 + (i+2)%3]) - (A[((j+1)%3)*3 + (i+2)%3] * A[((j+2)%3)*3 + (i+1)%3]));
+void solve_linear_3x3_system(float A[9], float b[3], float ret_x[3]);
+
+inline bool compare_arrays(float a[], float b[], int n) {
+    for (int i = 0; i < n; ++i) {
+        if (a[i] != b[i]) {
+            return false;
         }
     }
+    return true;
+}
 
-    // computing solution vector x = A_inv * b
-    ret_x[0] = 0.0f;
-    ret_x[1] = 0.0f;
-    ret_x[2] = 0.0f;
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            ret_x[i] += A_inv[i*3 + j] * b[j];
+inline bool compare_arrays_close(float a[], float b[], int n, float epsilon = EPSILON) {
+    for (int i = 0; i < n; ++i) {
+        if (fabsf(a[i] - b[i]) > epsilon) {
+            return false;
         }
     }
+    return true;
+}
 
+// Compares two matrices of floats and checks if the values are equal.
+// Returns true if all values of the matrix are equal, false otherwise.
+static inline bool are_float_matrices_equal(float *matrix1, float *matrix2, int width, int height) {
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            if (matrix1[i * width + j] != matrix2[i * width + j]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+// Compares two matrices of booleans and checks if the values are equal.
+// Returns true if all values of the matrix are equal, false otherwise.
+inline bool are_bool_matrices_equal(bool *matrix1, bool *matrix2, int width, int height) {
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            if (matrix1[i * width + j] != matrix2[i * width + j]) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
