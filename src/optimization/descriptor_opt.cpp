@@ -265,8 +265,9 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
                     // NOTE: We use expf here
                     float gauss_s1 = M_1_PI * g_factor * expf(-g_factor * (g_x*g_x + g_y*g_y));
                     
-                    float rx = haarX(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
-                    float ry = haarY(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
+                    int s = (int) lroundf(scale);
+                    float rx = box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
+                    float ry = box_integral(iimage, sample_y, sample_x-s, s, 2*s) - box_integral(iimage, sample_y-s, sample_x-s, s, 2*s);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * (ry);
@@ -454,7 +455,6 @@ static const float gauss_s2_precomputed[] = {
 };
 */
 
-
 void get_msurf_descriptor_precompute_gauss_s2(struct integral_image* iimage, struct interest_point* ipoint) {
 
     float scale = ipoint->scale;
@@ -545,3 +545,98 @@ void get_msurf_descriptor_precompute_gauss_s2(struct integral_image* iimage, str
     }
 
 }
+
+void get_msurf_descriptor_separable_gauss_s1(struct integral_image* iimage, struct interest_point* ipoint) {
+
+    float scale = ipoint->scale;
+    int ipoint_x = (int) lroundf(ipoint->x);
+    int ipoint_y = (int) lroundf(ipoint->y);
+
+    // build descriptor
+    float* descriptor = ipoint->descriptor;
+    int desc_idx = 0;
+    float sum_of_squares = 0.0f;
+
+    // Initializing gauss_s2 index for precomputed array
+    int gauss_s2_index = 0;
+
+    int i = -8;
+
+    // calculate descriptor for this interest point
+    while(i < 12) {
+
+        int j = -8;
+        i = i - 4;
+
+        while(j < 12) {
+            
+            float dx = 0.0f;
+            float dy = 0.0f; 
+            float mdx = 0.0f; 
+            float mdy = 0.0f;
+
+            j = j - 4;
+
+            int xs = (int) lroundf(ipoint_x + (i + 4) * scale);
+            int ys = (int) lroundf(ipoint_y + (j + 4) * scale);
+
+    
+
+            for (int k = i; k < i + 9; ++k) {
+                for (int l = j; l < j + 9; ++l) {
+
+                    //Get coords of sample point on the rotated axis
+                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    int sample_y = (int) lroundf(ipoint_y + l * scale);
+
+                    //Get the gaussian weighted x and y responses
+                    // TODO: (Sebastian) Precompute this...
+                    float gauss_s1 = gaussianf((float) xs-sample_x, (float) ys-sample_y, 2.5f * scale);
+
+                    float rx = haarX(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
+                    float ry = haarY(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
+                    
+                    //Get the gaussian weighted x and y responses on rotated axis
+                    float rrx = gauss_s1 * (ry);
+                    float rry = gauss_s1 * (rx);
+
+                    dx += rrx;
+                    dy += rry;
+                    mdx += fabsf(rrx);
+                    mdy += fabsf(rry);
+
+                }
+            }
+
+            // Precomputed 4x4 gauss_s2 with (x,y) = {-1.5, -0.5, 0.5, 1.5}^2 and sig = 1.5f
+            float gauss_s2 = gauss_s2_precomputed[gauss_s2_index++];
+
+            // add the values to the descriptor vector
+            descriptor[desc_idx] = dx * gauss_s2;
+            descriptor[desc_idx+1] = dy * gauss_s2;
+            descriptor[desc_idx+2] = mdx * gauss_s2;
+            descriptor[desc_idx+3] = mdy * gauss_s2;
+
+            // precompute for normaliztion
+            sum_of_squares += (dx*dx + dy*dy + mdx*mdx + mdy*mdy) * gauss_s2*gauss_s2;
+
+            desc_idx += 4;
+
+            j += 9;
+
+        }
+
+        i += 9;
+
+    }
+
+    // rescale to unit vector
+    float norm_factor = 1.0f / sqrtf(sum_of_squares);
+
+    for (int i = 0; i < 64; ++i) {
+        descriptor[i] *= norm_factor;
+    }
+
+}
+
+
