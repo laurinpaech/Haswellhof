@@ -30,7 +30,7 @@ const char *images[] = {
 //#define BENCHMARK_INTEREST_POINTS
 //#define BENCHMARK_INTERPOLATE_STEPS
 //#define BENCHMARK_GET_DESCRIPTORS
-
+//#define BENCHMARK_GET_MSURF_DESCRIPTORS
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data *> all_benchmark_data;
@@ -132,6 +132,17 @@ int main(int argc, char const *argv[]) {
         }
         free(GW);
 #else
+
+#ifdef BENCHMARK_GET_MSURF_DESCRIPTORS
+        printf("get_msurf_descriptor start\n");
+        // TODO: (Sebastian) find FLOPS count for get_msurf_descriptor
+        struct benchmark_data *benchmark_get_descriptor =
+            initialise_benchmark_data(image_name, width, height, "get_msurf_descriptor", interest_points.size(), 0);
+        bench_get_msurf_descriptor(iimage, &interest_points, GW, benchmark_get_descriptor);
+        all_benchmark_data.push_back(benchmark_get_descriptor);
+        printf("get_msurf_descriptor end\n");
+#endif
+
         // Alternative M-SURF descriptors as in OpenSURF
         for (size_t i = 0; i < interest_points.size(); ++i) {
             get_msurf_descriptor(iimage, &interest_points[i]);
