@@ -23,7 +23,7 @@
 
 void solve_linear_3x3_system(float A[9], float b[3], float ret_x[3]);
 
-static inline bool compare_arrays(float a[], float b[], int n) {
+inline bool compare_arrays(float a[], float b[], int n) {
     for (int i = 0; i < n; ++i) {
         if (a[i] != b[i]) {
             return false;
@@ -32,7 +32,7 @@ static inline bool compare_arrays(float a[], float b[], int n) {
     return true;
 }
 
-static inline bool compare_arrays_close(float a[], float b[], int n, float epsilon = EPSILON) {
+inline bool compare_arrays_close(float a[], float b[], int n, float epsilon = EPSILON) {
     for (int i = 0; i < n; ++i) {
         if (fabsf(a[i] - b[i]) > epsilon) {
             return false;

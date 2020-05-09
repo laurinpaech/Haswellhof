@@ -5,9 +5,10 @@
 #include "integral_image.h"
 #include "interest_point.h"
 
+
 #define PATCH_SIZE 20
 
-static inline float* get_gaussian(float sigma) {
+inline float* get_gaussian(float sigma) {
     /* computes matrix of shape (size x size) containing prob values of
     2d gaussian with std=sigma and mean=(size/2, size/2) */
     int size = PATCH_SIZE;
@@ -24,15 +25,15 @@ static inline float* get_gaussian(float sigma) {
     return GW;
 }
 
-static inline float gaussian(float x, float y, float sig) {
+inline float gaussian(float x, float y, float sig) {
     return 1.0f / (2.0f * M_PI * sig*sig) * exp(-(x*x+y*y)/(2.0f*sig*sig));
 }
 
-static inline float haarX(struct integral_image *iimage, int row, int col, int s) {
+inline float haarX(struct integral_image *iimage, int row, int col, int s) {
     return box_integral(iimage, row-s/2, col, s, s/2) - box_integral(iimage, row-s/2, col-s/2, s, s/2);
 }
 
-static inline float haarY(struct integral_image *iimage, int row, int col, int s) {
+inline float haarY(struct integral_image *iimage, int row, int col, int s) {
     return box_integral(iimage, row, col-s/2, s/2, s) - box_integral(iimage, row-s/2, col-s/2, s/2, s);
 }
 

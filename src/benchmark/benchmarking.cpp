@@ -210,7 +210,9 @@ void bench_interpolate_step(struct fasthessian *fh, struct benchmark_data *data)
 
     // filter index map
     const int filter_map[NUM_OCTAVES][NUM_LAYERS] = {
-        {0, 1, 2, 3}, {1, 3, 4, 5}, {3, 5, 6, 7},
+        {0, 1, 2, 3}, 
+        {1, 3, 4, 5}, 
+        {3, 5, 6, 7},
         //{5, 7, 8, 9},
         //{7, 9, 10, 11}
     };
@@ -351,7 +353,6 @@ void perf_get_descriptor(void (*function)(struct integral_image *, struct intere
         num_runs = num_runs * multiplier;
         start = start_tsc();
         for (size_t i = 0; i < num_runs; i++) {
-            float offsets[3];
             (*function)(iimage, ipoint, GW);
         }
         end = stop_tsc(start);
@@ -370,7 +371,6 @@ void perf_get_descriptor(void (*function)(struct integral_image *, struct intere
     for (size_t j = 0; j < REP; j++) {
         start = start_tsc();
         for (size_t i = 0; i < num_runs; ++i) {
-            float offsets[3];
             (*function)(iimage, ipoint, GW);
         }
         end = stop_tsc(start);
