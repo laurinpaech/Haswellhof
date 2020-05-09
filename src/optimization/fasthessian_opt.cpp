@@ -1,6 +1,208 @@
 #include "fasthessian_opt.h"
 
 
+/* Dyy coords
+// whole box filter
+r00 = x - border;
+r01 = x + border;  // -> x-border+filtersize-1 = x-border+(border+border+1)-1
+c00 = y - lobe;
+c01 = y + lobe - 1; // -> y-lobe+1 + 2*lobe -1 -1
+
+A =
+B =
+C =
+D =
+
+// neg part box filter
+r10 = x - lobe / 2 - 1;
+r11 = r10 + lobe - 1;
+c10 = y - lobe;
+c11 = y + lobe - 1;
+
+A = (r10, c10)
+B = (r10, c11) = (x - lobe / 2 - 1, y + lobe - 1)
+C = (r11, c10)
+D = (r11, c11)
+*/
+
+void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct integral_image* iimage) {
+    float Dxx, Dyy, Dxy;
+    int x, y;
+    int r0, r1, c0, c1, r00, r01, c00, c01, r10, r11, c10, c11;
+    float Dyy0, Dyy1;
+    float A, B, C, D;
+
+    float* response = layer->response;
+    bool* laplacian = layer->laplacian;
+
+    int step = layer->step;
+    int filter_size = layer->filter_size;
+    int height = layer->height;
+    int width = layer->width;
+
+    int lobe = filter_size/3;
+    int border = (filter_size-1)/2;
+    float inv_area = 1.f/(filter_size*filter_size);
+
+    int ind = 0  // oder alternativ (i+1)*j
+
+    float *data = (float*) iimage->data;  // brauch hier keinen cast weil es eig float sein sollte
+    int iheight = iimage->height;
+    int iwidth = iimage->width;
+
+    // Top Left Corner - Case 1: B of neg part outside
+    for (int i = 0; i < lobe/2+1; i++) {    // Inner B is outside, i.e. 0
+        for (int j = 0; j < lobe; j++) {    // c0 = col - 1 = (y - lobe + 1) -1 < 0
+            // Image coordinates
+            x = i*step;
+            y = j*step;
+
+            // Compute Dyy
+            // whole box filter
+            r01 = x + border;
+            c01 = y + lobe - 1;
+
+            Dyy0 = data[r01 * iwidth + c01];
+
+            // neg part box filter
+            r11 = r10 + lobe - 1;
+            c11 = y + lobe - 1;
+
+            D = data[r11 * iwidth + c11];
+            Dyy1 = D;
+
+            Dyy = Dyy0 - 3 * Dyy1;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                    - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
+                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
+            ind += 1;
+        }
+    }
+
+    // Top Left Corner - Case 2: B of neg part inside
+    for (int i = lobe/2+1; i < border+1; i++) {     // Inner B is inside
+        for (int j = 0; j < lobe; j++) {
+            // Image coordinates
+            x = i*step;
+            y = j*step;
+
+            // Compute Dyy
+            // whole box filter
+            r01 = x + border;
+            c01 = y + lobe - 1;
+
+            Dyy0 = data[r01 * iwidth + c01];
+
+            // neg part box filter
+            r10 = x - lobe / 2 - 1;
+            r11 = r10 + lobe;  // -1 is already part of r10
+            c11 = y + lobe - 1;
+
+            B = data[r10 * iwidth + c11];
+            D = data[r11 * iwidth + c11];
+            Dyy1 = D - B;
+
+            Dyy = Dyy0 - 3 * Dyy1;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                    - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
+                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
+            ind += 1;
+        }
+    }
+
+    // Rest
+    for (int i = 0; i < height; ++i) {
+        for (int j = lobe; j < width; ++j) {
+            // Image coordinates
+            x = i*step;
+            y = j*step;
+
+            // Calculate Dxx, Dyy, Dxy with Box Filter
+            Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                    - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+            Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
+                    - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
+            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
+                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
+            ind += 1;
+        }
+    }
+    for (int i = border+1; i < height; ++i) {
+        for (int j = 0; j < lobe; ++j) {
+            // Image coordinates
+            x = i*step;
+            y = j*step;
+
+            // Calculate Dxx, Dyy, Dxy with Box Filter
+            Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                    - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+            Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
+                    - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
+            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
+                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
+            ind += 1;
+        }
+    }
+
+}
 
 void compute_response_layers_at_once(struct fasthessian* fh, struct integral_image* iimage) {
     /* computes all 8 response layers at once, gives same results as base implementation
@@ -191,7 +393,7 @@ void compute_response_layers_at_once(struct fasthessian* fh, struct integral_ima
             laplacian3[ind] = (Dxx3 + Dyy3 >= 0 ? true : false);
 
 
-            // 2*step 
+            // 2*step
             if (i%2 == 0 && j%2 == 0) {
                 // layer4
                 // Calculate Dxx, Dyy, Dxy with Box Filter
@@ -241,7 +443,7 @@ void compute_response_layers_at_once(struct fasthessian* fh, struct integral_ima
 
                 ind2++;
 
-                // 4*step 
+                // 4*step
                 if (i%4 == 0 && j%4 == 0) {
                     // layer6
                     // Calculate Dxx, Dyy, Dxy with Box Filter
@@ -292,7 +494,7 @@ void compute_response_layers_at_once(struct fasthessian* fh, struct integral_ima
                     ind4++;
                 }
             }
-            
+
             // template for search and replace J to layer number
             // // layerJ
             // // Calculate Dxx, Dyy, Dxy with Box Filter
@@ -314,7 +516,7 @@ void compute_response_layers_at_once(struct fasthessian* fh, struct integral_ima
             // responseJ[ind] = DxxJ * DyyJ - 0.81f * DxyJ * DxyJ;
 
             // // Calculate Laplacian
-            // laplacianJ[ind] = (DxxJ + DyyJ >= 0 ? true : false);            
+            // laplacianJ[ind] = (DxxJ + DyyJ >= 0 ? true : false);
         }
     }
 
@@ -324,7 +526,5 @@ void compute_response_layers_at_once(struct fasthessian* fh, struct integral_ima
 
 
 void interpolate_step_gauss(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets[3]) {
-    
+
 }
-
-
