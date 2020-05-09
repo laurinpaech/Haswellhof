@@ -88,9 +88,7 @@ int main(int argc, char const *argv[]) {
         printf("compute_response_layer end\n");
 #endif
         // Compute responses for every layer
-        for (int i = 0; i < fh->total_layers; i++) {
-            compute_response_layer(fh->response_map[i], iimage);
-        }
+	    compute_response_map(fh);
 
         // Getting interest points with non-maximum supression
         std::vector<struct interest_point> interest_points;
