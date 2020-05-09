@@ -45,13 +45,17 @@ int main(int argc, char const *argv[])
 	struct integral_image* iimage = create_integral_img(width, height);
 
 #ifdef VALIDATE_INTEGRAL_IMAGE
-        printf("Validate image\n");
-        std::vector<void (*)(float *, int, int, float *)> optimized_iimage_functions {compute_integral_img_faster_alg};
-        bool is_equal = validate_integral_image(compute_integral_img, optimized_iimage_functions, width, height, image);
-        if(is_equal == false){
-            printf("The integral images are not equal.\n");
+    {
+        std::vector<void (*)(float *, int, int, float *)> test_functions;
+        test_functions.push_back(compute_integral_img_faster_alg);
+
+        bool valid = validate_integral_image(compute_integral_img, test_functions, width, height, image);
+        if (valid) {
+            printf("INTEGRAL IMAGE VALIDATION:    \033[0;32mSUCCESS!\033[0m\n");
+        } else {
+            printf("INTEGRAL IMAGE VALIDATION:    \033[1;31mFAILED!\033[0m\n");
         }
-        printf("After validating image\n");
+    }
 #endif
 
 	// Compute integral image
@@ -86,17 +90,19 @@ int main(int argc, char const *argv[])
         get_msurf_descriptor(iimage, &interest_points[i]);
 	}
 #ifdef VALIDATE_GET_MSURF_DESCRIPTORS	
-    std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
-    test_functions.push_back(get_msurf_descriptor_improved);
-    test_functions.push_back(get_msurf_descriptor_inlined);
-    test_functions.push_back(get_msurf_descriptor_precompute_gauss_s2);
-    test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
+    {
+        std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
+        test_functions.push_back(get_msurf_descriptor_improved);
+        test_functions.push_back(get_msurf_descriptor_inlined);
+        test_functions.push_back(get_msurf_descriptor_precompute_gauss_s2);
+        test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
 
-    bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
-    if (valid) {
-        printf("SUCCESS!\n");
-    } else {
-        printf("FAILED!\n");
+        bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
+        if (valid) {
+            printf("MSURF DESCRIPTOR VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
+        } else {
+            printf("MSURF DESCRIPTOR VALIDATION:  \033[1;31mFAILED!\033[0m;!\n");
+        }
     }
 #endif
 #endif
