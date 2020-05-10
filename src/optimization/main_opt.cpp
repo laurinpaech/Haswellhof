@@ -81,7 +81,9 @@ int main(int argc, char const *argv[])
     stbi_image_free(image); // possibly move this to create_integral_img
     free(iimage->data);
     free(iimage);
-    for (size_t i = 0; i < NUM_LAYERS; i++) {
+    for (int i = 0; i < NUM_LAYERS; ++i) {
+        free(fh->response_map[i]->response);
+		free(fh->response_map[i]->laplacian);
         free(fh->response_map[i]);
     }
     free(fh);
