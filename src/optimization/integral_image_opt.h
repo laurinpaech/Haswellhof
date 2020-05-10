@@ -5,7 +5,7 @@
 
 
 // Returns the number of flops of the optimized function compute_integral_img_faster_alg.
-static inline long get_flops_compute_integral_img_faster_alg( int width, int height, int stride){
+inline long get_flops_compute_integral_img_faster_alg( int width, int height, int stride){
 
     // First 2 rows = 3*width -> odd width + 3
     // Remaining rows (height - stride) * width + 2 -> odd width + 2*(height-2)

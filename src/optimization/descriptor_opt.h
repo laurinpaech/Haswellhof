@@ -8,7 +8,7 @@
 
 // #define PATCH_SIZE 20
 
-// static inline float* get_gaussian(float sigma) {
+// inline float* get_gaussian(float sigma) {
 //     /* computes matrix of shape (size x size) containing prob values of
 //     2d gaussian with std=sigma and mean=(size/2, size/2) */
 //     int size = PATCH_SIZE;
@@ -37,7 +37,7 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
 
 void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint);
 
-static inline void haarXY(float* ii_data, int height, int width, int row, int col, int scale, float* haarX, float* haarY) {
+inline void haarXY(float* ii_data, int height, int width, int row, int col, int scale, float* haarX, float* haarY) {
     // subtracting by one for row/col because row/col is inclusive.
     int r0 = MIN(row, height) - 1;         
     int c0 = MIN(col, width) - 1;         
@@ -87,16 +87,16 @@ static inline void haarXY(float* ii_data, int height, int width, int row, int co
     *haarY = -1*(r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0);
 }
 
-static inline void haarXY_precheck_boundaries(float* ii_data, int height, int width, int col, int row, int scale, float* haarX, float* haarY) {
+inline void haarXY_precheck_boundaries(float* ii_data, int height, int width, int col, int row, int scale, float* haarX, float* haarY) {
     // (row,col) is upper left corner of haar wavelet filter
     if (row <= 0 
         || col <= 0 
         || (row + 2*scale) > height 
         || (col + 2*scale) > width) {
-        // wavelet filters that can not be applied completely will be skipped
-        // I think it even makes sense to skip the whole keypoint if its 
-        // descriptor goes over boundaries as it then can not be invariant 
-        return;
+        return haarXY(ii_data, height, width, col, row, scale, haarX, haarY);
+        // wavelet filters that can not be applied completely could also be skipped
+        // the result will deviate from the base implementation
+        // but this is how the original surf implementation is handling it
     }
     
     // subtracting by one for row/col because row/col is inclusive.
