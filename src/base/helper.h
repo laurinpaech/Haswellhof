@@ -43,7 +43,7 @@ inline bool compare_arrays_close(float a[], float b[], int n, float epsilon = EP
 
 // Compares two matrices of floats and checks if the values are equal.
 // Returns true if all values of the matrix are equal, false otherwise.
-static inline bool are_float_matrices_equal(float *matrix1, float *matrix2, int width, int height) {
+inline bool are_float_matrices_equal(float *matrix1, float *matrix2, int width, int height) {
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (matrix1[i * width + j] != matrix2[i * width + j]) {
