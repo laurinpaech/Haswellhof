@@ -85,10 +85,10 @@ static inline void haarXY_precheck_boundaries(float* ii_data, int height, int wi
         || col <= 0 
         || (row + 2*scale) > height 
         || (col + 2*scale) > width) {
-        // wavelet filters that can not be applied completely will be skipped
-        // I think it even makes sense to skip the whole keypoint if its 
-        // descriptor goes over boundaries as it then can not be invariant 
-        return;
+        return haarXY(ii_data, height, width, col, row, scale, haarX, haarY);
+        // wavelet filters that can not be applied completely could also be skipped
+        // the result will deviate from the base implementation
+        // but this is how the original surf implementation is handling it
     }
     
     // subtracting by one for row/col because row/col is inclusive.
