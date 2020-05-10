@@ -59,9 +59,8 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
 
                     sum_x += x; // sum(x)
                     sum_y += y; // sum(y)
-                    // TODO: (Sebastian) Why cast here? -> in pure c this returns double
-                    abs_x += (float)fabs(x); // sum(abs(x))
-                    abs_y += (float)fabs(y); // sum(abs(y))
+                    abs_x += fabs(x); // sum(abs(x))
+                    abs_y += fabs(y); // sum(abs(y))
                 }
             }
             descriptor[desc_idx] = sum_x;
@@ -70,8 +69,7 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
             descriptor[desc_idx+3] = abs_y;
             
             // precompute for normaliztion
-            //for (int m=0; m<4; ++m) 
-            //    sum_of_squares += descriptor[desc_idx+m]*descriptor[desc_idx+m];
+
             sum_of_squares += sum_x * sum_x + sum_y * sum_y + abs_x * abs_x + abs_y * abs_y;
 
 
@@ -146,8 +144,6 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
                     int sample_x = (int) round(ipoint_x + k * scale);
                     int sample_y = (int) round(ipoint_y + l * scale);
 
-                    //Get the gaussian weighted x and y responses
-                    // TODO: (Sebastian) Precompute this...
                     float gauss_s1 = gaussian((float) xs-sample_x, (float) ys-sample_y, 2.5f * scale);
                                         
                     float rx = haarX(iimage, sample_y, sample_x, (int) 2.0 * round(scale));
