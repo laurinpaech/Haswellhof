@@ -72,14 +72,17 @@ int main(int argc, char const *argv[])
 	compute_response_map(fh);
 
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER
-    std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions{compute_response_layer};
-	//bool valid = validate_compute_response_layer(compute_response_layer, test_functions, iimage);
+    {
+        std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
+        test_functions.push_back(compute_response_layer);
+        //bool valid = validate_compute_response_layer(compute_response_layer, test_functions, iimage);
 
-    bool valid = validate_compute_response_layer_custom_matrix(compute_response_layer, test_functions);
-    if (valid) {
-        printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
-    } else {
-        printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[1;31mFAILED!\033[0m;!\n");
+        bool valid = validate_compute_response_layer_custom_matrix(compute_response_layer, test_functions);
+        if (valid) {
+            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
+        } else {
+            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[1;31mFAILED!\033[0m!\n");
+        }
     }
 #endif
 
@@ -134,7 +137,9 @@ int main(int argc, char const *argv[])
 	stbi_image_free(image); // possibly move this to create_integral_img
 	free(iimage->data);
 	free(iimage);
-	for (size_t i = 0; i < NUM_LAYERS; i++) {
+	for (int i = 0; i < NUM_LAYERS; ++i) {
+        free(fh->response_map[i]->response);
+        free(fh->response_map[i]->laplacian);
 		free(fh->response_map[i]);
 	}
 	free(fh);

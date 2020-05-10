@@ -139,13 +139,17 @@ bool validate_compute_response_layer(
                 all_valid = false;
             }
         }
-        for (size_t i = 0; i < NUM_LAYERS; i++) {
+        for (int i = 0; i < NUM_LAYERS; ++i) {
+            free(optimized_fh->response_map[i]->response);
+            free(optimized_fh->response_map[i]->laplacian);
             free(optimized_fh->response_map[i]);
         }
         free(optimized_fh);
     }
 
-    for (size_t i = 0; i < NUM_LAYERS; i++) {
+    for (int i = 0; i < NUM_LAYERS; ++i) {
+        free(original_fh->response_map[i]->response);
+        free(original_fh->response_map[i]->laplacian);
         free(original_fh->response_map[i]);
     }
     free(original_fh);
