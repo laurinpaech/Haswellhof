@@ -1,4 +1,6 @@
 #include "fasthessian_opt.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 
 void super_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage) {

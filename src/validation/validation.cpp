@@ -65,7 +65,7 @@ bool validate_compute_response_layer_custom_matrix(
 
     free(iimage->data);
     free(iimage);
-
+    free(image);
     return valid;
 }
 

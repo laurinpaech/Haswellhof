@@ -12,7 +12,7 @@ struct fasthessian* create_fast_hessian(struct integral_image *iimage) {
     // malloc fast hessian struct
     struct fasthessian* fh = (struct fasthessian*) malloc(sizeof(struct fasthessian));
 
-    // Interest Image
+    // Integral Image
     fh->iimage = iimage;
 
     // Set Variables
