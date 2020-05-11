@@ -109,7 +109,6 @@ void get_msurf_descriptor_improved(struct integral_image* iimage, struct interes
     /*
     applied optimizations:
         - replaced outer wihle loops with for loops, simplifying index calculation
-        - switched order of inner loops to go along x direction for better locality
         - scalar replacement & FLOP reduction by computing in the outer most (possible) loop
         - changed math functions to their float counterparts (??? or is that part of base)
     
@@ -220,14 +219,8 @@ void get_msurf_descriptor_improved(struct integral_image* iimage, struct interes
 void get_msurf_descriptor_improved_flip(struct integral_image* iimage, struct interest_point* ipoint) {
     /*
     applied optimizations:
-        - replaced outer wihle loops with for loops, simplifying index calculation
+        - same as get_msurf_descriptor_improved
         - switched order of inner loops to go along x direction for better locality
-        - scalar replacement & FLOP reduction by computing in the outer most (possible) loop
-        - changed math functions to their float counterparts (??? or is that part of base)
-    
-    ideas:
-        - flip outer for loops (this will change how desc_idx hat to be incremeted to yield the same feature vector)
-        otherwise the result is a mere permutation, doubt this helps locality much)
     */
 
     float scale = ipoint->scale;
@@ -328,14 +321,8 @@ void get_msurf_descriptor_improved_flip(struct integral_image* iimage, struct in
 void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, struct interest_point* ipoint) {
     /*
     applied optimizations:
-        - replaced outer wihle loops with for loops, simplifying index calculation
-        - switched order of inner loops to go along x direction for better locality
-        - scalar replacement & FLOP reduction by computing in the outer most (possible) loop
-        - changed math functions to their float counterparts (??? or is that part of base)
-    
-    ideas:
-        - flip outer for loops (this will change how desc_idx hat to be incremeted to yield the same feature vector)
-        otherwise the result is a mere permutation, doubt this helps locality much)
+        - same as get_msurf_descriptor_improved
+        - switched order of inner and outer loops to go along x direction for better locality
     */
 
     float scale = ipoint->scale;
@@ -437,7 +424,7 @@ void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, stru
 void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest_point* ipoint) {
     /*
     applied optimizations:
-        - all of get_msurf_descriptor_improved
+        - all of get_msurf_descriptor_improved_flip
         - inlined gaussian funktion and removed its noralization (as we normalize in the end)
 
     ideas:
