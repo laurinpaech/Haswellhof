@@ -83,7 +83,8 @@ bool validate_compute_response_layer(
     create_response_map(original_fh);
 
     // Compute responses for every layer
-    for (int i = 0; i < original_fh->total_layers; i++) {
+    // for (int i = 0; i < original_fh->total_layers; i++) {
+    for (int i = 0; i < 1; i++) {
 #ifdef DEBUG_INFO
         // printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height,
         // original_fh->response_map[i]->width);
@@ -99,34 +100,21 @@ bool validate_compute_response_layer(
 
     for (int j = 0; j < test_functions.size(); ++j) {
         // Fast-Hessian
-        printf("\n\nCreate fast hessian for custom matrix for optimized function:\n");
         struct fasthessian *optimized_fh = create_fast_hessian(iimage);
 
         // Create octaves with response layers
         create_response_map(optimized_fh);
 
-        printf("\nAFTER RESPONSEMAP responsemap 7;\n"
-        "address: %p\n"
-        "height: %i, width: %i\n"
-        "computed height: %i, computed width: %i\n",  optimized_fh->response_map[7], optimized_fh->response_map[7]->height, optimized_fh->response_map[7]->width);
-
         // Compute responses for every layer
-        for (int i = 0; i < optimized_fh->total_layers; ++i) {
-            printf("BLA Compute optimized response layer.\n"
-            "Responsemap %i, height: %i, width: %i\n", 
-            i, optimized_fh->response_map[i]->height, optimized_fh->response_map[i]->width);
-
+        // for (int i = 0; i < optimized_fh->total_layers; ++i) {
+        for (int i = 0; i < 1; ++i) {
             test_functions[j](optimized_fh->response_map[i], iimage);
-            
-            printf("BLABLA Compute optimized response layer.\n"
-            "Responsemap %i, height: %i, width: %i\n", 
-            i, optimized_fh->response_map[i]->height, optimized_fh->response_map[i]->width);
         }
 
         if (original_fh->total_layers != optimized_fh->total_layers) {
             printf(
                 "compute_response_layer() test function %d does not match original function - the number of layers "
-                "difer. original layers: %i optimized layers: %i \nhttps://www.dict.cc/?s=differ\n",
+                "differ. original layers: %i optimized layers: %i \n",
                 j, original_fh->total_layers, optimized_fh->total_layers);
             all_valid = false;
             // If the numbers of layers doesn't match, don't do any further tests.
@@ -134,7 +122,8 @@ bool validate_compute_response_layer(
         }
 
         // Compare each layer of each test function with the original
-        for (int i = 0; i < original_fh->total_layers; i++) {
+        // for (int i = 0; i < original_fh->total_layers; i++) {
+        for (int i = 0; i < 1; i++) {
             struct response_layer *optimized_layer = optimized_fh->response_map[i];
             struct response_layer *original_layer = original_fh->response_map[i];
 /*
@@ -157,8 +146,7 @@ bool validate_compute_response_layer(
                 continue;
             }
 #ifdef DEBUG_INFO
-            // print_debug(original_layer->response, optimized_layer->response,
-            // original_layer->height,original_layer->width);
+            print_debug(original_layer->response, optimized_layer->response, original_layer->height,original_layer->width);
 #endif
 
             if (!are_float_matrices_equal(original_layer->response, optimized_layer->response, original_layer->height,

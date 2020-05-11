@@ -50,8 +50,6 @@ void create_response_map(struct fasthessian* fh) {
     int w = img_width / init_step;
     int h = img_height / init_step;
 
-    printf("In create_response_map width: %i, height: %i\n", w, h);
-
     // Octave 1 - 9, 15, 21, 27
     fh->response_map[0] = initialise_response_layer(9, w, h, init_step);
     fh->response_map[1] = initialise_response_layer(15, w, h, init_step);
@@ -65,16 +63,13 @@ void create_response_map(struct fasthessian* fh) {
     // Octave 3 - 27, 51, 75, 99
     fh->response_map[6] = initialise_response_layer(75, w/4, h/4, init_step*4);
     fh->response_map[7] = initialise_response_layer(99, w/4, h/4, init_step*4);
-    printf("In create_response_map responsemap 7;\n"
-        "height: %i, width: %i\n"
-        "computed height: %i, computed width: %i\n", fh->response_map[7]->height, fh->response_map[7]->width, h/4, w/4);
 }
 
 void compute_response_map(struct fasthessian* fh) {
-    
+
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer(fh->response_map[i], fh->iimage);
-	}   
+	}
 
 }
 

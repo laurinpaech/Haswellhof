@@ -223,6 +223,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
     int r0, r1, c0, c1, r00, r01, c00, c01, r10, r11, c10, c11;
     float Dyy0, Dyy1;
     float A, B, C, D;
+    int k;
 
     float* response = layer->response;
     bool* laplacian = layer->laplacian;
@@ -236,25 +237,40 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
     int border = (filter_size-1)/2;
     float inv_area = 1.f/(filter_size*filter_size);
 
+    // lobe:    25
+    // border:  37
+    printf("RESPONSE_LAYER\nlobe: %i\nborder: %i\n", lobe, border);
+
     int ind = 0;  // oder alternativ (i+1)*j
 
     float *data = (float*) iimage->data;  // brauch hier keinen cast weil es eig float sein sollte
     int iheight = iimage->height;
     int iwidth = iimage->width;
 
-    // Top Left Corner - Case 1: B of neg part outside
-    for (int i = 0; i < lobe/2+1; i++) {    // Inner B is outside, i.e. 0
-        for (int j = 0; j < lobe; j++) {    // c0 = col - 1 = (y - lobe + 1) -1 < 0
-            // Image coordinates
-            x = i*step;
-            y = j*step;
+    /*
+    step: 2, 4, 8
+    0, step, 2*step, 3*step, ...,
 
-            // Compute Dyy
+    */
+
+    // Top Left Corner - Case 1: B of neg part outside
+    for (int i = 0; i < lobe/2+1; i += step) {    // Inner B is outside, i.e. 0
+        for (int j = 0; j < lobe; j += step) {    // c0 = col - 1 = (y - lobe + 1) -1 < 0
+            // Image coordinates
+            // x = i*step;
+            // y = j*step;
+            x = i;
+            y = j;
+
+            // printf("i: %i\nj: %i\n", i, j);
+            // TODO: check if outer loop correct bounds
+
+            // Compute Dyy  
             // whole box filter
             r01 = x + border;
             c01 = y + lobe - 1;
 
-            Dyy0 = data[r01 * iwidth + c01];
+            Dyy0 = data[r01 * iwidth + c01];  // seg fault at: i: 12, j:0
 
             // neg part box filter
             r10 = x - lobe / 2 - 1;
@@ -289,11 +305,15 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
     }
 
     // Top Left Corner - Case 2: B of neg part inside
-    for (int i = lobe/2+1; i < border+1; i++) {     // Inner B is inside
-        for (int j = 0; j < lobe; j++) {
+    // initial value muss auf nächst höhere step aufgerundet werden
+    k = (lobe/2+1 + step - 1) / step * step;
+    for (int i = k; i < border+1; i += step) {     // Inner B is inside
+        for (int j = 0; j < lobe; j += step) {
             // Image coordinates
-            x = i*step;
-            y = j*step;
+            // x = i*step;
+            // y = j*step;
+            x = i;
+            y = j;
 
             // Compute Dyy
             // whole box filter
@@ -337,11 +357,14 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
     }
 
     // Rest
-    for (int i = 0; i < border+1; ++i) {
-        for (int j = lobe; j < width; ++j) {
+    k = (lobe + step - 1) / step * step;
+    for (int i = 0; i < border+1; i += step) {
+        for (int j = k; j < width; j += step) {
             // Image coordinates
-            x = i*step;
-            y = j*step;
+            // x = i*step;
+            // y = j*step;
+            x = i;
+            y = j;
 
             // Calculate Dxx, Dyy, Dxy with Box Filter
             Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
@@ -366,8 +389,10 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
             ind += 1;
         }
     }
-    for (int i = border+1; i < height; ++i) {
-        for (int j = 0; j < width; ++j) {
+
+    k = (border+1 + step - 1) / step * step;
+    for (int i = k; i < height; i += 1) {
+        for (int j = 0; j < width; j += 1) {
             // Image coordinates
             x = i*step;
             y = j*step;
@@ -1095,4 +1120,3 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
 void interpolate_step_gauss(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets[3]) {
 
 }
-
