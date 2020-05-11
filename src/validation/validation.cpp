@@ -107,7 +107,7 @@ bool validate_compute_response_layer(
 
         // Compute responses for every layer
         // for (int i = 0; i < optimized_fh->total_layers; ++i) {
-        for (int i = 0; i < 1; ++i) {
+        for (int i = 0; i < 2; ++i) {
             test_functions[j](optimized_fh->response_map[i], iimage);
         }
 
@@ -123,16 +123,17 @@ bool validate_compute_response_layer(
 
         // Compare each layer of each test function with the original
         // for (int i = 0; i < original_fh->total_layers; i++) {
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 2; i++) {
             struct response_layer *optimized_layer = optimized_fh->response_map[i];
             struct response_layer *original_layer = original_fh->response_map[i];
-/*
-            printf(
-                "Response layer: %i \n"
-                "Original layers height: %i optimized layers height: %i,  original layers width: %i "
-                "optimized layers width: %i\n",
-                i, original_layer->height, optimized_layer->height, original_layer->width, optimized_layer->width);
-*/
+            /*
+                        printf(
+                            "Response layer: %i \n"
+                            "Original layers height: %i optimized layers height: %i,  original layers width: %i "
+                            "optimized layers width: %i\n",
+                            i, original_layer->height, optimized_layer->height, original_layer->width,
+               optimized_layer->width);
+            */
             if (original_layer->height != optimized_layer->height || original_layer->width != optimized_layer->width) {
                 printf(
                     "compute_response_layer() Testfunction: %i does not match original function\n"
@@ -140,20 +141,31 @@ bool validate_compute_response_layer(
                     "Response layer: %i \n"
                     "Original layers height: %i optimized layers height: %i,  original layers width: %i "
                     "optimized layers width: %i\n",
-                    j, i, original_layer->height, optimized_layer->height, original_layer->width, optimized_layer->width);
+                    j, i, original_layer->height, optimized_layer->height, original_layer->width,
+                    optimized_layer->width);
                 all_valid = false;
                 // If the sizes of layers don't match, don't do any further tests.
                 continue;
             }
 #ifdef DEBUG_INFO
-            print_debug(original_layer->response, optimized_layer->response, original_layer->height,original_layer->width);
+            print_debug(original_layer->response, optimized_layer->response, original_layer->height,
+                        original_layer->width);
 #endif
-
+            printf("Response Layer: %i\n", i);
             if (!are_float_matrices_equal(original_layer->response, optimized_layer->response, original_layer->height,
-                                          original_layer->width) ||
-                !are_bool_matrices_equal(original_layer->laplacian, optimized_layer->laplacian, original_layer->height,
+                                          original_layer->width)) {
+                printf(
+                    "compute_response_layer() test function %d does not match original function.\n"
+                    "The response matrices differ.\n",
+                    j);
+                all_valid = false;
+            }
+            if (!are_bool_matrices_equal(original_layer->laplacian, optimized_layer->laplacian, original_layer->height,
                                          original_layer->width)) {
-                printf("compute_response_layer() test function %d does not match original function\n", j);
+                printf(
+                    "compute_response_layer() test function %d does not match original function.\n"
+                    "The laplacian matrices differ.\n",
+                    j);
                 all_valid = false;
             }
         }

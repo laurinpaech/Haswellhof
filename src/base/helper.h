@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
+
 
 // https://stackoverflow.com/questions/3437404/min-and-max-in-c
 #define MIN(a, b)               \
@@ -47,6 +49,8 @@ inline bool are_float_matrices_equal(float *matrix1, float *matrix2, int width, 
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (matrix1[i * width + j] != matrix2[i * width + j]) {
+                printf("DIFFERENCE: (%i, %i) original: %f, optimized: %f\n", i, j, matrix1[i * width + j],
+                       matrix2[i * width + j]);
                 return false;
             }
         }

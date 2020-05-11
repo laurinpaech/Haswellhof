@@ -89,6 +89,7 @@ void compute_response_layer(struct response_layer *layer, struct integral_image 
 
     int ky = (lobe + step - 1) / step * step;
     int kx = (border + 1 + step - 1) / step * step;
+
     for (int i = 0, ind = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j, ind++) {
             // Image coordinates
@@ -105,13 +106,14 @@ void compute_response_layer(struct response_layer *layer, struct integral_image 
                   box_integral(iimage, x - lobe, y - lobe, lobe, lobe) - box_integral(iimage, x + 1, y + 1, lobe, lobe);
 
             // if (x < border+1 && y < width &&  y >= ky) {
-
+/*
             if ((x < height && y < width && x >= kx)) {
                 if (x < 32 && y < 5) {
-                    // printf("ORIGINAL: (%i, %i) - Dyy: %f, Dxx: %f, Dxy: %f\n\n", x, y, Dyy, Dxx, Dxy);
-                    printf("OPTIMIZED index: %i\n\n", ind);
+                    printf("ORIGINAL: (%i, %i) - index: %i - Dyy: %f, Dxx: %f, Dxy: %f\n\n", x, y, ind, Dyy, Dxx, Dxy);
+                    // rintf("ORIGINAL index: %i\n\n", ind);
                 }
             }
+            */
             /*
                if (x < border+1 && y < width &&  y >= ky) {
                    printf("ORIGINAL index: %i\n\n", ind);

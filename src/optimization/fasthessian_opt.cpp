@@ -363,12 +363,14 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
             ind += 1;
         }
     }
+    printf("OPTIMIZED: width: %i, step: %i\n\n", width, step);
 
     // Rest
     k = (lobe + step - 1) / step * step;
     for (int i = 0; i < border + 1; i += step) {
-        ind = (i / step) * width + k / step;
-        for (int j = k; j < width; j += step) {
+        ind = (i / step) * width + (k / step);
+        for (int j = k; j < width*step; j += step) {
+
             // Image coordinates
             // x = i*step;
             // y = j*step;
@@ -391,7 +393,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
             Dyy *= inv_area;
             Dxy *= inv_area;
 
-            printf("OPTIMIZED index: %i\n\n", ind);
+           // printf("OPTIMIZED index: %i\n\n", ind);
 
             // Calculate Determinant
             response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
@@ -403,9 +405,9 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
     }
 
     k = (border + 1 + step - 1) / step * step;
-    for (int i = k; i < height; i += step) {
+    for (int i = k; i < height*step; i += step) {
         ind = (i / step) * width;
-        for (int j = 0; j < width; j += step) {
+        for (int j = 0; j < width*step; j += step) {
             // Image coordinates
             // x = i*step;
             // y = j*step;
@@ -420,12 +422,12 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
             Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe) +
                   box_integral(iimage, x + 1, y - lobe, lobe, lobe) -
                   box_integral(iimage, x - lobe, y - lobe, lobe, lobe) - box_integral(iimage, x + 1, y + 1, lobe, lobe);
-
+/*
             if (x < 32 && y < 5) {
-                // printf("OPTIMIZED: (%i, %i) - Dyy: %f, Dxx: %f, Dxy: %f\n\n", i, j, Dyy, Dxx, Dxy);
-                printf("OPTIMIZED index: %i\n\n", ind);
+                 printf("OPTIMIZED: (%i, %i) - index: %i - Dyy: %f, Dxx: %f, Dxy: %f\n\n", i, j, ind, Dyy, Dxx, Dxy);
+                //printf("OPTIMIZED index: %i\n\n", ind);
             }
-
+*/
             // Normalize Responses with inverse area
             Dxx *= inv_area;
             Dyy *= inv_area;
