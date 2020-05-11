@@ -1,6 +1,8 @@
 #include "fasthessian_opt.h"
 
+
 void super_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage) {
+    /*
     int height = layer->height;
     int width = layer->width;
     int iwidth = iimage->width;  // TODO: fix where needs to be fixed
@@ -188,6 +190,7 @@ void super_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage
             }
         }
     }
+    */
 }
 
 /* Dyy coords
@@ -334,7 +337,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
     }
 
     // Rest
-    for (int i = 0; i < height; ++i) {
+    for (int i = 0; i < border+1; ++i) {
         for (int j = lobe; j < width; ++j) {
             // Image coordinates
             x = i*step;
@@ -364,7 +367,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
         }
     }
     for (int i = border+1; i < height; ++i) {
-        for (int j = 0; j < lobe; ++j) {
+        for (int j = 0; j < width; ++j) {
             // Image coordinates
             x = i*step;
             y = j*step;
@@ -395,6 +398,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
 
 }
 
+/**
 void compute_response_layer_Dyy_top(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y;
@@ -626,8 +630,7 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
         }
     }
 }
-
-
+*/
 void compute_response_layers_at_once(struct fasthessian* fh, struct integral_image* iimage) {
     /* computes all 8 response layers at once, gives same results as base implementation
     valgrind reports no improvement for l1 misses, i.e. locality is not improved as expected
@@ -1092,3 +1095,4 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
 void interpolate_step_gauss(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets[3]) {
 
 }
+

@@ -7,5 +7,8 @@
 #include "descriptor.h"
 #include "benchmarking.h"
 #include "helper.h"
+#include "validation.h"
+#include "fasthessian_opt.h"
 
 void playground_function1();
+void playground_function2(struct integral_image *iimage);

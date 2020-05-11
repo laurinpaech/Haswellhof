@@ -7,7 +7,7 @@
 #include "helper.h"
 #include "validation_integral_image.h"
 
-//#define DEBUG_INFO
+#define DEBUG_INFO
 #define VALIDATION_PRECISION (1e-3)
 
 // Creates an integral image given an image, its corresponding height and width, the base function and a list of other
@@ -45,10 +45,10 @@ bool validate_integral_image(void (*original_function)(float *, int, int, float 
 bool validate_compute_response_layer_custom_matrix(
     void (*original_function)(struct response_layer *, struct integral_image *),
     const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions) {
-    int width = 5, height = 5;
+    int width = 128, height = 128;
     float *image = (float *)malloc(height * width * sizeof(float));
-    int counter = 0;
     for (int i = 0; i < height; ++i) {
+        int counter = 0;
         for (int j = 0; j < width; ++j) {
             image[i * width + j] = counter;
             counter++;
@@ -76,6 +76,8 @@ bool validate_compute_response_layer(
     bool all_valid = true;
 
     // Fast-Hessian
+
+    printf("\n\nCreate fast hessian for custom matrix for original function:\n");
     struct fasthessian *original_fh = create_fast_hessian(iimage);
     // Create octaves with response layers
     create_response_map(original_fh);
@@ -83,32 +85,49 @@ bool validate_compute_response_layer(
     // Compute responses for every layer
     for (int i = 0; i < original_fh->total_layers; i++) {
 #ifdef DEBUG_INFO
-        printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height, original_fh->response_map[i]->width);
+        // printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height,
+        // original_fh->response_map[i]->width);
 #endif
         original_function(original_fh->response_map[i], iimage);
-        /**printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height, original_fh->response_map[i]->width);
-        for (int l = 0; l <  original_fh->response_map[i]->height; l++) {
-            for (int m = 0; m < original_fh->response_map[i]->width; m++) {
-                printf("i1: %f\n", original_fh->response_map[i][l * original_fh->response_map[i]->width + m]);
+        /**printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height,
+        original_fh->response_map[i]->width); for (int l = 0; l <  original_fh->response_map[i]->height; l++) { for (int
+        m = 0; m < original_fh->response_map[i]->width; m++) { printf("i1: %f\n", original_fh->response_map[i][l *
+        original_fh->response_map[i]->width + m]);
             }
         }*/
     }
 
     for (int j = 0; j < test_functions.size(); ++j) {
         // Fast-Hessian
+        printf("\n\nCreate fast hessian for custom matrix for optimized function:\n");
         struct fasthessian *optimized_fh = create_fast_hessian(iimage);
+
         // Create octaves with response layers
         create_response_map(optimized_fh);
+
+        printf("\nAFTER RESPONSEMAP responsemap 7;\n"
+        "address: %p\n"
+        "height: %i, width: %i\n"
+        "computed height: %i, computed width: %i\n",  optimized_fh->response_map[7], optimized_fh->response_map[7]->height, optimized_fh->response_map[7]->width);
+
         // Compute responses for every layer
-        for (int i = 0; i < optimized_fh->total_layers; i++) {
+        for (int i = 0; i < optimized_fh->total_layers; ++i) {
+            printf("BLA Compute optimized response layer.\n"
+            "Responsemap %i, height: %i, width: %i\n", 
+            i, optimized_fh->response_map[i]->height, optimized_fh->response_map[i]->width);
+
             test_functions[j](optimized_fh->response_map[i], iimage);
+            
+            printf("BLABLA Compute optimized response layer.\n"
+            "Responsemap %i, height: %i, width: %i\n", 
+            i, optimized_fh->response_map[i]->height, optimized_fh->response_map[i]->width);
         }
 
         if (original_fh->total_layers != optimized_fh->total_layers) {
             printf(
                 "compute_response_layer() test function %d does not match original function - the number of layers "
-                "difer.\n",
-                j);
+                "difer. original layers: %i optimized layers: %i \nhttps://www.dict.cc/?s=differ\n",
+                j, original_fh->total_layers, optimized_fh->total_layers);
             all_valid = false;
             // If the numbers of layers doesn't match, don't do any further tests.
             continue;
@@ -118,17 +137,28 @@ bool validate_compute_response_layer(
         for (int i = 0; i < original_fh->total_layers; i++) {
             struct response_layer *optimized_layer = optimized_fh->response_map[i];
             struct response_layer *original_layer = original_fh->response_map[i];
+/*
+            printf(
+                "Response layer: %i \n"
+                "Original layers height: %i optimized layers height: %i,  original layers width: %i "
+                "optimized layers width: %i\n",
+                i, original_layer->height, optimized_layer->height, original_layer->width, optimized_layer->width);
+*/
             if (original_layer->height != optimized_layer->height || original_layer->width != optimized_layer->width) {
                 printf(
-                    "compute_response_layer() test function %d does not match original function - the layer sizes "
-                    "difer.\n",
-                    j);
+                    "compute_response_layer() Testfunction: %i does not match original function\n"
+                    "The layer sizes difer.\n "
+                    "Response layer: %i \n"
+                    "Original layers height: %i optimized layers height: %i,  original layers width: %i "
+                    "optimized layers width: %i\n",
+                    j, i, original_layer->height, optimized_layer->height, original_layer->width, optimized_layer->width);
                 all_valid = false;
                 // If the sizes of layers don't match, don't do any further tests.
                 continue;
             }
 #ifdef DEBUG_INFO
-            print_debug(original_layer->response, optimized_layer->response, original_layer->height,original_layer->width);
+            // print_debug(original_layer->response, optimized_layer->response,
+            // original_layer->height,original_layer->width);
 #endif
 
             if (!are_float_matrices_equal(original_layer->response, optimized_layer->response, original_layer->height,
@@ -167,7 +197,6 @@ bool validate_get_msurf_descriptors(
     bool all_valid = true;
 
     for (int i = 0; i < interest_points->size(); ++i) {
-        
         struct interest_point ref_ipoint = interest_points->at(i);
         original_function(iimage, &ref_ipoint);
 

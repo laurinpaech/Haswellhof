@@ -23,8 +23,9 @@ int main(int argc, char const *argv[])
         printf("Invaid argument count.\nUsage:\n\t./surf image_path descriptor_file_target_path\n");
         return 1;
     }
+	/*
 	int width, height, channels;
-
+	
 	// Load image
 	stbi_ldr_to_hdr_gamma(1.0f);
 	float* image = stbi_loadf(argv[1], &width, &height, &channels, STBI_grey);
@@ -40,13 +41,21 @@ int main(int argc, char const *argv[])
 	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
 
 	// Fast-Hessian
+	printf("\n\nCreate fasthessian for actual image in main:\n");
 	struct fasthessian* fh = create_fast_hessian(iimage);
 
 	// Create octaves with response layers
 	create_response_map(fh);
+	*/
 
+	printf("before validation of compute response layer\n");
+
+	playground_function1();
+
+/**
 	// Compute responses for every layer
 	compute_response_map(fh);
+
 
 	// Getting interest points with non-maximum supression
 	std::vector<struct interest_point> interest_points;
@@ -78,8 +87,10 @@ int main(int argc, char const *argv[])
         fprintf(fp, "\n");
     }
     fclose(fp);
-
+*/
+	
 	// Free memory
+	/*
 	stbi_image_free(image); // possibly move this to create_integral_img
 	free(iimage->data);
 	free(iimage);
@@ -89,6 +100,7 @@ int main(int argc, char const *argv[])
 		free(fh->response_map[i]);
 	}
 	free(fh);
+	*/
 
 	return 0;
 }

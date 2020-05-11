@@ -172,6 +172,8 @@ add_executable(playground
     # Add validation header and source files here
     validation/validation.h
     validation/validation.cpp
+    validation/validation_integral_image.h
+    validation/validation_integral_image.cpp
     # Add playground header and source files here
     playground/playground.h
     playground/playground.cpp
