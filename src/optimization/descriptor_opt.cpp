@@ -105,8 +105,22 @@ void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct in
 }
 
 void get_msurf_descriptor_improved(struct integral_image* iimage, struct interest_point* ipoint) {
+    /*
+    applied optimizations:
+        - replaced outer wihle loops with for loops, simplifying index calculation
+        - switched order of inner loops to go along x direction for better locality
+        - scalar replacement & FLOP reduction by computing in the outer most (possible) loop
+        - changed math functions to their float counterparts (??? or is that part of base)
+    
+    ideas:
+        - flip outer for loops (this will change how desc_idx hat to be incremeted to yield the same feature vector)
+        otherwise the result is a mere permutation, doubt this helps locality much)
+    */
 
     float scale = ipoint->scale;
+    float scale_mul_25f = 2.5f*scale;
+    int int_scale_mul_2 = (int) 2 * lroundf(scale);
+
     int ipoint_x = (int) lroundf(ipoint->x);
     int ipoint_y = (int) lroundf(ipoint->y);
 
@@ -116,84 +130,77 @@ void get_msurf_descriptor_improved(struct integral_image* iimage, struct interes
     float sum_of_squares = 0.0f;
     
     // subregion centers for the 4x4 gaussian weighting
-    float cx = -0.5f;
-    float cy = 0.0f;
-
-    int i = -8;
+    float cx = -2.5f;
+    float cy;
 
     // calculate descriptor for this interest point
-    while(i < 12) {
-
-        int j = -8;
-        i = i - 4;
+    for (int i=-8; i<8; i+=5) {
 
         cx += 1.0f;
-        cy = -0.5f;
+        cy = -2.5f;
 
-        while(j < 12) {
+        for (int j=-8; j<8; j+=5) {
+
+            cy += 1.0f;
             
             float dx = 0.0f;
             float dy = 0.0f; 
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            cy += 1.0f;
+            int xs = (int) lroundf(ipoint_x + i * scale);
+            int ys = (int) lroundf(ipoint_y + j * scale);
 
-            j = j - 4;
+            for (int l = j-4; l < j + 5; ++l) {
 
-            // TODO: (Sebastian) I think this should be i + 4 and j + 4 (OpenSURF also wrong)
-            int xs = (int) lroundf(ipoint_x + (i + 4) * scale);
-            int ys = (int) lroundf(ipoint_y + (j + 4) * scale);
+                //Get y coords of sample point
+                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                float ys_sub_sample_y = (float) ys-sample_y;
 
-            for (int k = i; k < i + 9; ++k) {
-                for (int l = j; l < j + 9; ++l) {
+                for (int k = i-4; k < i + 5; ++k) {
 
-                    //Get coords of sample point on the rotated axis
+                    //Get x coords of sample point
                     int sample_x = (int) lroundf(ipoint_x + k * scale);
-                    int sample_y = (int) lroundf(ipoint_y + l * scale);
+                    float xs_sub_sample_x = (float) xs-sample_x;
 
                     //Get the gaussian weighted x and y responses
                     // TODO: (Sebastian) Precompute this...
-                    float gauss_s1 = gaussianf((float) xs-sample_x, (float) ys-sample_y, 2.5f * scale);
+                    float gauss_s1 = gaussianf(xs_sub_sample_x, ys_sub_sample_y, scale_mul_25f);
                     
-                    float rx = haarX(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
-                    float ry = haarY(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
+                    float rx = haarX(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float ry = haarY(iimage, sample_y, sample_x, int_scale_mul_2);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
-                    float rrx = gauss_s1 * (ry);
-                    float rry = gauss_s1 * (rx);
+                    float rrx = gauss_s1 * ry;
+                    float rry = gauss_s1 * rx;
 
                     dx += rrx;
                     dy += rry;
-                    // TODO: (Sebastian) Why cast here? -> in pure c this returns double
-                    // SOLVED: Use fabsf() instead!
                     mdx += fabsf(rrx);
                     mdy += fabsf(rry);
-
                 }
-                
             }
 
             // TODO: (Sebastian) Precompute this...
-            float gauss_s2 = gaussianf(cx-2.0f, cy-2.0f, 1.5f);
+            float gauss_s2 = gaussianf(cx, cy, 1.5f);
 
             // add the values to the descriptor vector
-            descriptor[desc_idx] = dx * gauss_s2;
-            descriptor[desc_idx+1] = dy * gauss_s2;
-            descriptor[desc_idx+2] = mdx * gauss_s2;
-            descriptor[desc_idx+3] = mdy * gauss_s2;
+            float d1 = dx * gauss_s2;
+            float d2 = dy * gauss_s2;
+            float d3 = mdx * gauss_s2;
+            float d4 = mdy * gauss_s2;
+
+            descriptor[desc_idx] = d1;
+            descriptor[desc_idx+1] = d2;
+            descriptor[desc_idx+2] = d3;
+            descriptor[desc_idx+3] = d4;
 
             // precompute for normaliztion
-            sum_of_squares += (dx*dx + dy*dy + mdx*mdx + mdy*mdy) * gauss_s2*gauss_s2;
+            sum_of_squares += (d1*d1 + d2*d2 + d3*d3 + d4*d4);
 
             desc_idx += 4;
 
-            j += 9;
-
         }
-
-        i += 9;
-
     }
 
     // rescale to unit vector
@@ -203,12 +210,26 @@ void get_msurf_descriptor_improved(struct integral_image* iimage, struct interes
     for (int i = 0; i < 64; ++i) {
         descriptor[i] *= norm_factor;
     }
-
 }
 
+
 void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest_point* ipoint) {
+    /*
+    applied optimizations:
+        - all of get_msurf_descriptor_improved
+        - inlined gaussian funktion and removed its noralization (as we normalize in the end)
+
+    ideas:
+        - keep xs_sub_sample_x and xs_sub_sample_x_squared as int and cast in expf (same for y)
+    */
 
     float scale = ipoint->scale;
+    // float scale_mul_25f = 2.5f*scale;
+    int int_scale_mul_2 = (int) 2 * lroundf(scale);
+    float scale_squared = scale*scale;
+    float g1_factor = -0.08f / (scale_squared); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
+    float g2_factor = -1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
+
     int ipoint_x = (int) lroundf(ipoint->x);
     int ipoint_y = (int) lroundf(ipoint->y);
 
@@ -218,110 +239,111 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
     float sum_of_squares = 0.0f;
     
     // subregion centers for the 4x4 gaussian weighting
-    float cx = -0.5f;
-    float cy = 0.0f;
-
-    int i = -8;
+    float cx = -2.5f;
+    float cy;
 
     // calculate descriptor for this interest point
-    while(i < 12) {
-
-        int j = -8;
-        i = i - 4;
+    for (int i=-8; i<8; i+=5) {
 
         cx += 1.0f;
-        cy = -0.5f;
+        float cx_squared = cx*cx;
+        
+        cy = -2.5f;
 
-        while(j < 12) {
+        for (int j=-8; j<8; j+=5) {
+
+            cy += 1.0f;
+            float cy_squared = cy*cy;
             
             float dx = 0.0f;
             float dy = 0.0f; 
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            cy += 1.0f;
+            int xs = (int) lroundf(ipoint_x + i * scale);
+            int ys = (int) lroundf(ipoint_y + j * scale);
 
-            j = j - 4;
+            for (int l = j-4; l < j + 5; ++l) {
 
-            // TODO: (Sebastian) I think this should be i + 4 and j + 4 (OpenSURF also wrong)
-            int xs = (int) lroundf(ipoint_x + (i + 4) * scale);
-            int ys = (int) lroundf(ipoint_y + (j + 4) * scale);
+                //Get y coords of sample point
+                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                float ys_sub_sample_y = (float) ys-sample_y;
+                float ys_sub_sample_y_squared = ys_sub_sample_y*ys_sub_sample_y;
 
-            for (int k = i; k < i + 9; ++k) {
-                for (int l = j; l < j + 9; ++l) {
+                for (int k = i-4; k < i + 5; ++k) {
 
-                    //Get coords of sample point on the rotated axis
+                    //Get x coords of sample point
                     int sample_x = (int) lroundf(ipoint_x + k * scale);
-                    int sample_y = (int) lroundf(ipoint_y + l * scale);
+                    float xs_sub_sample_x = (float) xs-sample_x;
+                    float xs_sub_sample_x_squared = xs_sub_sample_x*xs_sub_sample_x;
 
                     //Get the gaussian weighted x and y responses
-                    //float gauss_s1 = gaussian(xs-sample_x, ys-sample_y, 2.5f * scale);
-                    //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig))
-                    float g_factor = 0.08f / (scale*scale); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
-                    float g_x = xs - sample_x;
-                    float g_y = ys - sample_y;
                     // NOTE: We use expf here
-                    float gauss_s1 = expf(-g_factor * (g_x*g_x + g_y*g_y));
+                    float gauss_s1 = expf(g1_factor * (xs_sub_sample_x_squared + ys_sub_sample_y_squared));
                     
-                    int s = (int) lroundf(scale);
-                    float rx = box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
-                    float ry = box_integral(iimage, sample_y, sample_x-s, s, 2*s) - box_integral(iimage, sample_y-s, sample_x-s, s, 2*s);
+                    float rx = haarX(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float ry = haarY(iimage, sample_y, sample_x, int_scale_mul_2);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
-                    float rrx = gauss_s1 * (ry);
-                    float rry = gauss_s1 * (rx);
+                    float rrx = gauss_s1 * ry;
+                    float rry = gauss_s1 * rx;
 
                     dx += rrx;
                     dy += rry;
-                    // TODO: (Sebastian) Why cast here? -> in pure c this returns double
-                    // SOLVED: Use fabsf() instead!
                     mdx += fabsf(rrx);
                     mdy += fabsf(rry);
-
                 }
-                
             }
 
             // TODO: (Sebastian) Precompute this...
-            //float gauss_s2 = gaussian(cx-2.0f,cy-2.0f,1.5f);
-            //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig));
-            float g_factor = 1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
-            float g_x = cx - 2.0f;
-            float g_y = cy - 2.0f;
             // NOTE: We use expf here
-            float gauss_s2 = expf(-g_factor * (g_x*g_x + g_y*g_y)); 
+            float gauss_s2 = expf(g2_factor * (cx_squared + cy_squared)); 
 
             // add the values to the descriptor vector
-            descriptor[desc_idx] = dx * gauss_s2;
-            descriptor[desc_idx+1] = dy * gauss_s2;
-            descriptor[desc_idx+2] = mdx * gauss_s2;
-            descriptor[desc_idx+3] = mdy * gauss_s2;
+            float d1 = dx * gauss_s2;
+            float d2 = dy * gauss_s2;
+            float d3 = mdx * gauss_s2;
+            float d4 = mdy * gauss_s2;
+
+            descriptor[desc_idx] = d1;
+            descriptor[desc_idx+1] = d2;
+            descriptor[desc_idx+2] = d3;
+            descriptor[desc_idx+3] = d4;
 
             // precompute for normaliztion
-            sum_of_squares += (dx*dx + dy*dy + mdx*mdx + mdy*mdy) * gauss_s2*gauss_s2;
+            sum_of_squares += (d1*d1 + d2*d2 + d3*d3 + d4*d4);
 
             desc_idx += 4;
 
-            j += 9;
-
         }
-
-        i += 9;
-
     }
 
     // rescale to unit vector
+    // NOTE: using sqrtf() for floats
     float norm_factor = 1.0f / sqrtf(sum_of_squares);
 
     for (int i = 0; i < 64; ++i) {
         descriptor[i] *= norm_factor;
     }
-
 }
 
+
 void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint) {
+    /*
+    applied optimizations:
+        - all of get_msurf_descriptor_inlined
+        - using haarXY function to compute Haar Wavelet responses at once
+    */
 
     float scale = ipoint->scale;
+    // float scale_mul_25f = 2.5f*scale;
+    int int_scale = (int) lroundf(scale);
+    // int int_scale_mul_2 =  2 * int_scale;
+    float scale_squared = scale*scale;
+
+    float g1_factor = -0.08f / (scale_squared); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
+    float g2_factor = -1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
+
     int ipoint_x = (int) lroundf(ipoint->x);
     int ipoint_y = (int) lroundf(ipoint->y);
 
@@ -335,114 +357,118 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
     float sum_of_squares = 0.0f;
     
     // subregion centers for the 4x4 gaussian weighting
-    float cx = -0.5f;
-    float cy = 0.0f;
-
-    int i = -8;
+    float cx = -2.5f;
+    float cy;
 
     // calculate descriptor for this interest point
-    while(i < 12) {
-
-        int j = -8;
-        i = i - 4;
+    for (int i=-8; i<8; i+=5) {
 
         cx += 1.0f;
-        cy = -0.5f;
+        float cx_squared = cx*cx;
+        
+        cy = -2.5f;
 
-        while(j < 12) {
+        for (int j=-8; j<8; j+=5) {
+
+            cy += 1.0f;
+            float cy_squared = cy*cy;
             
             float dx = 0.0f;
             float dy = 0.0f; 
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            cy += 1.0f;
+            int xs = (int) lroundf(ipoint_x + i * scale);
+            int ys = (int) lroundf(ipoint_y + j * scale);
 
-            j = j - 4;
+            for (int l = j-4; l < j + 5; ++l) {
 
-            //int xs = (int) lroundf(ipoint_x + (i + 5) * scale);
-            //int ys = (int) lroundf(ipoint_y + (j + 5) * scale);
-            int xs = (int) lroundf(ipoint_x + (i + 4) * scale);
-            int ys = (int) lroundf(ipoint_y + (j + 4) * scale);
+                //Get y coords of sample point
+                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                float ys_sub_sample_y = (float) ys-sample_y;
+                float ys_sub_sample_y_squared = ys_sub_sample_y*ys_sub_sample_y;
 
-            for (int k = i; k < i + 9; ++k) {
-                for (int l = j; l < j + 9; ++l) {
+                int sample_y_sub_int_scale = sample_y-int_scale;
 
-                    //Get coords of sample point on the rotated axis
+                for (int k = i-4; k < i + 5; ++k) {
+
+                    //Get x coords of sample point
                     int sample_x = (int) lroundf(ipoint_x + k * scale);
-                    int sample_y = (int) lroundf(ipoint_y + l * scale);
+                    float xs_sub_sample_x = (float) xs-sample_x;
+                    float xs_sub_sample_x_squared = xs_sub_sample_x*xs_sub_sample_x;
+                    int sample_x_sub_int_scale = sample_x-int_scale;
 
                     //Get the gaussian weighted x and y responses
-                    //float gauss_s1 = gaussian(xs-sample_x, ys-sample_y, 2.5f * scale);
-                    //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig))
-                    float g_factor = 0.08f / (scale*scale); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
-                    float g_x = xs - sample_x;
-                    float g_y = ys - sample_y;
                     // NOTE: We use expf here
-                    float gauss_s1 = expf(-g_factor * (g_x*g_x + g_y*g_y));
+                    float gauss_s1 = expf(g1_factor * (xs_sub_sample_x_squared + ys_sub_sample_y_squared));
                     
-                    int s = (int) lroundf(scale);
-                    float rx = 0.0f; //box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
-                    float ry = 0.0f; //box_integral(iimage, sample_y, sample_x-s, s, 2*s) - box_integral(iimage, sample_y-s, sample_x-s, s, 2*s);
-
-                    haarXY(data, height, width, sample_y-s, sample_x-s, s, &rx, &ry);
-
+                    float rx = 0.0f;
+                    float ry = 0.0f;
+                    haarXY(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
-                    //float rrx = gauss_s1*(-rx*si + ry*co);
-                    //float rry = gauss_s1*(rx*co + ry*si);
-                    float rrx = gauss_s1 * (ry);
-                    float rry = gauss_s1 * (rx);
+                    float rrx = gauss_s1 * ry;
+                    float rry = gauss_s1 * rx;
 
                     dx += rrx;
                     dy += rry;
                     mdx += fabsf(rrx);
                     mdy += fabsf(rry);
-
                 }
             }
 
             // TODO: (Sebastian) Precompute this...
-            //float gauss_s2 = gaussian(cx-2.0f,cy-2.0f,1.5f);
-            //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig));
-            float g_factor = 1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
-            float g_x = cx - 2.0f;
-            float g_y = cy - 2.0f;
             // NOTE: We use expf here
-            float gauss_s2 = expf(-g_factor * (g_x*g_x + g_y*g_y)); 
+            float gauss_s2 = expf(g2_factor * (cx_squared + cy_squared)); 
 
             // add the values to the descriptor vector
-            descriptor[desc_idx] = dx * gauss_s2;
-            descriptor[desc_idx+1] = dy * gauss_s2;
-            descriptor[desc_idx+2] = mdx * gauss_s2;
-            descriptor[desc_idx+3] = mdy * gauss_s2;
+            float d1 = dx * gauss_s2;
+            float d2 = dy * gauss_s2;
+            float d3 = mdx * gauss_s2;
+            float d4 = mdy * gauss_s2;
+
+            descriptor[desc_idx] = d1;
+            descriptor[desc_idx+1] = d2;
+            descriptor[desc_idx+2] = d3;
+            descriptor[desc_idx+3] = d4;
 
             // precompute for normaliztion
-            sum_of_squares += (dx*dx + dy*dy + mdx*mdx + mdy*mdy) * gauss_s2*gauss_s2;
+            sum_of_squares += (d1*d1 + d2*d2 + d3*d3 + d4*d4);
 
             desc_idx += 4;
 
-            j += 9;
-
         }
-
-        i += 9;
-
     }
 
     // rescale to unit vector
+    // NOTE: using sqrtf() for floats
     float norm_factor = 1.0f / sqrtf(sum_of_squares);
 
     for (int i = 0; i < 64; ++i) {
         descriptor[i] *= norm_factor;
     }
-
 }
 
 
 void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integral_image* iimage, struct interest_point* ipoint) {
+    /*
+    applied optimizations:
+        - all of get_msurf_descriptor_inlined
+        - using haarXY_precheck_boundaries function to compute Haar Wavelet responses at once with very naive reduction of if/MIN usage
+
+    ideas:
+        - more sophisticated boundary checking (before the haarXY_precheck_boundaries function call)
+    */
 
     float scale = ipoint->scale;
+    // float scale_mul_25f = 2.5f*scale;
+    int int_scale = (int) lroundf(scale);
+    // int int_scale_mul_2 =  2 * int_scale;
+    float scale_squared = scale*scale;
+
+    float g1_factor = -0.08f / (scale_squared); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
+    float g2_factor = -1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
+
     int ipoint_x = (int) lroundf(ipoint->x);
     int ipoint_y = (int) lroundf(ipoint->y);
 
@@ -456,107 +482,96 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
     float sum_of_squares = 0.0f;
     
     // subregion centers for the 4x4 gaussian weighting
-    float cx = -0.5f;
-    float cy = 0.0f;
-
-    int i = -8;
+    float cx = -2.5f;
+    float cy;
 
     // calculate descriptor for this interest point
-    while(i < 12) {
-
-        int j = -8;
-        i = i - 4;
+    for (int i=-8; i<8; i+=5) {
 
         cx += 1.0f;
-        cy = -0.5f;
+        float cx_squared = cx*cx;
+        
+        cy = -2.5f;
 
-        while(j < 12) {
+        for (int j=-8; j<8; j+=5) {
+
+            cy += 1.0f;
+            float cy_squared = cy*cy;
             
             float dx = 0.0f;
             float dy = 0.0f; 
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            cy += 1.0f;
+            int xs = (int) lroundf(ipoint_x + i * scale);
+            int ys = (int) lroundf(ipoint_y + j * scale);
 
-            j = j - 4;
+            for (int l = j-4; l < j + 5; ++l) {
 
-            //int xs = (int) lroundf(ipoint_x + (i + 5) * scale);
-            //int ys = (int) lroundf(ipoint_y + (j + 5) * scale);
-            int xs = (int) lroundf(ipoint_x + (i + 4) * scale);
-            int ys = (int) lroundf(ipoint_y + (j + 4) * scale);
+                //Get y coords of sample point
+                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                float ys_sub_sample_y = (float) ys-sample_y;
+                float ys_sub_sample_y_squared = ys_sub_sample_y*ys_sub_sample_y;
 
-            for (int k = i; k < i + 9; ++k) {
-                for (int l = j; l < j + 9; ++l) {
+                int sample_y_sub_int_scale = sample_y-int_scale;
 
-                    //Get coords of sample point on the rotated axis
+                for (int k = i-4; k < i + 5; ++k) {
+
+                    //Get x coords of sample point
                     int sample_x = (int) lroundf(ipoint_x + k * scale);
-                    int sample_y = (int) lroundf(ipoint_y + l * scale);
+                    float xs_sub_sample_x = (float) xs-sample_x;
+                    float xs_sub_sample_x_squared = xs_sub_sample_x*xs_sub_sample_x;
+                    int sample_x_sub_int_scale = sample_x-int_scale;
 
                     //Get the gaussian weighted x and y responses
-                    //float gauss_s1 = gaussian(xs-sample_x, ys-sample_y, 2.5f * scale);
-                    //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig))
-                    float g_factor = 0.08f / (scale*scale); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
-                    float g_x = xs - sample_x;
-                    float g_y = ys - sample_y;
                     // NOTE: We use expf here
-                    float gauss_s1 = expf(-g_factor * (g_x*g_x + g_y*g_y));
+                    float gauss_s1 = expf(g1_factor * (xs_sub_sample_x_squared + ys_sub_sample_y_squared));
                     
-                    int s = (int) lroundf(scale);
-                    float rx = 0.0f; //box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
-                    float ry = 0.0f; //box_integral(iimage, sample_y, sample_x-s, s, 2*s) - box_integral(iimage, sample_y-s, sample_x-s, s, 2*s);
-
-                    haarXY_precheck_boundaries(data, height, width, sample_y-s, sample_x-s, s, &rx, &ry);
+                    float rx = 0.0f;
+                    float ry = 0.0f;
+                    haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
-                    //float rrx = gauss_s1*(-rx*si + ry*co);
-                    //float rry = gauss_s1*(rx*co + ry*si);
-                    float rrx = gauss_s1 * (ry);
-                    float rry = gauss_s1 * (rx);
+                    float rrx = gauss_s1 * ry;
+                    float rry = gauss_s1 * rx;
 
                     dx += rrx;
                     dy += rry;
                     mdx += fabsf(rrx);
                     mdy += fabsf(rry);
-
                 }
             }
 
             // TODO: (Sebastian) Precompute this...
-            //float gauss_s2 = gaussian(cx-2.0f,cy-2.0f,1.5f);
-            //(1.0f/(2.0f*pi*sig*sig)) * exp( -(x*x+y*y)/(2.0f*sig*sig));
-            float g_factor = 1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
-            float g_x = cx - 2.0f;
-            float g_y = cy - 2.0f;
             // NOTE: We use expf here
-            float gauss_s2 = expf(-g_factor * (g_x*g_x + g_y*g_y)); 
+            float gauss_s2 = expf(g2_factor * (cx_squared + cy_squared)); 
 
             // add the values to the descriptor vector
-            descriptor[desc_idx] = dx * gauss_s2;
-            descriptor[desc_idx+1] = dy * gauss_s2;
-            descriptor[desc_idx+2] = mdx * gauss_s2;
-            descriptor[desc_idx+3] = mdy * gauss_s2;
+            float d1 = dx * gauss_s2;
+            float d2 = dy * gauss_s2;
+            float d3 = mdx * gauss_s2;
+            float d4 = mdy * gauss_s2;
+
+            descriptor[desc_idx] = d1;
+            descriptor[desc_idx+1] = d2;
+            descriptor[desc_idx+2] = d3;
+            descriptor[desc_idx+3] = d4;
 
             // precompute for normaliztion
-            sum_of_squares += (dx*dx + dy*dy + mdx*mdx + mdy*mdy) * gauss_s2*gauss_s2;
+            sum_of_squares += (d1*d1 + d2*d2 + d3*d3 + d4*d4);
 
             desc_idx += 4;
 
-            j += 9;
-
         }
-
-        i += 9;
-
     }
 
     // rescale to unit vector
+    // NOTE: using sqrtf() for floats
     float norm_factor = 1.0f / sqrtf(sum_of_squares);
 
     for (int i = 0; i < 64; ++i) {
         descriptor[i] *= norm_factor;
     }
-
 }
 
 
