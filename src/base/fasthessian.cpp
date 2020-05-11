@@ -105,6 +105,7 @@ void compute_response_layer(struct response_layer *layer, struct integral_image 
                   box_integral(iimage, x + 1, y - lobe, lobe, lobe) -
                   box_integral(iimage, x - lobe, y - lobe, lobe, lobe) - box_integral(iimage, x + 1, y + 1, lobe, lobe);
 
+
             // if (x < border+1 && y < width &&  y >= ky) {
 /*
             if ((x < height && y < width && x >= kx)) {

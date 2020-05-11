@@ -84,7 +84,8 @@ bool validate_compute_response_layer(
 
     // Compute responses for every layer
     // for (int i = 0; i < original_fh->total_layers; i++) {
-    for (int i = 0; i < 1; i++) {
+        int test_response_layers = original_fh->total_layers;
+    for (int i = 0; i < test_response_layers; i++) {
 #ifdef DEBUG_INFO
         // printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height,
         // original_fh->response_map[i]->width);
@@ -107,7 +108,7 @@ bool validate_compute_response_layer(
 
         // Compute responses for every layer
         // for (int i = 0; i < optimized_fh->total_layers; ++i) {
-        for (int i = 0; i < 2; ++i) {
+        for (int i = 0; i < test_response_layers; ++i) {
             test_functions[j](optimized_fh->response_map[i], iimage);
         }
 
@@ -123,7 +124,7 @@ bool validate_compute_response_layer(
 
         // Compare each layer of each test function with the original
         // for (int i = 0; i < original_fh->total_layers; i++) {
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < test_response_layers; i++) {
             struct response_layer *optimized_layer = optimized_fh->response_map[i];
             struct response_layer *original_layer = original_fh->response_map[i];
             /*
