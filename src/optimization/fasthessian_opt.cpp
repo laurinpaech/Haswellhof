@@ -292,6 +292,8 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
                     - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
                     - box_integral(iimage, x + 1, y + 1, lobe, lobe);
 
+            // printf("OPTIMIZED: (%i, %i) - Dyy: %f, Dxx: %f, Dxy: %f\n\n", i, j, Dyy, Dxx, Dxy);
+
             // Normalize Responses with inverse area
             Dxx *= inv_area;
             Dyy *= inv_area;
@@ -344,6 +346,8 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
                     - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
                     - box_integral(iimage, x + 1, y + 1, lobe, lobe);
 
+            // printf("OPTIMIZED: (%i, %i) - Dyy: %f, Dxx: %f, Dxy: %f\n\n", i, j, Dyy, Dxx, Dxy);
+
             // Normalize Responses with inverse area
             Dxx *= inv_area;
             Dyy *= inv_area;
@@ -378,6 +382,8 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
                     - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
                     - box_integral(iimage, x + 1, y + 1, lobe, lobe);
 
+            printf("OPTIMIZED: (%i, %i) - Dyy: %f, Dxx: %f, Dxy: %f\n\n", i, j, Dyy, Dxx, Dxy);
+
             // Normalize Responses with inverse area
             Dxx *= inv_area;
             Dyy *= inv_area;
@@ -393,11 +399,13 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
     }
 
     k = (border+1 + step - 1) / step * step;
-    for (int i = k; i < height; i += 1) {
-        for (int j = 0; j < width; j += 1) {
+    for (int i = k; i < height; i += step) {
+        for (int j = 0; j < width; j += step) {
             // Image coordinates
-            x = i*step;
-            y = j*step;
+            // x = i*step;
+            // y = j*step;
+            x = i;
+            y = j;
 
             // Calculate Dxx, Dyy, Dxy with Box Filter
             Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)

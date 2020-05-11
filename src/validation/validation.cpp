@@ -7,7 +7,7 @@
 #include "helper.h"
 #include "validation_integral_image.h"
 
-#define DEBUG_INFO
+// #define DEBUG_INFO
 #define VALIDATION_PRECISION (1e-3)
 
 // Creates an integral image given an image, its corresponding height and width, the base function and a list of other
