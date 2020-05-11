@@ -261,7 +261,7 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
                     float g_x = xs - sample_x;
                     float g_y = ys - sample_y;
                     // NOTE: We use expf here
-                    float gauss_s1 = M_1_PI * g_factor * expf(-g_factor * (g_x*g_x + g_y*g_y));
+                    float gauss_s1 = expf(-g_factor * (g_x*g_x + g_y*g_y));
                     
                     int s = (int) lroundf(scale);
                     float rx = box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
@@ -289,7 +289,7 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
             float g_x = cx - 2.0f;
             float g_y = cy - 2.0f;
             // NOTE: We use expf here
-            float gauss_s2 = M_1_PI * g_factor * expf(-g_factor * (g_x*g_x + g_y*g_y)); 
+            float gauss_s2 = expf(-g_factor * (g_x*g_x + g_y*g_y)); 
 
             // add the values to the descriptor vector
             descriptor[desc_idx] = dx * gauss_s2;
@@ -379,7 +379,7 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
                     float g_x = xs - sample_x;
                     float g_y = ys - sample_y;
                     // NOTE: We use expf here
-                    float gauss_s1 = M_1_PI * g_factor * expf(-g_factor * (g_x*g_x + g_y*g_y));
+                    float gauss_s1 = expf(-g_factor * (g_x*g_x + g_y*g_y));
                     
                     int s = (int) lroundf(scale);
                     float rx = 0.0f; //box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
@@ -409,7 +409,7 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
             float g_x = cx - 2.0f;
             float g_y = cy - 2.0f;
             // NOTE: We use expf here
-            float gauss_s2 = M_1_PI * g_factor * expf(-g_factor * (g_x*g_x + g_y*g_y)); 
+            float gauss_s2 = expf(-g_factor * (g_x*g_x + g_y*g_y)); 
 
             // add the values to the descriptor vector
             descriptor[desc_idx] = dx * gauss_s2;
@@ -500,7 +500,7 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
                     float g_x = xs - sample_x;
                     float g_y = ys - sample_y;
                     // NOTE: We use expf here
-                    float gauss_s1 = M_1_PI * g_factor * expf(-g_factor * (g_x*g_x + g_y*g_y));
+                    float gauss_s1 = expf(-g_factor * (g_x*g_x + g_y*g_y));
                     
                     int s = (int) lroundf(scale);
                     float rx = 0.0f; //box_integral(iimage, sample_y-s, sample_x, 2*s, s) - box_integral(iimage, sample_y-s, sample_x-s, 2*s, s);
@@ -529,7 +529,7 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
             float g_x = cx - 2.0f;
             float g_y = cy - 2.0f;
             // NOTE: We use expf here
-            float gauss_s2 = M_1_PI * g_factor * expf(-g_factor * (g_x*g_x + g_y*g_y)); 
+            float gauss_s2 = expf(-g_factor * (g_x*g_x + g_y*g_y)); 
 
             // add the values to the descriptor vector
             descriptor[desc_idx] = dx * gauss_s2;
