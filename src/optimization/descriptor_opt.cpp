@@ -104,7 +104,120 @@ void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct in
 
 }
 
+
 void get_msurf_descriptor_improved(struct integral_image* iimage, struct interest_point* ipoint) {
+    /*
+    applied optimizations:
+        - replaced outer wihle loops with for loops, simplifying index calculation
+        - switched order of inner loops to go along x direction for better locality
+        - scalar replacement & FLOP reduction by computing in the outer most (possible) loop
+        - changed math functions to their float counterparts (??? or is that part of base)
+    
+    ideas:
+        - flip outer for loops (this will change how desc_idx hat to be incremeted to yield the same feature vector)
+        otherwise the result is a mere permutation, doubt this helps locality much)
+    */
+
+    float scale = ipoint->scale;
+    float scale_mul_25f = 2.5f*scale;
+    int int_scale_mul_2 = (int) 2 * lroundf(scale);
+
+    int ipoint_x = (int) lroundf(ipoint->x);
+    int ipoint_y = (int) lroundf(ipoint->y);
+
+    // build descriptor
+    float* descriptor = ipoint->descriptor;
+    int desc_idx = 0;
+    float sum_of_squares = 0.0f;
+    
+    // subregion centers for the 4x4 gaussian weighting
+    float cx = -2.5f;
+    float cy;
+
+    // calculate descriptor for this interest point
+    for (int i=-8; i<8; i+=5) {
+
+        cx += 1.0f;
+        cy = -2.5f;
+
+        for (int j=-8; j<8; j+=5) {
+
+            cy += 1.0f;
+            
+            float dx = 0.0f;
+            float dy = 0.0f; 
+            float mdx = 0.0f; 
+            float mdy = 0.0f;
+
+            int xs = (int) lroundf(ipoint_x + i * scale);
+            int ys = (int) lroundf(ipoint_y + j * scale);
+
+            for (int k = i-4; k < i + 5; ++k) {
+
+                //Get x coords of sample point
+                int sample_x = (int) lroundf(ipoint_x + k * scale);
+                float xs_sub_sample_x = (float) xs-sample_x;
+
+                for (int l = j-4; l < j + 5; ++l) {
+
+                    //Get y coords of sample point
+                    int sample_y = (int) lroundf(ipoint_y + l * scale);
+                    float ys_sub_sample_y = (float) ys-sample_y;
+
+                
+
+                    //Get the gaussian weighted x and y responses
+                    // TODO: (Sebastian) Precompute this...
+                    float gauss_s1 = gaussianf(xs_sub_sample_x, ys_sub_sample_y, scale_mul_25f);
+                    
+                    float rx = haarX(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float ry = haarY(iimage, sample_y, sample_x, int_scale_mul_2);
+                    
+                    //Get the gaussian weighted x and y responses on rotated axis
+                    float rrx = gauss_s1 * ry;
+                    float rry = gauss_s1 * rx;
+
+                    dx += rrx;
+                    dy += rry;
+                    mdx += fabsf(rrx);
+                    mdy += fabsf(rry);
+                }
+            }
+
+            // TODO: (Sebastian) Precompute this...
+            float gauss_s2 = gaussianf(cx, cy, 1.5f);
+
+            // add the values to the descriptor vector
+            float d1 = dx * gauss_s2;
+            float d2 = dy * gauss_s2;
+            float d3 = mdx * gauss_s2;
+            float d4 = mdy * gauss_s2;
+
+            descriptor[desc_idx] = d1;
+            descriptor[desc_idx+1] = d2;
+            descriptor[desc_idx+2] = d3;
+            descriptor[desc_idx+3] = d4;
+
+            // precompute for normaliztion
+            sum_of_squares += (d1*d1 + d2*d2 + d3*d3 + d4*d4);
+
+            desc_idx += 4;
+
+        }
+    }
+
+    // rescale to unit vector
+    // NOTE: using sqrtf() for floats
+    float norm_factor = 1.0f / sqrtf(sum_of_squares);
+
+    for (int i = 0; i < 64; ++i) {
+        descriptor[i] *= norm_factor;
+    }
+}
+
+
+
+void get_msurf_descriptor_improved_flip(struct integral_image* iimage, struct interest_point* ipoint) {
     /*
     applied optimizations:
         - replaced outer wihle loops with for loops, simplifying index calculation
@@ -211,6 +324,115 @@ void get_msurf_descriptor_improved(struct integral_image* iimage, struct interes
         descriptor[i] *= norm_factor;
     }
 }
+
+void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, struct interest_point* ipoint) {
+    /*
+    applied optimizations:
+        - replaced outer wihle loops with for loops, simplifying index calculation
+        - switched order of inner loops to go along x direction for better locality
+        - scalar replacement & FLOP reduction by computing in the outer most (possible) loop
+        - changed math functions to their float counterparts (??? or is that part of base)
+    
+    ideas:
+        - flip outer for loops (this will change how desc_idx hat to be incremeted to yield the same feature vector)
+        otherwise the result is a mere permutation, doubt this helps locality much)
+    */
+
+    float scale = ipoint->scale;
+    float scale_mul_25f = 2.5f*scale;
+    int int_scale_mul_2 = (int) 2 * lroundf(scale);
+
+    int ipoint_x = (int) lroundf(ipoint->x);
+    int ipoint_y = (int) lroundf(ipoint->y);
+
+    // build descriptor
+    float* descriptor = ipoint->descriptor;
+    int desc_idx = 0;
+    float sum_of_squares = 0.0f;
+    
+    // subregion centers for the 4x4 gaussian weighting
+    float cy = -2.5f;
+    float cx;
+
+    // calculate descriptor for this interest point
+    for (int j=-8; j<8; j+=5) {
+
+        cy += 1.0f;
+        cx = -2.5f;
+
+        for (int i=-8; i<8; i+=5) {
+
+            cx += 1.0f;
+            
+            float dx = 0.0f;
+            float dy = 0.0f; 
+            float mdx = 0.0f; 
+            float mdy = 0.0f;
+
+            int xs = (int) lroundf(ipoint_x + i * scale);
+            int ys = (int) lroundf(ipoint_y + j * scale);
+
+            for (int l = j-4; l < j + 5; ++l) {
+
+                //Get y coords of sample point
+                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                float ys_sub_sample_y = (float) ys-sample_y;
+
+                for (int k = i-4; k < i + 5; ++k) {
+
+                    //Get x coords of sample point
+                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    float xs_sub_sample_x = (float) xs-sample_x;
+
+                    //Get the gaussian weighted x and y responses
+                    // TODO: (Sebastian) Precompute this...
+                    float gauss_s1 = gaussianf(xs_sub_sample_x, ys_sub_sample_y, scale_mul_25f);
+                    
+                    float rx = haarX(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float ry = haarY(iimage, sample_y, sample_x, int_scale_mul_2);
+                    
+                    //Get the gaussian weighted x and y responses on rotated axis
+                    float rrx = gauss_s1 * ry;
+                    float rry = gauss_s1 * rx;
+
+                    dx += rrx;
+                    dy += rry;
+                    mdx += fabsf(rrx);
+                    mdy += fabsf(rry);
+                }
+            }
+
+            // TODO: (Sebastian) Precompute this...
+            float gauss_s2 = gaussianf(cx, cy, 1.5f);
+
+            // add the values to the descriptor vector
+            float d1 = dx * gauss_s2;
+            float d2 = dy * gauss_s2;
+            float d3 = mdx * gauss_s2;
+            float d4 = mdy * gauss_s2;
+
+            descriptor[desc_idx] = d1;
+            descriptor[desc_idx+1] = d2;
+            descriptor[desc_idx+2] = d3;
+            descriptor[desc_idx+3] = d4;
+
+            // precompute for normaliztion
+            sum_of_squares += (d1*d1 + d2*d2 + d3*d3 + d4*d4);
+
+            desc_idx += 4;
+
+        }
+    }
+
+    // rescale to unit vector
+    // NOTE: using sqrtf() for floats
+    float norm_factor = 1.0f / sqrtf(sum_of_squares);
+
+    for (int i = 0; i < 64; ++i) {
+        descriptor[i] *= norm_factor;
+    }
+}
+
 
 
 void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest_point* ipoint) {
@@ -476,6 +698,7 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
     int width = iimage->width;
     int height = iimage->height;
 
+
     // build descriptor
     float* descriptor = ipoint->descriptor;
     int desc_idx = 0;
@@ -485,7 +708,13 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
     float cx = -2.5f;
     float cy;
 
-    // calculate descriptor for this interest point
+
+    // check if we ever hit a boundary
+    if (((int) lroundf(ipoint_x - 12*scale)) - int_scale <= 0 
+        || ((int) lroundf(ipoint_y - 12*scale)) - int_scale <= 0 
+        || ((int) lroundf(ipoint_x + 11*scale)) + int_scale > width 
+        || ((int) lroundf(ipoint_y + 11*scale)) + int_scale > height) 
+    { // some outside
     for (int i=-8; i<8; i+=5) {
 
         cx += 1.0f;
@@ -564,7 +793,89 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
 
         }
     }
+    
 
+    } else { // everything in borders
+    // calculate descriptor for this interest point
+    for (int i=-8; i<8; i+=5) {
+
+        cx += 1.0f;
+        float cx_squared = cx*cx;
+        
+        cy = -2.5f;
+
+        for (int j=-8; j<8; j+=5) {
+
+            cy += 1.0f;
+            float cy_squared = cy*cy;
+            
+            float dx = 0.0f;
+            float dy = 0.0f; 
+            float mdx = 0.0f; 
+            float mdy = 0.0f;
+
+            int xs = (int) lroundf(ipoint_x + i * scale);
+            int ys = (int) lroundf(ipoint_y + j * scale);
+
+            for (int l = j-4; l < j + 5; ++l) {
+
+                //Get y coords of sample point
+                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                float ys_sub_sample_y = (float) ys-sample_y;
+                float ys_sub_sample_y_squared = ys_sub_sample_y*ys_sub_sample_y;
+
+                int sample_y_sub_int_scale = sample_y-int_scale;
+
+                for (int k = i-4; k < i + 5; ++k) {
+
+                    //Get x coords of sample point
+                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    float xs_sub_sample_x = (float) xs-sample_x;
+                    float xs_sub_sample_x_squared = xs_sub_sample_x*xs_sub_sample_x;
+                    int sample_x_sub_int_scale = sample_x-int_scale;
+
+                    //Get the gaussian weighted x and y responses
+                    // NOTE: We use expf here
+                    float gauss_s1 = expf(g1_factor * (xs_sub_sample_x_squared + ys_sub_sample_y_squared));
+                    
+                    float rx = 0.0f;
+                    float ry = 0.0f;
+                    haarXY_nocheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
+                    
+                    //Get the gaussian weighted x and y responses on rotated axis
+                    float rrx = gauss_s1 * ry;
+                    float rry = gauss_s1 * rx;
+
+                    dx += rrx;
+                    dy += rry;
+                    mdx += fabsf(rrx);
+                    mdy += fabsf(rry);
+                }
+            }
+
+            // TODO: (Sebastian) Precompute this...
+            // NOTE: We use expf here
+            float gauss_s2 = expf(g2_factor * (cx_squared + cy_squared)); 
+
+            // add the values to the descriptor vector
+            float d1 = dx * gauss_s2;
+            float d2 = dy * gauss_s2;
+            float d3 = mdx * gauss_s2;
+            float d4 = mdy * gauss_s2;
+
+            descriptor[desc_idx] = d1;
+            descriptor[desc_idx+1] = d2;
+            descriptor[desc_idx+2] = d3;
+            descriptor[desc_idx+3] = d4;
+
+            // precompute for normaliztion
+            sum_of_squares += (d1*d1 + d2*d2 + d3*d3 + d4*d4);
+
+            desc_idx += 4;
+
+        }
+    }
+    }
     // rescale to unit vector
     // NOTE: using sqrtf() for floats
     float norm_factor = 1.0f / sqrtf(sum_of_squares);

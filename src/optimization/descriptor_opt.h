@@ -33,6 +33,10 @@ void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct in
 
 void get_msurf_descriptor_improved(struct integral_image* iimage, struct interest_point* ipoint);
 
+void get_msurf_descriptor_improved_flip(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, struct interest_point* ipoint);
+
 void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest_point* ipoint);
 
 void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint);
@@ -126,5 +130,32 @@ inline void haarXY_precheck_boundaries(float* ii_data, int height, int width, in
     *haarX = -1*(r0c0_sub_r2c2 - 2*(r0c1 - r2c1) + r0c2_sub_r2c0);
     *haarY = -1*(r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0);
 }
+
+
+inline void haarXY_nocheck_boundaries(float* ii_data, int height, int width, int row, int col, int scale, float* haarX, float* haarY) {
+    // subtracting by one for row/col because row/col is inclusive.
+    int r0 = row - 1;         
+    int c0 = col - 1;         
+    int r1 = row + scale - 1;  
+    int c1 = col + scale - 1;   
+    int r2 = row + 2*scale - 1;
+    int c2 = col + 2*scale - 1;
+
+    float r0c0 = ii_data[r0 * width + c0];
+    float r0c1 = ii_data[r0 * width + c1];
+    float r0c2 = ii_data[r0 * width + c2];
+    float r1c0 = ii_data[r1 * width + c0];
+    float r1c2 = ii_data[r1 * width + c2];
+    float r2c0 = ii_data[r2 * width + c0];
+    float r2c1 = ii_data[r2 * width + c1];
+    float r2c2 = ii_data[r2 * width + c2];
+
+    float r0c0_sub_r2c2 = r0c0 - r2c2;
+    float r0c2_sub_r2c0 = r0c2 - r2c0;
+
+    *haarX = -1*(r0c0_sub_r2c2 - 2*(r0c1 - r2c1) + r0c2_sub_r2c0);
+    *haarY = -1*(r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0);
+}
+
 
 void get_msurf_descriptor_precompute_gauss_s2(struct integral_image* iimage, struct interest_point* ipoint);
