@@ -254,8 +254,8 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
             Dyy0 = data[r01 * iwidth + c01];
 
             // neg part box filter
-            // TODO: (carla) shouldn't this be x + lobe / 2 ? or maybe x + (lobe-1) / 2 -> see TODO line 150
-            r11 = r10 + lobe - 1;
+            r10 = x - lobe / 2 - 1;
+            r11 = r10 + lobe; // -1 is already part of r10
             c11 = y + lobe - 1;
 
             D = data[r11 * iwidth + c11];
@@ -300,7 +300,6 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
             Dyy0 = data[r01 * iwidth + c01];
 
             // neg part box filter
-            // TODO: (carla) why -1? if we use -1 then imo it would be x - (lobe-1) / 2 but since it's int division it
             // should not matter.
             r10 = x - lobe / 2 - 1;
             r11 = r10 + lobe;  // -1 is already part of r10
@@ -414,7 +413,7 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
     int border = (filter_size-1)/2;
     float inv_area = 1.f/(filter_size*filter_size);
 
-    int ind = 0  // oder alternativ (i+1)*j
+    int ind = 0;  // oder alternativ (i+1)*j
 
     float *data = (float*) iimage->data;  // brauch hier keinen cast weil es eig float sein sollte
     int iheight = iimage->height;
@@ -435,7 +434,8 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
             Dyy0 = data[r01 * iwidth + c01];
 
             // neg part box filter
-            r11 = r10 + lobe - 1;
+            r10 = x - lobe / 2 - 1;
+            r11 = r10 + lobe; // -1 is already part of r10
             c11 = y + lobe - 1;
 
             D = data[r11 * iwidth + c11];
