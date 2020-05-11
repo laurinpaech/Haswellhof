@@ -1,10 +1,12 @@
 #pragma once 
 
-#include <math.h>
-#include <stdlib.h>
 #include "integral_image.h"
 #include "interest_point.h"
 #include "helper.h"
+
+#include <math.h>
+#include <stdlib.h>
+
 
 // #define PATCH_SIZE 20
 

@@ -120,10 +120,10 @@ void get_msurf_descriptor_improved(struct integral_image* iimage, struct interes
 
     float scale = ipoint->scale;
     float scale_mul_25f = 2.5f*scale;
-    int int_scale_mul_2 = (int) 2 * lroundf(scale);
+    int int_scale_mul_2 = (int) 2 * roundf(scale);
 
-    int ipoint_x = (int) lroundf(ipoint->x);
-    int ipoint_y = (int) lroundf(ipoint->y);
+    int ipoint_x = (int) roundf(ipoint->x);
+    int ipoint_y = (int) roundf(ipoint->y);
 
     // build descriptor
     float* descriptor = ipoint->descriptor;
@@ -149,19 +149,19 @@ void get_msurf_descriptor_improved(struct integral_image* iimage, struct interes
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            int xs = (int) lroundf(ipoint_x + i * scale);
-            int ys = (int) lroundf(ipoint_y + j * scale);
+            int xs = (int) roundf(ipoint_x + i * scale);
+            int ys = (int) roundf(ipoint_y + j * scale);
 
             for (int k = i-4; k < i + 5; ++k) {
 
                 //Get x coords of sample point
-                int sample_x = (int) lroundf(ipoint_x + k * scale);
+                int sample_x = (int) roundf(ipoint_x + k * scale);
                 float xs_sub_sample_x = (float) xs-sample_x;
 
                 for (int l = j-4; l < j + 5; ++l) {
 
                     //Get y coords of sample point
-                    int sample_y = (int) lroundf(ipoint_y + l * scale);
+                    int sample_y = (int) roundf(ipoint_y + l * scale);
                     float ys_sub_sample_y = (float) ys-sample_y;
 
                 
@@ -232,10 +232,10 @@ void get_msurf_descriptor_improved_flip(struct integral_image* iimage, struct in
 
     float scale = ipoint->scale;
     float scale_mul_25f = 2.5f*scale;
-    int int_scale_mul_2 = (int) 2 * lroundf(scale);
+    int int_scale_mul_2 = (int) 2 * roundf(scale);
 
-    int ipoint_x = (int) lroundf(ipoint->x);
-    int ipoint_y = (int) lroundf(ipoint->y);
+    int ipoint_x = (int) roundf(ipoint->x);
+    int ipoint_y = (int) roundf(ipoint->y);
 
     // build descriptor
     float* descriptor = ipoint->descriptor;
@@ -261,19 +261,19 @@ void get_msurf_descriptor_improved_flip(struct integral_image* iimage, struct in
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            int xs = (int) lroundf(ipoint_x + i * scale);
-            int ys = (int) lroundf(ipoint_y + j * scale);
+            int xs = (int) roundf(ipoint_x + i * scale);
+            int ys = (int) roundf(ipoint_y + j * scale);
 
             for (int l = j-4; l < j + 5; ++l) {
 
                 //Get y coords of sample point
-                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                int sample_y = (int) roundf(ipoint_y + l * scale);
                 float ys_sub_sample_y = (float) ys-sample_y;
 
                 for (int k = i-4; k < i + 5; ++k) {
 
                     //Get x coords of sample point
-                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    int sample_x = (int) roundf(ipoint_x + k * scale);
                     float xs_sub_sample_x = (float) xs-sample_x;
 
                     //Get the gaussian weighted x and y responses
@@ -340,10 +340,10 @@ void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, stru
 
     float scale = ipoint->scale;
     float scale_mul_25f = 2.5f*scale;
-    int int_scale_mul_2 = (int) 2 * lroundf(scale);
+    int int_scale_mul_2 = (int) 2 * roundf(scale);
 
-    int ipoint_x = (int) lroundf(ipoint->x);
-    int ipoint_y = (int) lroundf(ipoint->y);
+    int ipoint_x = (int) roundf(ipoint->x);
+    int ipoint_y = (int) roundf(ipoint->y);
 
     // build descriptor
     float* descriptor = ipoint->descriptor;
@@ -369,19 +369,19 @@ void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, stru
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            int xs = (int) lroundf(ipoint_x + i * scale);
-            int ys = (int) lroundf(ipoint_y + j * scale);
+            int xs = (int) roundf(ipoint_x + i * scale);
+            int ys = (int) roundf(ipoint_y + j * scale);
 
             for (int l = j-4; l < j + 5; ++l) {
 
                 //Get y coords of sample point
-                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                int sample_y = (int) roundf(ipoint_y + l * scale);
                 float ys_sub_sample_y = (float) ys-sample_y;
 
                 for (int k = i-4; k < i + 5; ++k) {
 
                     //Get x coords of sample point
-                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    int sample_x = (int) roundf(ipoint_x + k * scale);
                     float xs_sub_sample_x = (float) xs-sample_x;
 
                     //Get the gaussian weighted x and y responses
@@ -434,7 +434,6 @@ void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, stru
 }
 
 
-
 void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest_point* ipoint) {
     /*
     applied optimizations:
@@ -447,13 +446,13 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
 
     float scale = ipoint->scale;
     // float scale_mul_25f = 2.5f*scale;
-    int int_scale_mul_2 = (int) 2 * lroundf(scale);
+    int int_scale_mul_2 = (int) 2 * roundf(scale);
     float scale_squared = scale*scale;
     float g1_factor = -0.08f / (scale_squared); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
     float g2_factor = -1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
 
-    int ipoint_x = (int) lroundf(ipoint->x);
-    int ipoint_y = (int) lroundf(ipoint->y);
+    int ipoint_x = (int) roundf(ipoint->x);
+    int ipoint_y = (int) roundf(ipoint->y);
 
     // build descriptor
     float* descriptor = ipoint->descriptor;
@@ -482,20 +481,20 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            int xs = (int) lroundf(ipoint_x + i * scale);
-            int ys = (int) lroundf(ipoint_y + j * scale);
+            int xs = (int) roundf(ipoint_x + i * scale);
+            int ys = (int) roundf(ipoint_y + j * scale);
 
             for (int l = j-4; l < j + 5; ++l) {
 
                 //Get y coords of sample point
-                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                int sample_y = (int) roundf(ipoint_y + l * scale);
                 float ys_sub_sample_y = (float) ys-sample_y;
                 float ys_sub_sample_y_squared = ys_sub_sample_y*ys_sub_sample_y;
 
                 for (int k = i-4; k < i + 5; ++k) {
 
                     //Get x coords of sample point
-                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    int sample_x = (int) roundf(ipoint_x + k * scale);
                     float xs_sub_sample_x = (float) xs-sample_x;
                     float xs_sub_sample_x_squared = xs_sub_sample_x*xs_sub_sample_x;
 
@@ -559,15 +558,15 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
 
     float scale = ipoint->scale;
     // float scale_mul_25f = 2.5f*scale;
-    int int_scale = (int) lroundf(scale);
+    int int_scale = (int) roundf(scale);
     // int int_scale_mul_2 =  2 * int_scale;
     float scale_squared = scale*scale;
 
     float g1_factor = -0.08f / (scale_squared); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
     float g2_factor = -1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
 
-    int ipoint_x = (int) lroundf(ipoint->x);
-    int ipoint_y = (int) lroundf(ipoint->y);
+    int ipoint_x = (int) roundf(ipoint->x);
+    int ipoint_y = (int) roundf(ipoint->y);
 
     float *data = (float *)iimage->data;
     int width = iimage->width;
@@ -600,13 +599,13 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            int xs = (int) lroundf(ipoint_x + i * scale);
-            int ys = (int) lroundf(ipoint_y + j * scale);
+            int xs = (int) roundf(ipoint_x + i * scale);
+            int ys = (int) roundf(ipoint_y + j * scale);
 
             for (int l = j-4; l < j + 5; ++l) {
 
                 //Get y coords of sample point
-                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                int sample_y = (int) roundf(ipoint_y + l * scale);
                 float ys_sub_sample_y = (float) ys-sample_y;
                 float ys_sub_sample_y_squared = ys_sub_sample_y*ys_sub_sample_y;
 
@@ -615,7 +614,7 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
                 for (int k = i-4; k < i + 5; ++k) {
 
                     //Get x coords of sample point
-                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    int sample_x = (int) roundf(ipoint_x + k * scale);
                     float xs_sub_sample_x = (float) xs-sample_x;
                     float xs_sub_sample_x_squared = xs_sub_sample_x*xs_sub_sample_x;
                     int sample_x_sub_int_scale = sample_x-int_scale;
@@ -684,15 +683,15 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
 
     float scale = ipoint->scale;
     // float scale_mul_25f = 2.5f*scale;
-    int int_scale = (int) lroundf(scale);
+    int int_scale = (int) roundf(scale);
     // int int_scale_mul_2 =  2 * int_scale;
     float scale_squared = scale*scale;
 
     float g1_factor = -0.08f / (scale_squared); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
     float g2_factor = -1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
 
-    int ipoint_x = (int) lroundf(ipoint->x);
-    int ipoint_y = (int) lroundf(ipoint->y);
+    int ipoint_x = (int) roundf(ipoint->x);
+    int ipoint_y = (int) roundf(ipoint->y);
 
     float *data = (float *)iimage->data;
     int width = iimage->width;
@@ -710,10 +709,10 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
 
 
     // check if we ever hit a boundary
-    if (((int) lroundf(ipoint_x - 12*scale)) - int_scale <= 0 
-        || ((int) lroundf(ipoint_y - 12*scale)) - int_scale <= 0 
-        || ((int) lroundf(ipoint_x + 11*scale)) + int_scale > width 
-        || ((int) lroundf(ipoint_y + 11*scale)) + int_scale > height) 
+    if (((int) roundf(ipoint_x - 12*scale)) - int_scale <= 0 
+        || ((int) roundf(ipoint_y - 12*scale)) - int_scale <= 0 
+        || ((int) roundf(ipoint_x + 11*scale)) + int_scale > width 
+        || ((int) roundf(ipoint_y + 11*scale)) + int_scale > height) 
     { // some outside
     for (int i=-8; i<8; i+=5) {
 
@@ -732,13 +731,13 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            int xs = (int) lroundf(ipoint_x + i * scale);
-            int ys = (int) lroundf(ipoint_y + j * scale);
+            int xs = (int) roundf(ipoint_x + i * scale);
+            int ys = (int) roundf(ipoint_y + j * scale);
 
             for (int l = j-4; l < j + 5; ++l) {
 
                 //Get y coords of sample point
-                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                int sample_y = (int) roundf(ipoint_y + l * scale);
                 float ys_sub_sample_y = (float) ys-sample_y;
                 float ys_sub_sample_y_squared = ys_sub_sample_y*ys_sub_sample_y;
 
@@ -747,7 +746,7 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
                 for (int k = i-4; k < i + 5; ++k) {
 
                     //Get x coords of sample point
-                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    int sample_x = (int) roundf(ipoint_x + k * scale);
                     float xs_sub_sample_x = (float) xs-sample_x;
                     float xs_sub_sample_x_squared = xs_sub_sample_x*xs_sub_sample_x;
                     int sample_x_sub_int_scale = sample_x-int_scale;
@@ -814,13 +813,13 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            int xs = (int) lroundf(ipoint_x + i * scale);
-            int ys = (int) lroundf(ipoint_y + j * scale);
+            int xs = (int) roundf(ipoint_x + i * scale);
+            int ys = (int) roundf(ipoint_y + j * scale);
 
             for (int l = j-4; l < j + 5; ++l) {
 
                 //Get y coords of sample point
-                int sample_y = (int) lroundf(ipoint_y + l * scale);
+                int sample_y = (int) roundf(ipoint_y + l * scale);
                 float ys_sub_sample_y = (float) ys-sample_y;
                 float ys_sub_sample_y_squared = ys_sub_sample_y*ys_sub_sample_y;
 
@@ -829,7 +828,7 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
                 for (int k = i-4; k < i + 5; ++k) {
 
                     //Get x coords of sample point
-                    int sample_x = (int) lroundf(ipoint_x + k * scale);
+                    int sample_x = (int) roundf(ipoint_x + k * scale);
                     float xs_sub_sample_x = (float) xs-sample_x;
                     float xs_sub_sample_x_squared = xs_sub_sample_x*xs_sub_sample_x;
                     int sample_x_sub_int_scale = sample_x-int_scale;
@@ -900,8 +899,8 @@ static const float gauss_s2_precomputed[] = {
 void get_msurf_descriptor_precompute_gauss_s2(struct integral_image* iimage, struct interest_point* ipoint) {
 
     float scale = ipoint->scale;
-    int ipoint_x = (int) lroundf(ipoint->x);
-    int ipoint_y = (int) lroundf(ipoint->y);
+    int ipoint_x = (int) roundf(ipoint->x);
+    int ipoint_y = (int) roundf(ipoint->y);
 
     // build descriptor
     float* descriptor = ipoint->descriptor;
@@ -928,22 +927,22 @@ void get_msurf_descriptor_precompute_gauss_s2(struct integral_image* iimage, str
 
             j = j - 4;
 
-            int xs = (int) lroundf(ipoint_x + (i + 4) * scale);
-            int ys = (int) lroundf(ipoint_y + (j + 4) * scale);
+            int xs = (int) roundf(ipoint_x + (i + 4) * scale);
+            int ys = (int) roundf(ipoint_y + (j + 4) * scale);
 
             for (int k = i; k < i + 9; ++k) {
                 for (int l = j; l < j + 9; ++l) {
 
                     //Get coords of sample point on the rotated axis
-                    int sample_x = (int) lroundf(ipoint_x + k * scale);
-                    int sample_y = (int) lroundf(ipoint_y + l * scale);
+                    int sample_x = (int) roundf(ipoint_x + k * scale);
+                    int sample_y = (int) roundf(ipoint_y + l * scale);
 
                     //Get the gaussian weighted x and y responses
                     // TODO: (Sebastian) Precompute this...
                     float gauss_s1 = gaussianf((float) xs-sample_x, (float) ys-sample_y, 2.5f * scale);
 
-                    float rx = haarX(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
-                    float ry = haarY(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
+                    float rx = haarX(iimage, sample_y, sample_x, (int) 2 * roundf(scale));
+                    float ry = haarY(iimage, sample_y, sample_x, (int) 2 * roundf(scale));
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * (ry);
@@ -991,8 +990,8 @@ void get_msurf_descriptor_precompute_gauss_s2(struct integral_image* iimage, str
 void get_msurf_descriptor_separable_gauss_s1(struct integral_image* iimage, struct interest_point* ipoint) {
 
     float scale = ipoint->scale;
-    int ipoint_x = (int) lroundf(ipoint->x);
-    int ipoint_y = (int) lroundf(ipoint->y);
+    int ipoint_x = (int) roundf(ipoint->x);
+    int ipoint_y = (int) roundf(ipoint->y);
 
     // build descriptor
     float* descriptor = ipoint->descriptor;
@@ -1019,8 +1018,8 @@ void get_msurf_descriptor_separable_gauss_s1(struct integral_image* iimage, stru
 
             j = j - 4;
 
-            int xs = (int) lroundf(ipoint_x + (i + 4) * scale);
-            int ys = (int) lroundf(ipoint_y + (j + 4) * scale);
+            int xs = (int) roundf(ipoint_x + (i + 4) * scale);
+            int ys = (int) roundf(ipoint_y + (j + 4) * scale);
 
     
 
@@ -1028,15 +1027,15 @@ void get_msurf_descriptor_separable_gauss_s1(struct integral_image* iimage, stru
                 for (int l = j; l < j + 9; ++l) {
 
                     //Get coords of sample point on the rotated axis
-                    int sample_x = (int) lroundf(ipoint_x + k * scale);
-                    int sample_y = (int) lroundf(ipoint_y + l * scale);
+                    int sample_x = (int) roundf(ipoint_x + k * scale);
+                    int sample_y = (int) roundf(ipoint_y + l * scale);
 
                     //Get the gaussian weighted x and y responses
                     // TODO: (Sebastian) Precompute this...
                     float gauss_s1 = gaussianf((float) xs-sample_x, (float) ys-sample_y, 2.5f * scale);
 
-                    float rx = haarX(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
-                    float ry = haarY(iimage, sample_y, sample_x, (int) 2 * lroundf(scale));
+                    float rx = haarX(iimage, sample_y, sample_x, (int) 2 * roundf(scale));
+                    float ry = haarY(iimage, sample_y, sample_x, (int) 2 * roundf(scale));
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * (ry);
