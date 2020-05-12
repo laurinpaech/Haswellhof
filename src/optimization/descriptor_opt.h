@@ -49,6 +49,14 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
 
 void get_msurf_descriptors_inlined(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
+void get_msurf_descriptor_gauss_s1_separable_test(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_s1_separable_test(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_gauss_s2_precomputed(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_s2_precomputed(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
 void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint);
 
 void get_msurf_descriptors_inlinedHaarWavelets(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
@@ -56,6 +64,10 @@ void get_msurf_descriptors_inlinedHaarWavelets(struct integral_image* iimage, st
 void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integral_image* iimage, struct interest_point* ipoint);
 
 void get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_gauss_compute_once_case(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_compute_once_case(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
 
 inline void haarXY(float* ii_data, int height, int width, int row, int col, int scale, float* haarX, float* haarY) {
@@ -141,6 +153,7 @@ inline void haarXY_precheck_boundaries(float* ii_data, int height, int width, in
     float r0c0_sub_r2c2 = r0c0 - r2c2;
     float r0c2_sub_r2c0 = r0c2 - r2c0;
 
+    // TODO: (Sebastian) couln't we remove the -1 here?
     *haarX = -1*(r0c0_sub_r2c2 - 2*(r0c1 - r2c1) + r0c2_sub_r2c0);
     *haarY = -1*(r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0);
 }
@@ -167,9 +180,7 @@ inline void haarXY_nocheck_boundaries(float* ii_data, int height, int width, int
     float r0c0_sub_r2c2 = r0c0 - r2c2;
     float r0c2_sub_r2c0 = r0c2 - r2c0;
 
+    // TODO: (Sebastian) couln't we remove the -1 here?
     *haarX = -1*(r0c0_sub_r2c2 - 2*(r0c1 - r2c1) + r0c2_sub_r2c0);
     *haarY = -1*(r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0);
 }
-
-
-void get_msurf_descriptor_precompute_gauss_s2(struct integral_image* iimage, struct interest_point* ipoint);
