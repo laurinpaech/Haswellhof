@@ -76,27 +76,22 @@ bool validate_compute_response_layer(
     bool all_valid = true;
 
     // Fast-Hessian
-
-    printf("\n\nCreate fast hessian for custom matrix for original function:\n");
+    printf("\nCreate fast hessian for custom matrix for original function:\n");
     struct fasthessian *original_fh = create_fast_hessian(iimage);
     // Create octaves with response layers
     create_response_map(original_fh);
 
     // Compute responses for every layer
-    // for (int i = 0; i < original_fh->total_layers; i++) {
-        int test_response_layers = original_fh->total_layers;
+    int test_response_layers = original_fh->total_layers;
+
     for (int i = 0; i < test_response_layers; i++) {
+
 #ifdef DEBUG_INFO
-        // printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height,
-        // original_fh->response_map[i]->width);
+        printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height,
+        original_fh->response_map[i]->width);
 #endif
+
         original_function(original_fh->response_map[i], iimage);
-        /**printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height,
-        original_fh->response_map[i]->width); for (int l = 0; l <  original_fh->response_map[i]->height; l++) { for (int
-        m = 0; m < original_fh->response_map[i]->width; m++) { printf("i1: %f\n", original_fh->response_map[i][l *
-        original_fh->response_map[i]->width + m]);
-            }
-        }*/
     }
 
     for (int j = 0; j < test_functions.size(); ++j) {
