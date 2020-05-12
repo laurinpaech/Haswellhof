@@ -10,4 +10,6 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
 
 void compute_response_layer_Dyy_top(struct response_layer* layer, struct integral_image* iimage);
 
+void compute_response_layer_Dyy_top_mid(struct response_layer* layer, struct integral_image* iimage);
+
 void compute_response_layers_at_once(struct fasthessian* fh, struct integral_image *iimage);
