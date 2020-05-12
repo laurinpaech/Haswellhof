@@ -69,6 +69,10 @@ void get_msurf_descriptor_gauss_compute_once_case(struct integral_image* iimage,
 
 void get_msurf_descriptors_gauss_compute_once_case(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
+void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_pecompute_haar(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
 
 inline void haarXY(float* ii_data, int height, int width, int row, int col, int scale, float* haarX, float* haarY) {
     // subtracting by one for row/col because row/col is inclusive.
