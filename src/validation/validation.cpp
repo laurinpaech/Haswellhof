@@ -102,7 +102,6 @@ bool validate_compute_response_layer(
         create_response_map(optimized_fh);
 
         // Compute responses for every layer
-        // for (int i = 0; i < optimized_fh->total_layers; ++i) {
         for (int i = 0; i < test_response_layers; ++i) {
             test_functions[j](optimized_fh->response_map[i], iimage);
         }

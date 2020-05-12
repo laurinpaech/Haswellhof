@@ -12,7 +12,8 @@
 
 void playground_function1() {
     std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
-    test_functions.push_back(compute_response_layer_Dyy_leftcorner);
+    // test_functions.push_back(compute_response_layer_Dyy_leftcorner);
+    test_functions.push_back(compute_response_layer_Dyy_top);
     // bool valid = validate_compute_response_layer(compute_response_layer, test_functions, iimage);
 
     bool valid = validate_compute_response_layer_custom_matrix(compute_response_layer, test_functions);
