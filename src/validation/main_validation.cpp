@@ -108,7 +108,6 @@ int main(int argc, char const *argv[])
         std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
         test_functions.push_back(get_msurf_descriptor_improved);
         test_functions.push_back(get_msurf_descriptor_inlined);
-        test_functions.push_back(get_msurf_descriptor_precompute_gauss_s2);
         test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
 
         bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
