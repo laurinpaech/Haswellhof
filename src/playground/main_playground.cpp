@@ -23,9 +23,9 @@ int main(int argc, char const *argv[])
         printf("Invaid argument count.\nUsage:\n\t./surf image_path descriptor_file_target_path\n");
         return 1;
     }
-	
+
 	int width, height, channels;
-	
+
 	// Load image
 	stbi_ldr_to_hdr_gamma(1.0f);
 	float* image = stbi_loadf(argv[1], &width, &height, &channels, STBI_grey);
@@ -46,17 +46,17 @@ int main(int argc, char const *argv[])
 
 	// Create octaves with response layers
 	create_response_map(fh);
-	
-	playground_function3(iimage, argv[1]);
+
+	// playground_function3(iimage, argv[1]);
 
 	//printf("before validation of compute response layer\n");
 	//playground_function2(iimage);
-	//playground_function1();
+	playground_function1();
 
 
 	// Compute responses for every layer
 	//compute_response_map(fh);
-	
+
 	for (int i = 0; i < fh->total_layers; ++i) {
         compute_response_layer_Dyy_leftcorner(fh->response_map[i], fh->iimage);
     }
@@ -94,9 +94,7 @@ int main(int argc, char const *argv[])
     }
     fclose(fp);
 
-	
 	// Free memory
-
 	stbi_image_free(image); // possibly move this to create_integral_img
 	free(iimage->data);
 	free(iimage);

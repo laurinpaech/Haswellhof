@@ -241,10 +241,6 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
     int border = (filter_size - 1) / 2;
     float inv_area = 1.f / (filter_size * filter_size);
 
-    // lobe:    25
-    // border:  37
-   // printf("RESPONSE_LAYER\nlobe: %i\nborder: %i\n", lobe, border);
-
     int ind = 0;  // oder alternativ (i+1)*j
 
     float *data = (float *)iimage->data;  // brauch hier keinen cast weil es eig float sein sollte
@@ -252,9 +248,13 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
     int iwidth = iimage->width;
 
     /*
-    step: 2, 4, 8
-    0, step, 2*step, 3*step, ...,
+        In our optimized function, i and j are raw coordinates in the integral
+        / original image. In the original function these coordinates are
+        coordinates of the layer. We changed it this way in the optimized function
+        because its easier to about corner cases in raw coordinates.
 
+        TODO: Might be possible (and more optimal) to convert it back to coords
+        of the layer. Then ind would be again a simple counting function
     */
 
     // Top Left Corner - Case 1: B of neg part outside
@@ -262,13 +262,8 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
         ind = (i / step) * width;
         for (int j = 0; j < lobe; j += step) {  // c0 = col - 1 = (y - lobe + 1) -1 < 0
             // Image coordinates
-            // x = i*step;
-            // y = j*step;
             x = i;
             y = j;
-
-            // printf("i: %i\nj: %i\n", i, j);
-            // TODO: check if outer loop correct bounds
 
             // Compute Dyy  
             // whole box filter
@@ -309,14 +304,12 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
     }
 
     // Top Left Corner - Case 2: B of neg part inside
-    // initial value muss auf nächst höhere step aufgerundet werden
+    // initial value has to be rounded up to next bigger step
     k = (lobe / 2 + 1 + step - 1) / step * step;
     for (int i = k; i < border + 1; i += step) {  // Inner B is inside
         ind = (i / step) * width;
         for (int j = 0; j < lobe; j += step) {
             // Image coordinates
-            // x = i*step;
-            // y = j*step;
             x = i;
             y = j;
 
