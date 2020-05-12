@@ -101,8 +101,6 @@ inline void haarXY(float* ii_data, int height, int width, int row, int col, int 
         r2c2 = ii_data[r2 * width + c2];
     }
 
-    printf("%d %d %d %d %d %d %d %d\n", r0 * width + c0, r0 * width + c1, r0 * width + c2, r1 * width + c0, r1 * width + c2, r2 * width + c0, r2 * width + c1, r2 * width + c2);
-
     float r0c0_sub_r2c2 = r0c0 - r2c2;
     float r0c2_sub_r2c0 = r0c2 - r2c0;
 
