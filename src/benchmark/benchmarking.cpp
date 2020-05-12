@@ -193,7 +193,7 @@ void perf_compute_response_all_layers(void (*function)(struct response_layer *, 
     cycles = total_cycles;  // cyclesList.front();
     double flops_per_cycle = round((100.0 * data.num_flops) / cycles) / 100.0;
     std::sort(cycleslist.begin(), cycleslist.end());
-    data.avg_cycles = (uint64_t)cycles / MAX(1, fh->total_layers);
+    data.avg_cycles = (uint64_t)cycles;
     data.min_cycles = (uint64_t)cycleslist.front() / MAX(1, fh->total_layers);
     data.max_cycles = (uint64_t)cycleslist.back() / MAX(1, fh->total_layers);
     // TODO: (carla) do we have to divide by total_lyers here? the total_cycles have already been divided;
