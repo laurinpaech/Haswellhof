@@ -548,7 +548,7 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
         }
     }
 
-    // Top Mid - Case 1: B of neg part outside TODO
+    // Top Mid - Case 1: B of neg part outside
     k0 = (lobe + step - 1) / step * step;  // initial y value to next multiple of step
 
     for (int i = 0; i < lobe / 2 + 1; i += step) {
@@ -617,29 +617,29 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
             y = j;
 
             // Compute Dyy
-            // whole box filter TODO
-            // r01 = x + border;
-            // c00 = y - lobe;
-            // c01 = y + lobe - 1;
-            //
-            // C = data[r01 * iwidth + c00];
-            // D = data[r01 * iwidth + c01];
-            // Dyy0 = D - C;
-            //
-            // // neg part box filter TODO
-            // r10 = x - lobe / 2 - 1;
-            // r11 = r10 + lobe - 1;
-            // c10 = y - lobe;
-            // c11 = y + lobe - 1;
-            //
-            // A = data[r0 * iwidth + c0];
-            // B = data[r0 * iwidth + c1];
-            // C = data[r1 * iwidth + c0];
-            // D = data[r1 * iwidth + c1];
-            //
-            // Dyy1 = A - B - C + D;
-            //
-            // Dyy = Dyy0 + 3*Dyy1;
+            // whole box filter
+            r01 = x + border;
+            c00 = y - lobe;
+            c01 = y + lobe - 1;
+
+            C = data[r01 * iwidth + c00];
+            D = data[r01 * iwidth + c01];
+            Dyy0 = D - C;
+
+            // neg part box filter TODO
+            r10 = x - lobe / 2 - 1;
+            r11 = r10 + lobe;
+            c10 = y - lobe;
+            c11 = y + lobe - 1;
+
+            A = data[r10 * iwidth + c10];
+            B = data[r10 * iwidth + c11];
+            C = data[r11 * iwidth + c10];
+            D = data[r11 * iwidth + c11];
+
+            Dyy1 = A - B - C + D;
+
+            Dyy = Dyy0 - 3*Dyy1;
 
             // Compute Dxx, Dxy
             Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1) -
