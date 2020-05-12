@@ -1,8 +1,6 @@
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
-#define USE_MSURF 1
-
 #include "stb_image.h"
 #include "integral_image.h"
 #include "fasthessian.h"
@@ -89,20 +87,10 @@ int main(int argc, char const *argv[])
     // Getting interest points with non-maximum supression
     std::vector<struct interest_point> interest_points;
     get_interest_points(fh, &interest_points);
+    
+    // Getting M-SURF descriptors for each interest point
+	get_msurf_descriptors(iimage, &interest_points);
 
-#if !USE_MSURF
-	// Descriptor stuff
-    float* GW = get_gaussian(3.3);
-	for (size_t i=0; i<interest_points.size(); ++i) {
-        get_descriptor(iimage, &interest_points[i], GW);
-	}
-
-    free(GW);
-#else
-	// Alternative M-SURF descriptors as in OpenSURF
-	for (size_t i=0; i<interest_points.size(); ++i) {
-        get_msurf_descriptor(iimage, &interest_points[i]);
-	}
 #ifdef VALIDATE_GET_MSURF_DESCRIPTORS	
     {
         std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
@@ -118,7 +106,6 @@ int main(int argc, char const *argv[])
             printf("MSURF DESCRIPTOR VALIDATION:        \033[1;31mFAILED!\033[0m\n");
         }
     }
-#endif
 #endif
 
 	// Write results to file

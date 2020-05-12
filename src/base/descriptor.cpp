@@ -118,7 +118,7 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
 }
 
 void get_msurf_descriptors(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
-    for (size_t i=0; i<interest_points->size(); ++i) {
+    for (int i = 0; i < interest_points->size(); ++i) {
         get_msurf_descriptor(iimage, &interest_points->at(i));
 	}
 }

@@ -1,8 +1,6 @@
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
-#define USE_MSURF 1
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -32,7 +30,6 @@ const char *images[] = {
 #define BENCHMARK_CREATE_RESPONSE_MAP
 #define BENCHMARK_INTEREST_POINTS
 #define BENCHMARK_INTERPOLATE_STEPS
-#define BENCHMARK_GET_DESCRIPTORS
 #define BENCHMARK_GET_MSURF_DESCRIPTORS
 
 int main(int argc, char const *argv[]) {
@@ -156,39 +153,6 @@ int main(int argc, char const *argv[]) {
         }
 #endif
 
-#if !USE_MSURF
-        // Descriptor stuff
-        float *GW = get_gaussian(3.3);
-
-#ifdef BENCHMARK_GET_DESCRIPTORS
-        {
-            printf("get_descriptor start\n");
-
-            // Insert all interpolate_step functions for benchmarking here
-            std::vector<void (*)(struct integral_image *, struct interest_point *, float *)> functions;
-            functions.push_back(get_descriptor);
-
-            struct benchmark_data default_data(image_name, width, height, "get_descriptor", interest_points.size(), 5734);
-
-            // Insert all respective benchmarking info for functions here
-            std::vector<struct benchmark_data> data;
-            data.push_back(default_data);
-
-            // Benchmarking all get_descriptor functions and storing timing results in respective entries in data
-            bench_get_descriptor(functions, iimage, &interest_points, GW, data);
-
-            // Appending this data to all benchmarking data
-            all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
-
-            printf("get_descriptor end\n");
-        }
-#endif
-        for (size_t i = 0; i < interest_points.size(); ++i) {
-            get_descriptor(iimage, &interest_points[i], GW);
-        }
-        free(GW);
-#else
-
 #ifdef BENCHMARK_GET_MSURF_DESCRIPTORS
         {
             printf("get_msurf_descriptor start\n");
@@ -232,11 +196,8 @@ int main(int argc, char const *argv[]) {
         }
 #endif
 
-        // Alternative M-SURF descriptors as in OpenSURF
-        for (size_t i = 0; i < interest_points.size(); ++i) {
-            get_msurf_descriptor(iimage, &interest_points[i]);
-        }
-#endif
+        // Getting M-SURF descriptors for each interest point
+	    get_msurf_descriptors(iimage, &interest_points);
 
         // Free memory
         stbi_image_free(image);  // possibly move this to create_integral_img
