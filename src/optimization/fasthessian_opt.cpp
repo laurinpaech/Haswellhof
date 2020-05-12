@@ -1166,12 +1166,28 @@ void compute_response_layer_Dyy_top_mid(struct response_layer* layer, struct int
             // Compute Dyy  
             // whole box filter TODO
             // A, C outside (= 0). B, D inside
+            r00 = x - border - 1;
+            r01 = x + border;
+            c01 = y + lobe - 1;
+
+            B = data[r00 * iwidth + c01];
+            D = data[r01 * iwidth + c01];
+            Dyy0 = D - B;
 
             // neg part box filter TODO
+            // A, C outside (= 0). B, D inside
+            r10 = x - lobe / 2 - 1;
+            r11 = r10 + lobe;
+            c11 = y + lobe - 1;
+
+            B = data[r10 * iwidth + c11];
+            D = data[r11 * iwidth + c11];
+
+            Dyy1 = D - B;
+
+            Dyy = Dyy0 - 3*Dyy1;
 
             // Compute Dxx, Dxy
-            Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1) -
-                  3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
             Dxx = box_integral(iimage, x - lobe + 1, y - border, 2 * lobe - 1, filter_size) -
                   3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2 * lobe - 1, lobe);
             Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe) +
@@ -1203,10 +1219,33 @@ void compute_response_layer_Dyy_top_mid(struct response_layer* layer, struct int
             x = i;
             y = j;
 
-            // Compute Dyy  
-            // whole box filter TODO
-
-            // neg part box filter TODO
+            // // Compute Dyy  
+            // // whole box filter TODO
+            // // A, C outside (= 0). B, D inside
+            // r00 = x - border - 1;
+            // r01 = x + border;
+            // c00 = y - lobe;
+            // c01 = y + lobe - 1;
+            //
+            // B = data[r00 * iwidth + c01];
+            // D = data[r01 * iwidth + c01];
+            // Dyy0 = D - B;
+            //
+            // // neg part box filter TODO
+            // // A, C outside (= 0). B, D inside
+            // r10 = x - lobe / 2 - 1;
+            // r11 = r10 + lobe;
+            // c10 = y - lobe;
+            // c11 = y + lobe - 1;
+            //
+            // A = data[r10 * iwidth + c10];
+            // B = data[r10 * iwidth + c11];
+            // C = data[r11 * iwidth + c10];
+            // D = data[r11 * iwidth + c11];
+            //
+            // Dyy1 = A - B - C + D;
+            //
+            // Dyy = Dyy0 - 3*Dyy1;
 
             // Compute Dxx, Dxy
             Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1) -
