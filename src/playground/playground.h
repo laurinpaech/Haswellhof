@@ -12,3 +12,4 @@
 
 void playground_function1();
 void playground_function2(struct integral_image *iimage);
+void playground_function3(struct integral_image *iimage, const char* image_name);

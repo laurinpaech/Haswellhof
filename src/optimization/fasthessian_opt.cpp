@@ -243,7 +243,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
 
     // lobe:    25
     // border:  37
-    printf("RESPONSE_LAYER\nlobe: %i\nborder: %i\n", lobe, border);
+   // printf("RESPONSE_LAYER\nlobe: %i\nborder: %i\n", lobe, border);
 
     int ind = 0;  // oder alternativ (i+1)*j
 
@@ -361,7 +361,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
             ind += 1;
         }
     }
-    printf("OPTIMIZED: width: %i, step: %i\n\n", width, step);
+  //  printf("OPTIMIZED: width: %i, step: %i\n\n", width, step);
 
     // Rest
     k = (lobe + step - 1) / step * step;
