@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fasthessian.h"
+#include "integral_image_opt.h"
 
 void get_interest_points_layers(struct fasthessian *fh, std::vector<struct interest_point> *interest_points);
 

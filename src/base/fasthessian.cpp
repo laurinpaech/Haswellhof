@@ -62,7 +62,7 @@ void create_response_map(struct fasthessian* fh) {
 
     // Octave 3 - 27, 51, 75, 99
     fh->response_map[6] = initialise_response_layer(75, w/4, h/4, init_step*4);
-    fh->response_map[7] = initialise_response_layer(99, w/4, h/4, init_step*4);
+    fh->response_map[7] = initialise_response_layer(LARGEST_FILTER_SIZE, w/4, h/4, init_step*4);
 }
 
 void compute_response_map(struct fasthessian* fh) {

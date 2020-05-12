@@ -39,6 +39,8 @@ int main(int argc, char const *argv[])
 	// Compute integral image
 	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
 
+	playground_function1(image, width, height);
+	/*
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);
 
@@ -78,17 +80,19 @@ int main(int argc, char const *argv[])
         fprintf(fp, "\n");
     }
     fclose(fp);
-
+*/
 	// Free memory
 	stbi_image_free(image); // possibly move this to create_integral_img
 	free(iimage->data);
 	free(iimage);
+	/*
 	for (int i = 0; i < NUM_LAYERS; ++i) {
 		free(fh->response_map[i]->response);
 		free(fh->response_map[i]->laplacian);
 		free(fh->response_map[i]);
 	}
 	free(fh);
+	*/
 
 	return 0;
 }

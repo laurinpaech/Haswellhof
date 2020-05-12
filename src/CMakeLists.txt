@@ -165,6 +165,8 @@ add_executable(playground
     benchmark/benchmarking.cpp
     benchmark/tsc_x86.h
     # Add optimization header and source files here
+    optimization/integral_image_opt.h
+    optimization/integral_image_opt.cpp
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
     optimization/descriptor_opt.h
@@ -172,6 +174,8 @@ add_executable(playground
     # Add validation header and source files here
     validation/validation.h
     validation/validation.cpp
+    validation/validation_integral_image.h
+    validation/validation_integral_image.cpp
     # Add playground header and source files here
     playground/playground.h
     playground/playground.cpp

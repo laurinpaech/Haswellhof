@@ -1,5 +1,6 @@
 #include "fasthessian_opt.h"
 
+/*
 void super_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage) {
     int height = layer->height;
     int width = layer->width;
@@ -189,7 +190,7 @@ void super_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage
         }
     }
 }
-
+*/
 /* Dyy coords
 // whole box filter
 r00 = x - border;
@@ -394,7 +395,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
     }
 
 }
-
+/*
 void compute_response_layer_Dyy_top(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y;
@@ -626,7 +627,7 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
         }
     }
 }
-
+*/
 
 void compute_response_layers_at_once(struct fasthessian* fh, struct integral_image* iimage) {
     /* computes all 8 response layers at once, gives same results as base implementation
@@ -1087,6 +1088,54 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
     }
 
 }
+void compute_response_layer_with_padding(struct response_layer* layer, struct integral_image* padded_iimage) {
+    float Dxx, Dyy, Dxy;
+    int x, y;
+
+    float* response = layer->response;
+    bool* laplacian = layer->laplacian;
+
+    int step = layer->step;
+    int filter_size = layer->filter_size;
+    int height = layer->height;
+    int width = layer->width;
+
+    int lobe = filter_size/3;
+    int border = (filter_size-1)/2;
+    float inv_area = 1.f/(filter_size*filter_size);
+
+     for (int i = 0, ind = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j, ind++) {
+            // Image coordinates
+            x = i*step;
+            y = j*step;
+
+            // Calculate Dxx, Dyy, Dxy with Box Filter
+            Dxx = box_integral_with_padding(padded_iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                    - 3 * box_integral_with_padding(padded_iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+            Dyy = box_integral_with_padding(padded_iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
+                    - 3 * box_integral_with_padding(padded_iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
+            Dxy = box_integral_with_padding(padded_iimage, x - lobe, y + 1, lobe, lobe)
+                    + box_integral_with_padding(padded_iimage, x + 1, y - lobe, lobe, lobe)
+                    - box_integral_with_padding(padded_iimage, x - lobe, y - lobe, lobe, lobe)
+                    - box_integral_with_padding(padded_iimage, x + 1, y + 1, lobe, lobe);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
+        }
+    }
+
+}
+
+
 
 
 void interpolate_step_gauss(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets[3]) {
