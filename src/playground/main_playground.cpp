@@ -41,7 +41,7 @@ int main(int argc, char const *argv[])
 	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
 
 	// Fast-Hessian
-	//printf("\n\nCreate fasthessian for actual image in main:\n");
+	// printf("\n\nCreate fasthessian for actual image in main:\n");
 	struct fasthessian* fh = create_fast_hessian(iimage);
 
 	// Create octaves with response layers
@@ -49,13 +49,12 @@ int main(int argc, char const *argv[])
 
 	// playground_function3(iimage, argv[1]);
 
-	//printf("before validation of compute response layer\n");
-	//playground_function2(iimage);
+	// printf("before validation of compute response layer\n");
+	// playground_function2(iimage);
 	playground_function1();
 
-
 	// Compute responses for every layer
-	//compute_response_map(fh);
+	// compute_response_map(fh);
 
 	for (int i = 0; i < fh->total_layers; ++i) {
         compute_response_layer_Dyy_leftcorner(fh->response_map[i], fh->iimage);

@@ -260,6 +260,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
     // Top Left Corner - Case 1: B of neg part outside
     for (int i = 0; i < lobe / 2 + 1; i += step) {  // Inner B is outside, i.e. 0
         ind = (i / step) * width;
+
         for (int j = 0; j < lobe; j += step) {  // c0 = col - 1 = (y - lobe + 1) -1 < 0
             // Image coordinates
             x = i;
@@ -306,8 +307,10 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
     // Top Left Corner - Case 2: B of neg part inside
     // initial value has to be rounded up to next bigger step
     k = (lobe / 2 + 1 + step - 1) / step * step;
+
     for (int i = k; i < border + 1; i += step) {  // Inner B is inside
         ind = (i / step) * width;
+
         for (int j = 0; j < lobe; j += step) {
             // Image coordinates
             x = i;
@@ -321,9 +324,8 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
             Dyy0 = data[r01 * iwidth + c01];
 
             // neg part box filter
-            // should not matter.
             r10 = x - lobe / 2 - 1;
-            r11 = r10 + lobe;  // -1 is already part of r10
+            r11 = r10 + lobe;   // -1 is already part of r10
             c11 = y + lobe - 1;
 
             B = data[r10 * iwidth + c11];
@@ -339,8 +341,6 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
                   box_integral(iimage, x + 1, y - lobe, lobe, lobe) -
                   box_integral(iimage, x - lobe, y - lobe, lobe, lobe) - box_integral(iimage, x + 1, y + 1, lobe, lobe);
 
-            // printf("OPTIMIZED: (%i, %i) - Dyy: %f, Dxx: %f, Dxy: %f\n\n", i, j, Dyy, Dxx, Dxy);
-
             // Normalize Responses with inverse area
             Dxx *= inv_area;
             Dyy *= inv_area;
@@ -354,16 +354,15 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
             ind += 1;
         }
     }
-  //  printf("OPTIMIZED: width: %i, step: %i\n\n", width, step);
 
     // Rest
     k = (lobe + step - 1) / step * step;
+
     for (int i = 0; i < border + 1; i += step) {
         ind = (i / step) * width + (k / step);
+
         for (int j = k; j < width * step; j += step) {
             // Image coordinates
-            // x = i*step;
-            // y = j*step;
             x = i;
             y = j;
 
@@ -382,9 +381,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
             Dxx *= inv_area;
             Dyy *= inv_area;
             Dxy *= inv_area;
-
-            // printf("OPTIMIZED index: %i\n\n", ind);
-
+            
             // Calculate Determinant
             response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
 
@@ -395,12 +392,12 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
     }
 
     k = (border + 1 + step - 1) / step * step;
+
     for (int i = k; i < height * step; i += step) {
         ind = (i / step) * width;
+
         for (int j = 0; j < width * step; j += step) {
             // Image coordinates
-            // x = i*step;
-            // y = j*step;
             x = i;
             y = j;
 
@@ -412,13 +409,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
             Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe) +
                   box_integral(iimage, x + 1, y - lobe, lobe, lobe) -
                   box_integral(iimage, x - lobe, y - lobe, lobe, lobe) - box_integral(iimage, x + 1, y + 1, lobe, lobe);
-            /*
-                        if (x < 32 && y < 5) {
-                             printf("OPTIMIZED: (%i, %i) - index: %i - Dyy: %f, Dxx: %f, Dxy: %f\n\n", i, j, ind, Dyy,
-               Dxx, Dxy);
-                            //printf("OPTIMIZED index: %i\n\n", ind);
-                        }
-            */
+
             // Normalize Responses with inverse area
             Dxx *= inv_area;
             Dyy *= inv_area;
