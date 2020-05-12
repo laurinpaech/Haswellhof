@@ -33,8 +33,6 @@ inline float gaussianf(float x, float y, float sig) {
     return 1.0f / (2.0f * M_PI * sig*sig) * expf(-(x*x+y*y)/(2.0f*sig*sig));
 }
 
-void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint, float* GW);
-
 void get_msurf_descriptor_improved(struct integral_image* iimage, struct interest_point* ipoint);
 
 void get_msurf_descriptors_improved(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);

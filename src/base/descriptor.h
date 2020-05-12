@@ -38,8 +38,6 @@ inline float haarY(struct integral_image *iimage, int row, int col, int s) {
     return box_integral(iimage, row, col-s/2, s/2, s) - box_integral(iimage, row-s/2, col-s/2, s/2, s);
 }
 
-void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW);
-
 void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* ipoint);
 
 void get_msurf_descriptors(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
