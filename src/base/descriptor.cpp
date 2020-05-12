@@ -54,8 +54,8 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
             // TODO: (Sebastian) I think this should be i + 4 and j + 4 (OpenSURF also wrong)
             //int xs = (int) round(ipoint_x + (i + 5) * scale);
             //int ys = (int) round(ipoint_y + (j + 5) * scale);
-            int xs = (int) round(ipoint_x + (i + 4) * scale);
-            int ys = (int) round(ipoint_y + (j + 4) * scale);
+            int xs = (int) round(ipoint_x + (i + 4.5) * scale);
+            int ys = (int) round(ipoint_y + (j + 4.5) * scale);
 
             for (int k = i; k < i + 9; ++k) {
                 for (int l = j; l < j + 9; ++l) {
@@ -63,8 +63,8 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
                     //Get coords of sample point on the rotated axis
                     //int sample_x = (int) round(ipoint_x + (-l*scale*si + k*scale*co));
                     //int sample_y = (int) round(ipoint_y + ( l*scale*co + k*scale*si));
-                    int sample_x = (int) round(ipoint_x + k * scale);
-                    int sample_y = (int) round(ipoint_y + l * scale);
+                    int sample_x = (int) round(ipoint_x + (k+0.5) * scale);
+                    int sample_y = (int) round(ipoint_y + (l+0.5) * scale);
 
                     float gauss_s1 = gaussian((float) xs-sample_x, (float) ys-sample_y, 2.5f * scale);
                                         
