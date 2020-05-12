@@ -560,35 +560,31 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
             y = j;
 
             // Compute Dyy
-            // whole box filter TODO
+            // whole box filter
             // A and B are outside (= 0), C and D inside
-            // r01 = x + border;
-            // c00 = y - lobe;
-            // c01 = y + lobe - 1;
-            //
-            // C = data[r01 * iwidth + c00];
-            // D = data[r01 * iwidth + c01];
-            // Dyy0 = D - C;
-            //
-            // // neg part box filter TODO
-            // // A and B are outside (= 0), C and D inside
-            // r10 = x - lobe / 2 - 1;
-            // r11 = r10 + lobe - 1;
-            // c10 = y - lobe;
-            // c11 = y + lobe - 1;
-            //
-            // A = data[r0 * iwidth + c0];
-            // B = data[r0 * iwidth + c1];
-            // C = data[r1 * iwidth + c0];
-            // D = data[r1 * iwidth + c1];
-            //
-            // Dyy1 = A - B - C + D;
-            //
-            // Dyy = Dyy0 + 3*Dyy1;
+            r01 = x + border;
+            c00 = y - lobe;
+            c01 = y + lobe - 1;
+
+            C = data[r01 * iwidth + c00];
+            D = data[r01 * iwidth + c01];
+            Dyy0 = D - C;
+
+            // neg part box filter
+            // A and B are outside (= 0), C and D inside
+            r10 = x - lobe / 2 - 1;
+            r11 = r10 + lobe;   // r10 und r11 kann man vereinfachen
+            c10 = y - lobe;
+            c11 = y + lobe - 1;
+
+            C = data[r11 * iwidth + c10];
+            D = data[r11 * iwidth + c11];
+
+            Dyy1 = D - C;
+
+            Dyy = Dyy0 - 3*Dyy1;
 
             // Compute Dxx, Dxy
-            Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1) -
-                  3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
             Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
                     - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
             Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
