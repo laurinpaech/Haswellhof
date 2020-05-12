@@ -626,7 +626,7 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
             D = data[r01 * iwidth + c01];
             Dyy0 = D - C;
 
-            // neg part box filter TODO
+            // neg part box filter
             r10 = x - lobe / 2 - 1;
             r11 = r10 + lobe;
             c10 = y - lobe;
@@ -642,8 +642,6 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
             Dyy = Dyy0 - 3*Dyy1;
 
             // Compute Dxx, Dxy
-            Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1) -
-                  3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
             Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
                     - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
             Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
@@ -665,7 +663,7 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
         }
     }
 
-    // Top Right - Case 1: B of neg part outside TODO
+    // Top Right - Case 1: A of neg part outside
     k0 = (width*step-lobe+1 + step - 1) / step * step;
 
     for (int i = 0; i < lobe/2+1; i += step) {
@@ -676,12 +674,27 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
             x = i;
             y = j;
 
-            // whole filter TODO
-            // neg part box filter TODO
+            // whole filter
+            r01 = x + border;
+            c00 = y - lobe;
+
+            C = data[r01 * iwidth + c00];
+            D = data[r01 * iwidth + iwidth-1];
+            Dyy0 = D - C;
+
+            // neg part box filter
+            r10 = x - lobe / 2 - 1;
+            r11 = r10 + lobe;
+            c10 = y - lobe;
+
+            C = data[r11 * iwidth + c10];
+            D = data[r11 * iwidth + iwidth-1];
+
+            Dyy1 = D - C;
+
+            Dyy = Dyy0 - 3*Dyy1;
 
             // Compute Dxx, Dxy
-            Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1) -
-                  3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
             Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
                     - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
             Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
@@ -703,7 +716,7 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
         }
     }
 
-    // Top Right - Case 2: B of neg part inside TODO
+    // Top Right - Case 2: A of neg part inside TODO
     k = (lobe / 2 + 1 + step - 1) / step * step;
 
     for (int i = k; i < border+1; i += step) {
