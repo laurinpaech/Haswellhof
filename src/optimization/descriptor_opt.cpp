@@ -466,7 +466,7 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
 
 void get_msurf_descriptors_inlined(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
     for (size_t i=0; i<interest_points->size(); ++i) {
-        get_msurf_descriptors_inlined(iimage, &interest_points->at(i));
+        get_msurf_descriptor_inlined(iimage, &interest_points->at(i));
 	}
 }
 
