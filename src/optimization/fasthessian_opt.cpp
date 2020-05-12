@@ -606,7 +606,7 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
         }
     }
 
-    // Top Mid - Case 2: B of neg part inside TODO
+    // Top Mid - Case 2: B of neg part inside
     k = (lobe / 2 + 1 + step - 1) / step * step;  // round initial value to next highest step
     for (int i = k; i < border+1; i += step) {
         ind = (i / step) * width + (k0 / step);

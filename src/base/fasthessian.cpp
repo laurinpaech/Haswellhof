@@ -87,9 +87,6 @@ void compute_response_layer(struct response_layer *layer, struct integral_image 
     int border = (filter_size - 1) / 2;
     float inv_area = 1.f / (filter_size * filter_size);
 
-    int ky = (lobe + step - 1) / step * step;
-    int kx = (border + 1 + step - 1) / step * step;
-
     for (int i = 0, ind = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j, ind++) {
             // Image coordinates
