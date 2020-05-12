@@ -41,6 +41,10 @@ void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, stru
 
 void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest_point* ipoint);
 
+void get_msurf_descriptor_gauss_s1_separable_test(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptor_gauss_s2_precomputed(struct integral_image* iimage, struct interest_point* ipoint);
+
 void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint);
 
 void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integral_image* iimage, struct interest_point* ipoint);
