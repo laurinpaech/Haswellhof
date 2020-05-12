@@ -162,3 +162,11 @@ void bench_get_msurf_descriptor(
 void perf_get_msurf_descriptor(void (*function)(struct integral_image *, struct interest_point *),
                                struct integral_image *iimage, struct interest_point *ipoint,
                                struct benchmark_data &data);
+
+void bench_get_msurf_descriptors(const std::vector<void (*)(struct integral_image *, std::vector<struct interest_point> *)> &functions,
+                                struct integral_image *iimage, std::vector<struct interest_point> *interest_points,
+                                std::vector<struct benchmark_data> &data);
+
+void perf_get_msurf_descriptors(void (*function)(struct integral_image *, std::vector<struct interest_point> *),
+                               struct integral_image *iimage, std::vector<struct interest_point> *ipoints,
+                               struct benchmark_data &data);

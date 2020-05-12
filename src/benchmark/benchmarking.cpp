@@ -594,3 +594,77 @@ void perf_get_msurf_descriptor(void (*function)(struct integral_image *, struct 
     data.max_cycles += (uint64_t)cycleslist.back();
     data.flops_per_cycle += flops_per_cycle;
 }
+
+
+// Calls timing function for multiple versions of get_msurf_descriptors. 
+// The number of times the timing should be conducted can be specified in this function. 
+// The number of flops for the version of get_msurf_descriptors must be set in the respective benchmark_data.
+void bench_get_msurf_descriptors(const std::vector<void (*)(struct integral_image *, std::vector<struct interest_point> *)> &functions,
+                                struct integral_image *iimage, std::vector<struct interest_point> *interest_points,
+                                std::vector<struct benchmark_data> &data) {
+    
+    assert(functions.size() == data.size());
+
+    // Iterating through all functions that should be benchmarked
+    for (int j = 0; j < functions.size(); ++j) {
+        perf_get_msurf_descriptors(functions[j], iimage, interest_points, data[j]);
+    }
+    
+}
+
+// Times the function get_msurf_descriptors from descriptor. 
+// Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data. 
+// The number of flops for get_msurf_descriptor must be set in benchmark_data.
+void perf_get_msurf_descriptors(void (*function)(struct integral_image *, std::vector<struct interest_point> *),
+                               struct integral_image *iimage, std::vector<struct interest_point> *ipoints,
+                               struct benchmark_data &data) {
+    double cycles = 0.;
+    long num_runs = 5;
+    double multiplier = 1;
+    uint64_t start, end;
+
+#ifdef WARM_UP
+    // Warm-up phase: we determine a number of executions that allows
+    // the code to be executed for at least CYCLES_REQUIRED cycles.
+    // This helps excluding timing overhead when measuring small runtimes.
+    do {
+        num_runs = num_runs * multiplier;
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; i++) {
+            (*function)(iimage, ipoints);
+        }
+        end = stop_tsc(start);
+
+        cycles = (double)end;
+        multiplier = (CYCLES_REQUIRED) / (cycles);
+
+    } while (multiplier > 2);
+#endif
+
+    std::vector<double> cycleslist;
+
+    // Actual performance measurements repeated REP times.
+    // We simply store all results and compute medians during post-processing.
+    double total_cycles = 0;
+    for (size_t j = 0; j < REP; j++) {
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; ++i) {
+            (*function)(iimage, ipoints);
+        }
+        end = stop_tsc(start);
+
+        cycles = ((double)end) / num_runs;
+        total_cycles += cycles;
+
+        cycleslist.push_back(cycles);
+    }
+    total_cycles /= REP;
+
+    cycles = total_cycles;  // cyclesList.front();
+    double flops_per_cycle = round((100.0 * data.num_flops) / cycles) / 100.0;
+    std::sort(cycleslist.begin(), cycleslist.end());
+    data.avg_cycles += (uint64_t)cycles;
+    data.min_cycles += (uint64_t)cycleslist.front();
+    data.max_cycles += (uint64_t)cycleslist.back();
+    data.flops_per_cycle += flops_per_cycle;
+}
