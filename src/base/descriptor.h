@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "integral_image.h"
 #include "interest_point.h"
+#include <vector>
 
 
 #define PATCH_SIZE 20
@@ -41,3 +42,4 @@ void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint
 
 void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* ipoint);
 
+void get_msurf_descriptors(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);

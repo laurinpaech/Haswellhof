@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "stdio.h"
+#include <vector>
 
 // #define PATCH_SIZE 20
 
@@ -35,15 +37,27 @@ void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct in
 
 void get_msurf_descriptor_improved(struct integral_image* iimage, struct interest_point* ipoint);
 
+void get_msurf_descriptors_improved(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
 void get_msurf_descriptor_improved_flip(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_improved_flip(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
 void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, struct interest_point* ipoint);
 
+void get_msurf_descriptors_improved_flip_flip(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
 void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_inlined(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
 void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint);
 
+void get_msurf_descriptors_inlinedHaarWavelets(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
 void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
 
 inline void haarXY(float* ii_data, int height, int width, int row, int col, int scale, float* haarX, float* haarY) {
@@ -88,6 +102,8 @@ inline void haarXY(float* ii_data, int height, int width, int row, int col, int 
     if (r2 >= 0 && c2 >= 0) {
         r2c2 = ii_data[r2 * width + c2];
     }
+
+    printf("%d %d %d %d %d %d %d %d\n", r0 * width + c0, r0 * width + c1, r0 * width + c2, r1 * width + c0, r1 * width + c2, r2 * width + c0, r2 * width + c1, r2 * width + c2);
 
     float r0c0_sub_r2c2 = r0c0 - r2c2;
     float r0c2_sub_r2c0 = r0c2 - r2c0;

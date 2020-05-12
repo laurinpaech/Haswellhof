@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <vector>
+
 void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
 
     float scale = ipoint->scale;
@@ -215,6 +217,12 @@ void get_msurf_descriptor_improved(struct integral_image* iimage, struct interes
 }
 
 
+void get_msurf_descriptors_improved(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
+    for (size_t i=0; i<interest_points->size(); ++i) {
+        get_msurf_descriptor_improved(iimage, &interest_points->at(i));
+	}
+}
+
 
 void get_msurf_descriptor_improved_flip(struct integral_image* iimage, struct interest_point* ipoint) {
     /*
@@ -318,6 +326,14 @@ void get_msurf_descriptor_improved_flip(struct integral_image* iimage, struct in
     }
 }
 
+
+void get_msurf_descriptors_improved_flip(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
+    for (size_t i=0; i<interest_points->size(); ++i) {
+        get_msurf_descriptor_improved_flip(iimage, &interest_points->at(i));
+	}
+}
+
+
 void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, struct interest_point* ipoint) {
     /*
     applied optimizations:
@@ -418,6 +434,13 @@ void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, stru
     for (int i = 0; i < 64; ++i) {
         descriptor[i] *= norm_factor;
     }
+}
+
+
+void get_msurf_descriptors_improved_flip_flip(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
+    for (size_t i=0; i<interest_points->size(); ++i) {
+        get_msurf_descriptor_improved_flip_flip(iimage, &interest_points->at(i));
+	}
 }
 
 
@@ -533,6 +556,13 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
     for (int i = 0; i < 64; ++i) {
         descriptor[i] *= norm_factor;
     }
+}
+
+
+void get_msurf_descriptors_inlined(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
+    for (size_t i=0; i<interest_points->size(); ++i) {
+        get_msurf_descriptors_inlined(iimage, &interest_points->at(i));
+	}
 }
 
 
@@ -655,6 +685,13 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
     for (int i = 0; i < 64; ++i) {
         descriptor[i] *= norm_factor;
     }
+}
+
+
+void get_msurf_descriptors_inlinedHaarWavelets(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
+    for (size_t i=0; i<interest_points->size(); ++i) {
+        get_msurf_descriptor_inlinedHaarWavelets(iimage, &interest_points->at(i));
+	}
 }
 
 
@@ -872,7 +909,16 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
 }
 
 
+void get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
+    for (size_t i=0; i<interest_points->size(); ++i) {
+        get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(iimage, &interest_points->at(i));
+	}
+}
+
+
 static const float gauss_s2_precomputed[] = {0.026022f, 0.040585f, 0.040585f, 0.026022f, 0.040585f, 0.063297f, 0.063297f, 0.040585f, 0.040585f, 0.063297f, 0.063297f, 0.040585f, 0.026022f, 0.040585f, 0.040585f, 0.026022f};
+
+
 
 /*
 static const float gauss_s2_precomputed[] = { 
@@ -974,6 +1020,14 @@ void get_msurf_descriptor_precompute_gauss_s2(struct integral_image* iimage, str
 
 }
 
+
+void get_msurf_descriptors_precompute_gauss_s2(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
+    for (size_t i=0; i<interest_points->size(); ++i) {
+        get_msurf_descriptor_precompute_gauss_s2(iimage, &interest_points->at(i));
+	}
+}
+
+
 void get_msurf_descriptor_separable_gauss_s1(struct integral_image* iimage, struct interest_point* ipoint) {
 
     float scale = ipoint->scale;
@@ -1068,3 +1122,8 @@ void get_msurf_descriptor_separable_gauss_s1(struct integral_image* iimage, stru
 }
 
 
+void get_msurf_descriptors_separable_gauss_s1(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
+    for (size_t i=0; i<interest_points->size(); ++i) {
+        get_msurf_descriptor_separable_gauss_s1(iimage, &interest_points->at(i));
+	}
+}
