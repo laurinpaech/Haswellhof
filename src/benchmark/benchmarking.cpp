@@ -373,7 +373,7 @@ void bench_get_descriptor(const std::vector<void (*)(struct integral_image *, st
         int counter = MIN(5, data[j].num_interest_points);
         for (int i = 0; i < counter; ++i) {
             struct interest_point ipoint = interest_points->at(i);
-            perf_get_descriptor(get_descriptor, iimage, &ipoint, GW, data[j]);
+            perf_get_descriptor(functions[j], iimage, &ipoint, GW, data[j]);
         }
 
         // Take the average of the runs.

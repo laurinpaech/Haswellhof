@@ -52,9 +52,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_integral_image(compute_integral_img, test_functions, width, height, image);
         if (valid) {
-            printf("INTEGRAL IMAGE VALIDATION:    \033[0;32mSUCCESS!\033[0m\n");
+            printf("INTEGRAL IMAGE VALIDATION:          \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("INTEGRAL IMAGE VALIDATION:    \033[1;31mFAILED!\033[0m\n");
+            printf("INTEGRAL IMAGE VALIDATION:          \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
@@ -81,7 +81,7 @@ int main(int argc, char const *argv[])
         if (valid) {
             printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[1;31mFAILED!\033[0m!\n");
+            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
@@ -113,9 +113,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
         if (valid) {
-            printf("MSURF DESCRIPTOR VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
+            printf("MSURF DESCRIPTOR VALIDATION:        \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("MSURF DESCRIPTOR VALIDATION:  \033[1;31mFAILED!\033[0m!\n");
+            printf("MSURF DESCRIPTOR VALIDATION:        \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif

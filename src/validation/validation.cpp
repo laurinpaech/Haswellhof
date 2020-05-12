@@ -105,10 +105,7 @@ bool validate_compute_response_layer(
         }
 
         if (original_fh->total_layers != optimized_fh->total_layers) {
-            printf(
-                "compute_response_layer() test function %d does not match original function - the number of layers "
-                "difer.\n",
-                j);
+            printf("compute_response_layer() test function %d does not match original function - the number of layers differ.\n", j);
             all_valid = false;
             // If the numbers of layers doesn't match, don't do any further tests.
             continue;
