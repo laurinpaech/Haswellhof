@@ -106,6 +106,7 @@ int main(int argc, char const *argv[])
 #ifdef VALIDATE_GET_MSURF_DESCRIPTORS	
     {
         std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
+        test_functions.push_back(get_msurf_descriptor);
         test_functions.push_back(get_msurf_descriptor_improved);
         test_functions.push_back(get_msurf_descriptor_inlined);
         test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
