@@ -204,7 +204,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
 
 }
 
-void compute_response_layers_at_once(struct fasthessian* fh, struct integral_image* iimage) {
+void compute_response_layers_at_once(struct fasthessian* fh) {
     /* computes all 8 response layers at once, gives same results as base implementation
     valgrind reports no improvement for l1 misses, i.e. locality is not improved as expected
     guess due to different filter sizes always accesing different cachelines
@@ -221,6 +221,7 @@ void compute_response_layers_at_once(struct fasthessian* fh, struct integral_ima
 
     int x, y;
     int step = fh->step;
+    struct integral_image* iimage = fh->iimage;
 
     // step == 1: 0,1,2,3
     // step == 2: 4,5

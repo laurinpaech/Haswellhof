@@ -41,7 +41,7 @@ int main(int argc, char const *argv[])
 	create_response_map(fh);
 
 	// Compute responses for every layer
-	compute_response_map(fh);
+	compute_response_layers(fh);
 
 	// Getting interest points with non-maximum supression
 	std::vector<struct interest_point> interest_points;

@@ -67,7 +67,7 @@ int main(int argc, char const *argv[])
 	create_response_map(fh);
 
 	// Compute responses for every layer
-	compute_response_map(fh);
+	compute_response_layers(fh);
 
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER
     {
@@ -94,10 +94,12 @@ int main(int argc, char const *argv[])
 #ifdef VALIDATE_GET_MSURF_DESCRIPTORS	
     {
         std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
-        test_functions.push_back(get_msurf_descriptor);
+        // test_functions.push_back(get_msurf_descriptor);
         test_functions.push_back(get_msurf_descriptor_improved);
         test_functions.push_back(get_msurf_descriptor_inlined);
         test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
+        test_functions.push_back(get_msurf_descriptor_gauss_compute_once_case);
+        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar);
 
         bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
         if (valid) {
