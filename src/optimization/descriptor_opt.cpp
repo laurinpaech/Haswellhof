@@ -1426,11 +1426,11 @@ void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, st
         || ((int) roundf(ipoint_y + 11*scale)) + int_scale > height) 
     { // some outside
 
-        for (int l=-12; l<12; l++) {
+        for (int l=-12, l_count=0; l<12; ++l, ++l_count) {
             // int sample_y = (int) roundf(ipoint_y + l * scale);
             int sample_y_sub_int_scale = (int) roundf(ipoint_y_sub_int_scale + l * scale);
 
-            for (int k=-12; k<12; k++) {
+            for (int k=-12, k_count=0; k<12; ++k, k_count++) {
 
                 //Get x coords of sample point
                 // int sample_x = (int) roundf(ipoint_x + k * scale);
@@ -1438,7 +1438,7 @@ void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, st
 
                 // float rx = 0.0f;
                 // float ry = 0.0f;
-                haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[(l+12)*24+(k+12)], &haarResponseY[(l+12)*24+(k+12)]);
+                haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
 
                 // haarResponseX[(l+12)*24+(k+12)] = rx;
                 // haarResponseY[(l+12)*24+(k+12)] = ry;
@@ -1448,11 +1448,11 @@ void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, st
 
     } else {
 
-        for (int l=-12; l<12; l++) {
+        for (int l=-12, l_count=0; l<12; ++l, ++l_count) {
             // int sample_y = (int) roundf(ipoint_y + l * scale);
             int sample_y_sub_int_scale = (int) roundf(ipoint_y_sub_int_scale + l * scale);
 
-            for (int k=-12; k<12; k++) {
+            for (int k=-12, k_count=0; k<12; ++k, ++k_count) {
 
                 //Get x coords of sample point
                 // int sample_x = (int) roundf(ipoint_x + k * scale);
@@ -1460,7 +1460,7 @@ void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, st
 
                 // float rx = 0.0f;
                 // float ry = 0.0f;
-                haarXY_nocheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[(l+12)*24+(k+12)], &haarResponseY[(l+12)*24+(k+12)]);
+                haarXY_nocheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
 
                 // haarResponseX[(l+12)*24+(k+12)] = rx;
                 // haarResponseY[(l+12)*24+(k+12)] = ry;

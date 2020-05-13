@@ -117,11 +117,11 @@ inline void haarXY(float* ii_data, int height, int width, int row, int col, int 
         r2c2 = ii_data[r2 * width + c2];
     }
 
-    float r0c0_sub_r2c2 = r0c0 - r2c2;
+    float r2c2_sub_r0c0 = r2c2 - r0c0;
     float r0c2_sub_r2c0 = r0c2 - r2c0;
 
-    *haarX = -1*(r0c0_sub_r2c2 - 2*(r0c1 - r2c1) + r0c2_sub_r2c0);
-    *haarY = -1*(r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0);
+    *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
+    *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
 }
 
 inline void haarXY_precheck_boundaries(float* ii_data, int height, int width, int row, int col, int scale, float* haarX, float* haarY) {
@@ -154,12 +154,11 @@ inline void haarXY_precheck_boundaries(float* ii_data, int height, int width, in
     float r2c1 = ii_data[r2 * width + c1];
     float r2c2 = ii_data[r2 * width + c2];
 
-    float r0c0_sub_r2c2 = r0c0 - r2c2;
+    float r2c2_sub_r0c0 = r2c2 - r0c0;
     float r0c2_sub_r2c0 = r0c2 - r2c0;
 
-    // TODO: (Sebastian) couln't we remove the -1 here?
-    *haarX = -1*(r0c0_sub_r2c2 - 2*(r0c1 - r2c1) + r0c2_sub_r2c0);
-    *haarY = -1*(r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0);
+    *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
+    *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
 }
 
 
@@ -181,10 +180,9 @@ inline void haarXY_nocheck_boundaries(float* ii_data, int height, int width, int
     float r2c1 = ii_data[r2 * width + c1];
     float r2c2 = ii_data[r2 * width + c2];
 
-    float r0c0_sub_r2c2 = r0c0 - r2c2;
+    float r2c2_sub_r0c0 = r2c2 - r0c0;
     float r0c2_sub_r2c0 = r0c2 - r2c0;
 
-    // TODO: (Sebastian) couln't we remove the -1 here?
-    *haarX = -1*(r0c0_sub_r2c2 - 2*(r0c1 - r2c1) + r0c2_sub_r2c0);
-    *haarY = -1*(r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0);
+    *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
+    *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
 }
