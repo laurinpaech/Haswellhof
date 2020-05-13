@@ -8,4 +8,4 @@
 #include "benchmarking.h"
 #include "helper.h"
 
-void playground_function1(float* image, int width, int height);
+void playground_function1();
