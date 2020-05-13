@@ -96,22 +96,23 @@ void bench_compute_integral_img(const std::vector<void (*)(float *, int, int, fl
 void perf_compute_integral_img(void (*function)(float *, int, int, float *), float *gray_image,
                                struct benchmark_data &data);
 
-/*
+/* Todo: (valentin) can these be removed?
 void bench_compute_response_layer(const std::vector<void (*)(struct response_layer *, struct integral_image *)>
 &functions, struct response_layer *layer, struct integral_image *iimage, std::vector<struct benchmark_data> &data);
-*/
 
 // Times the function compute_response_layer from fasthessian. Stores the average, minimum and maximum number of cycles
 // and the flops per cycle in benchmark_data. The number of flops for compute_response_layer must be set benchmark_data.
 void perf_compute_response_layer(void (*function)(struct response_layer *, struct integral_image *),
                                  struct response_layer *layer, struct integral_image *iimage,
                                  struct benchmark_data &data);
+*/
 
-void perf_compute_response_all_layers(void (*function)(struct response_layer *, struct integral_image *),
+
+void perf_compute_response_all_layers(void (*function)(struct fasthessian *),
                                       struct fasthessian *fh, struct benchmark_data &data);
 
 void bench_compute_response_layer(
-    const std::vector<void (*)(struct response_layer *, struct integral_image *)> &functions,
+    const std::vector<void (*)(struct fasthessian *)> &functions,
     struct integral_image *iimage, std::vector<struct benchmark_data> &data);
 
 void bench_get_interest_points(

@@ -14,20 +14,22 @@
 #include "interest_point.h"
 #include "stb_image.h"
 #include "descriptor_opt.h"
+#include "fasthessian_opt.h"
 
 const char *images[] = {
     // "../images/sunflower/sunflower_32.jpg",  
     // "../images/sunflower/sunflower_64.jpg",
     // "../images/sunflower/sunflower_128.jpg", 
-    // "../images/sunflower/sunflower_256.jpg"
+    // "../images/sunflower/sunflower_256.jpg",
     "../images/sunflower/sunflower_512.jpg",
     // "../images/sunflower/sunflower_1024.jpg",
-    // "../images/sunflower/sunflower_2048.jpg"
-    // "../images/sunflower/sunflower_4096.jpg"
+    // "../images/sunflower/sunflower_2048.jpg",
+    // "../images/sunflower/sunflower_4096.jpg",
 };
+
 #define n_images (sizeof(images) / sizeof(const char *))
 #define BENCHMARK_INTEGRAL_IMAGE
-#define BENCHMARK_CREATE_RESPONSE_MAP
+#define BENCHMARK_COMPUTE_RESPONSE_LAYERS
 #define BENCHMARK_INTEREST_POINTS
 #define BENCHMARK_INTERPOLATE_STEPS
 #define BENCHMARK_GET_MSURF_DESCRIPTORS
@@ -88,45 +90,58 @@ int main(int argc, char const *argv[]) {
         // Create octaves with response layers
         create_response_map(fh);
         
-#ifdef BENCHMARK_CREATE_RESPONSE_MAP
+#ifdef BENCHMARK_COMPUTE_RESPONSE_LAYERS
         {
             printf("compute_response_layer start\n");
-            struct benchmark_data data(image_name, width, height, "compute_response_layer", -1, (1 + height * width * 13));
-            perf_compute_response_layer(compute_response_layer, fh->response_map[0], iimage, data);
-            all_benchmark_data.push_back(data);
+
+            std::vector<void (*)(struct fasthessian *)> functions;
+            functions.push_back(compute_response_layers);
+            functions.push_back(compute_response_layers_at_once);
+
+
+            struct benchmark_data default_data(image_name, width, height, "compute_response_layer", -1, (1 + height * width * 13));
+            struct benchmark_data data1(image_name, width, height, "compute_response_layers_at_once", -1, (1 + height * width * 13));
+            
+            std::vector<struct benchmark_data> data;
+            data.push_back(default_data);
+            data.push_back(data1);
+
+            bench_compute_response_layer(functions, iimage, data);
+
+            all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
             printf("compute_response_layer end\n");
         }
 #endif
         
         // Compute responses for every layer
-	    compute_response_map(fh);
+	    compute_response_layers(fh);
 
         // Getting interest points with non-maximum supression
         std::vector<struct interest_point> interest_points;
         get_interest_points(fh, &interest_points);
 
 #ifdef BENCHMARK_INTEREST_POINTS
-        {
-            printf("get_interest_points start\n");
+        // {
+        //     printf("get_interest_points start\n");
             
-            // Insert all get_interest_points functions for benchmarking here
-            std::vector<void (*)(struct fasthessian *, std::vector<struct interest_point> *)> functions;
-            functions.push_back(get_interest_points);
+        //     // Insert all get_interest_points functions for benchmarking here
+        //     std::vector<void (*)(struct fasthessian *, std::vector<struct interest_point> *)> functions;
+        //     functions.push_back(get_interest_points);
             
-            long flops = 109 * interest_points.size();
-            struct benchmark_data default_data(image_name, width, height, "get_interest_points", interest_points.size(), flops);
+        //     long flops = 109 * interest_points.size();
+        //     struct benchmark_data default_data(image_name, width, height, "get_interest_points", interest_points.size(), flops);
 
-            // Insert all respective benchmarking info for get_interest_points here
-            std::vector<struct benchmark_data> data;
-            data.push_back(default_data);
+        //     // Insert all respective benchmarking info for get_interest_points here
+        //     std::vector<struct benchmark_data> data;
+        //     data.push_back(default_data);
 
-            // Benchmarking all get_interest_point functions and storing timing results in respective entries in data
-            bench_get_interest_points(functions, fh, data);
+        //     // Benchmarking all get_interest_point functions and storing timing results in respective entries in data
+        //     bench_get_interest_points(functions, fh, data);
             
-            // Appending this data to all benchmarking data
-            all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
-            printf("get_interest_points end\n");
-        }
+        //     // Appending this data to all benchmarking data
+        //     all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
+        //     printf("get_interest_points end\n");
+        // }
 #endif
 
 #ifdef BENCHMARK_INTERPOLATE_STEPS
@@ -166,6 +181,11 @@ int main(int argc, char const *argv[]) {
             functions.push_back(get_msurf_descriptors_inlined);
             functions.push_back(get_msurf_descriptors_inlinedHaarWavelets);
             functions.push_back(get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries);
+
+            functions.push_back(get_msurf_descriptors_gauss_s1_separable_test);
+            functions.push_back(get_msurf_descriptors_gauss_s2_precomputed);
+            functions.push_back(get_msurf_descriptors_gauss_compute_once_case);
+            functions.push_back(get_msurf_descriptors_gauss_pecompute_haar);
             
             // TODO: (Sebastian) find FLOPS count for get_msurf_descriptor
             struct benchmark_data default_data(image_name, width, height, "get_msurf_descriptors", interest_points.size(), -1);
@@ -174,7 +194,11 @@ int main(int argc, char const *argv[]) {
             struct benchmark_data data22(image_name, width, height, "get_msurf_descriptors_improved_flip_flip", interest_points.size(), -1);   
             struct benchmark_data data3(image_name, width, height, "get_msurf_descriptors_inlined", interest_points.size(), -1);
             struct benchmark_data data4(image_name, width, height, "get_msurf_descriptors_inlinedHaarWavelets", interest_points.size(), -1);   
-            struct benchmark_data data5(image_name, width, height, "get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries", interest_points.size(), -1);                     
+            struct benchmark_data data5(image_name, width, height, "get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries", interest_points.size(), -1);
+            struct benchmark_data data6(image_name, width, height, "get_msurf_descriptors_gauss_s1_separable_test", interest_points.size(), -1);
+            struct benchmark_data data7(image_name, width, height, "get_msurf_descriptors_gauss_s2_precomputed", interest_points.size(), -1);
+            struct benchmark_data data8(image_name, width, height, "get_msurf_descriptors_gauss_compute_once_case", interest_points.size(), -1);
+            struct benchmark_data data9(image_name, width, height, "get_msurf_descriptors_gauss_pecompute_haar", interest_points.size(), -1);
 
             // Insert all respective benchmarking info for functions here
             std::vector<struct benchmark_data> data;
@@ -185,6 +209,10 @@ int main(int argc, char const *argv[]) {
             data.push_back(data3);
             data.push_back(data4);
             data.push_back(data5);
+            data.push_back(data6);
+            data.push_back(data7);
+            data.push_back(data8);
+            data.push_back(data9);
 
             // Benchmarking all get_msurf_descriptor functions and storing timing results in respective entries in data
             bench_get_msurf_descriptors(functions, iimage, &interest_points, data);
