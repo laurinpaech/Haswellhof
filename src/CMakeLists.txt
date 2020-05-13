@@ -46,6 +46,8 @@ add_executable(benchmark
     base/descriptor.cpp
     optimization/descriptor_opt.h
     optimization/descriptor_opt.cpp
+    optimization/fasthessian_opt.h
+    optimization/fasthessian_opt.cpp
     benchmark/benchmark_data_to_file.h
     benchmark/benchmark_data_to_file.cpp
     benchmark/benchmarking.h
