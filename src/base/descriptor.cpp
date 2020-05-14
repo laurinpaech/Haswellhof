@@ -7,85 +7,7 @@
 
 #include <math.h>
 #include <stdlib.h>
-
-void get_descriptor(struct integral_image* iimage, struct interest_point* ipoint, float* GW) {
-
-    float scale = ipoint->scale;
-    int ipoint_x = (int) (ipoint->x + 0.5);
-    int ipoint_y = (int) (ipoint->y + 0.5);
-
-    int step = MAX((int)(scale + 0.5),1); // rounding is done this way in the original implementaion
-
-    int col_offset = ipoint_x-step*10 - step/2; //should this be 10.5 = 10 - 1 = PATCH_SIZE/2 + (shift to obtain upper left corner of haar wavelet filter) ??
-    int row_offset = ipoint_y-step*10 - step/2;
-
-    // build descriptor
-    float* descriptor = ipoint->descriptor;
-    int desc_idx = 0;
-    float sum_of_squares = 0.0f;
-
-    for (int i=0; i<4; ++i) {
-        for (int j=0; j<4; ++j) { // iterate over 4x4 sub_patches 
-            float sum_x = 0.0f;
-            float sum_y = 0.0f;
-            float abs_x = 0.0f;
-            float abs_y = 0.0f;
-            for (int k=i*5; k<i*5+5; ++k) {
-                for (int l=j*5; l<j*5+5; ++l) { 
-                    // iterate over 5x5 sample points of sub_patch[i][j]
-                    // and compute haar wavelet responses
-
-                    float gw = GW[k*PATCH_SIZE + l];
-
-                    // compute needed corners of the [2*scale x 2*scale] patch:
-                    // c1 XX c2 XX 
-                    // XX XX XX XX
-                    // c4 XX XX XX
-                    // XX XX XX XX
-
-                    int c1_row = row_offset +  l   *step;
-                    int c1_col = col_offset +  k   *step;
-
-                    int c2_col = col_offset + (k+1)*step;
-                    int c4_row = row_offset + (l+1)*step;
-
-                    // haarX
-                    float x = gw * (box_integral(iimage, c1_row, c1_col, 2*step, step)
-                                    - box_integral(iimage, c1_row, c2_col, 2*step, step));
-
-                    // haarY
-                    float y = gw * (box_integral(iimage, c1_row, c1_col, step, 2*step) 
-                                    - box_integral(iimage, c4_row, c1_col, step, 2*step));
-
-                    sum_x += x; // sum(x)
-                    sum_y += y; // sum(y)
-                    abs_x += fabs(x); // sum(abs(x))
-                    abs_y += fabs(y); // sum(abs(y))
-                }
-            }
-            descriptor[desc_idx] = sum_x;
-            descriptor[desc_idx+1] = sum_y;   
-            descriptor[desc_idx+2] = abs_x;
-            descriptor[desc_idx+3] = abs_y;
-            
-            // precompute for normaliztion
-
-            sum_of_squares += sum_x * sum_x + sum_y * sum_y + abs_x * abs_x + abs_y * abs_y;
-
-
-            desc_idx += 4;
-        }
-    }
-
-    // rescale to unit vector
-    float norm_factor = 1./sqrt(sum_of_squares);
-
-    for (int i=0; i<64; ++i) {
-        descriptor[i] *= norm_factor;
-    }
-
-}
-
+#include <vector>
 
 void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* ipoint) {
 
@@ -132,8 +54,8 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
             // TODO: (Sebastian) I think this should be i + 4 and j + 4 (OpenSURF also wrong)
             //int xs = (int) round(ipoint_x + (i + 5) * scale);
             //int ys = (int) round(ipoint_y + (j + 5) * scale);
-            int xs = (int) round(ipoint_x + (i + 4) * scale);
-            int ys = (int) round(ipoint_y + (j + 4) * scale);
+            int xs = (int) round(ipoint_x + (i + 4.5) * scale);
+            int ys = (int) round(ipoint_y + (j + 4.5) * scale);
 
             for (int k = i; k < i + 9; ++k) {
                 for (int l = j; l < j + 9; ++l) {
@@ -141,8 +63,8 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
                     //Get coords of sample point on the rotated axis
                     //int sample_x = (int) round(ipoint_x + (-l*scale*si + k*scale*co));
                     //int sample_y = (int) round(ipoint_y + ( l*scale*co + k*scale*si));
-                    int sample_x = (int) round(ipoint_x + k * scale);
-                    int sample_y = (int) round(ipoint_y + l * scale);
+                    int sample_x = (int) round(ipoint_x + (k+0.5) * scale);
+                    int sample_y = (int) round(ipoint_y + (l+0.5) * scale);
 
                     float gauss_s1 = gaussian((float) xs-sample_x, (float) ys-sample_y, 2.5f * scale);
                                         
@@ -193,4 +115,10 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
         descriptor[i] *= norm_factor;
     }
 
+}
+
+void get_msurf_descriptors(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
+    for (int i = 0; i < interest_points->size(); ++i) {
+        get_msurf_descriptor(iimage, &interest_points->at(i));
+	}
 }
