@@ -164,7 +164,7 @@ void compute_padded_integral_image(float *gray_image, int original_image_width, 
     float last_element_in_row = 0.0f;
     // Sum up the first row
     // The first element that is not padding.
-    int ind = ((border + 1) * padded_width) + lobe + 1;
+    int ind = (border * padded_width) + lobe;
     printf("PADDED INDEX: %i\n", ind);
 
     for (int i = 0; i < original_image_width; i++, ind++) {
@@ -234,8 +234,8 @@ float box_integral_with_padding(struct integral_image *iimage, int row, int col,
     // subtracting by one for row/col because row/col is inclusive.
     int r0 = row - 1;         // r - 3
     int c0 = col - 1;         // c - b - 1
-    int r1 = row + rows;  // r - 3 + 5
-    int c1 = col + cols;  // c - b + filter_size - 1
+    int r1 = row + rows - 1;  // r - 3 + 5
+    int c1 = col + cols - 1;  // c - b + filter_size - 1
 
     // Example with 9x9 filter at (0,0)
     // A: (-3, -5)

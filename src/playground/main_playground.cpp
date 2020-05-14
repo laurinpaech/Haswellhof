@@ -39,6 +39,7 @@ int main(int argc, char const *argv[])
 	// Compute integral image
 	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
 
+	//playground_function2();
 	playground_function1(image, width, height);
 	/*
 	// Fast-Hessian
