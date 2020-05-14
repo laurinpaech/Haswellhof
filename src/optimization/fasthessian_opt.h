@@ -10,3 +10,5 @@ void interpolate_step_gauss(int row, int col, struct response_layer *top, struct
 void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct integral_image* iimage);
 
 void compute_response_layers_at_once(struct fasthessian* fh, struct integral_image *iimage);
+
+void compute_response_layer_with_padding(struct response_layer* layer, struct integral_image* padded_iimage);

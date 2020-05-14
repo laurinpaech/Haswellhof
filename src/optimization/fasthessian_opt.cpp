@@ -1097,28 +1097,35 @@ void compute_response_layer_with_padding(struct response_layer* layer, struct in
 
     int step = layer->step;
     int filter_size = layer->filter_size;
-    int height = layer->height;
-    int width = layer->width;
+    int original_image_height = layer->height;
+    int original_image_width = layer->width;
 
     int lobe = filter_size/3;
     int border = (filter_size-1)/2;
     float inv_area = 1.f/(filter_size*filter_size);
 
-     for (int i = 0, ind = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j, ind++) {
+    int padded_lobe = (LARGEST_FILTER_SIZE / 3)+1;
+    int padded_border = ((LARGEST_FILTER_SIZE - 1) / 2)+1;
+
+    printf("OPTIMIZED Lobe: %i\n", lobe);
+
+     for (int i = 0, ind = 0; i < original_image_height; ++i) {
+        for (int j = 0; j < original_image_width; ++j, ind++) {
             // Image coordinates
-            x = i*step;
-            y = j*step;
+            x = i*step+padded_border;
+            y = j*step+padded_lobe;
 
             // Calculate Dxx, Dyy, Dxy with Box Filter
-            Dxx = box_integral_with_padding(padded_iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
-                    - 3 * box_integral_with_padding(padded_iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
-            Dyy = box_integral_with_padding(padded_iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
-                    - 3 * box_integral_with_padding(padded_iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
-            Dxy = box_integral_with_padding(padded_iimage, x - lobe, y + 1, lobe, lobe)
-                    + box_integral_with_padding(padded_iimage, x + 1, y - lobe, lobe, lobe)
-                    - box_integral_with_padding(padded_iimage, x - lobe, y - lobe, lobe, lobe)
-                    - box_integral_with_padding(padded_iimage, x + 1, y + 1, lobe, lobe);
+            Dxx = box_integral_with_padding(padded_iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size, 0)
+                    - 3 * box_integral_with_padding(padded_iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe, 0);
+            printf("Dyy: ");
+
+            Dyy = box_integral_with_padding(padded_iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1, 1)
+                    - 3 * box_integral_with_padding(padded_iimage, x - lobe / 2, y - lobe + 1 , lobe, 2*lobe - 1, 0);
+            Dxy = box_integral_with_padding(padded_iimage, x - lobe, y + 1, lobe, lobe, 0)
+                    + box_integral_with_padding(padded_iimage, x + 1, y - lobe, lobe, lobe, 0)
+                    - box_integral_with_padding(padded_iimage, x - lobe, y - lobe, lobe, lobe, 0)
+                    - box_integral_with_padding(padded_iimage, x + 1, y + 1, lobe, lobe, 0);
 
             // Normalize Responses with inverse area
             Dxx *= inv_area;
@@ -1127,6 +1134,8 @@ void compute_response_layer_with_padding(struct response_layer* layer, struct in
 
             // Calculate Determinant
             response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+           // printf("OPTIMIZED: (%i, %i), ind: %i, Dxx: %f, Dyy: %f, Dxy: %f, response: %f\n", x, y, ind, Dxx, Dyy, Dxy, response[ind]);
+
 
             // Calculate Laplacian
             laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);

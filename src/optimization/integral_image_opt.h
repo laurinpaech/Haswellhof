@@ -27,4 +27,4 @@ struct integral_image *create_padded_integral_img(int width, int height);
 
 void compute_padded_integral_image(float *gray_image, int width, int height, float *iimage_data);
 
-float box_integral_with_padding(struct integral_image *iimage, int row, int col, int rows, int cols);
+float box_integral_with_padding(struct integral_image *iimage, int row, int col, int rows, int cols, int print);

@@ -76,3 +76,6 @@ void interpolate_extremum(int row, int col, struct response_layer *top, struct r
 
 // constructing hessian and negative gaussian to solve 3x3 linear system and get sub-pixel offsets
 void interpolate_step(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets[3]);
+
+
+void compute_response_layer_debug(struct response_layer* layer, struct integral_image* iimage);
