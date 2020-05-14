@@ -96,10 +96,6 @@ inline float box_integral_debug(struct integral_image *iimage, int row, int col,
     if (r1 >= 0 && c1 >= 0) {
         D = data[r1 * width + c1];
     }
-    if(print == 1){
-                printf(" row: %i, col: %i\n", row, col);
 
-    printf("ORIGINAL: r0: %i, c0: %i, r1: %i, c1: %i, A: %f, B: %f, C: %f, D: %f\n", r0, c0, r1, c1, A, B, C, D);
-    }
     return fmax(0.0f, A - B - C + D);
 }

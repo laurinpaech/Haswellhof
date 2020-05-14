@@ -118,56 +118,6 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
 
 }
 
-void compute_response_layer_debug(struct response_layer* layer, struct integral_image* iimage) {
-    float Dxx, Dyy, Dxy;
-    int x, y;
-
-    float* response = layer->response;
-    bool* laplacian = layer->laplacian;
-
-    int step = layer->step;
-    int filter_size = layer->filter_size;
-    int height = layer->height;
-    int width = layer->width;
-
-    int lobe = filter_size/3;
-    int border = (filter_size-1)/2;
-    float inv_area = 1.f/(filter_size*filter_size);
-    for (int i = 0, ind = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j, ind++) {
-            // Image coordinates
-            x = i*step;
-            y = j*step;
-
-            // Calculate Dxx, Dyy, Dxy with Box Filter
-            //printf("Dxy: ");
-            Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
-                    - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
-            Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
-                    - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
-                       
-            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
-                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
-                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
-                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
-
-            // Normalize Responses with inverse area
-            Dxx *= inv_area;
-            Dyy *= inv_area;
-            Dxy *= inv_area;
-
-            // Calculate Determinant
-            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
-             //printf("ORIGINAL: (%i, %i), ind: %i, Dxx: %f, Dyy: %f, Dyy_large: %f, Dyy_small: %f,Dxy: %f, response: %f\n", x, y, ind, Dxx, Dyy, Dyy_large, Dyy_small,
-             //Dxy, response[ind]);            
-             // Calculate Laplacian
-            laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
-        }
-    }
-
-}
-
-
 
 void get_interest_points(struct fasthessian *fh, std::vector<struct interest_point> *interest_points) {
 
