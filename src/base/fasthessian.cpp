@@ -119,7 +119,7 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
 }
 
 void compute_response_layer_debug(struct response_layer* layer, struct integral_image* iimage) {
-    float Dxx, Dyy, Dxy;
+    float Dxx, Dyy, Dxy, Dyy_large, Dyy_small;
     int x, y;
 
     float* response = layer->response;
@@ -141,11 +141,14 @@ void compute_response_layer_debug(struct response_layer* layer, struct integral_
             y = j*step;
 
             // Calculate Dxx, Dyy, Dxy with Box Filter
-            printf("Dyy: ");
+            //printf("Dxy: ");
             Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
                     - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
-            Dyy = box_integral_debug(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1, 1)
+            Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
                     - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
+            Dyy_large = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1);
+            Dyy_small = 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
+            
             Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
                     + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
                     - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
@@ -158,8 +161,9 @@ void compute_response_layer_debug(struct response_layer* layer, struct integral_
 
             // Calculate Determinant
             response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
-            //printf("ORIGINAL: (%i, %i), ind: %i, Dxx: %f, Dyy: %f, Dxy: %f, response: %f\n", x, y, ind, Dxx, Dyy, Dxy, response[ind]);
-            // Calculate Laplacian
+             //printf("ORIGINAL: (%i, %i), ind: %i, Dxx: %f, Dyy: %f, Dyy_large: %f, Dyy_small: %f,Dxy: %f, response: %f\n", x, y, ind, Dxx, Dyy, Dyy_large, Dyy_small,
+             //Dxy, response[ind]);            
+             // Calculate Laplacian
             laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
         }
     }

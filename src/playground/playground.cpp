@@ -36,7 +36,7 @@ void playground_function1(float *image, int width, int height) {
 
     
         struct fasthessian *fh_original = create_fast_hessian(iimage);
-        int start =6;
+        int start =0;
 
        int test_layer_size = fh_original->total_layers;
         // Create octaves with response layers
