@@ -119,7 +119,7 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
 }
 
 void compute_response_layer_debug(struct response_layer* layer, struct integral_image* iimage) {
-    float Dxx, Dyy, Dxy, Dyy_large, Dyy_small;
+    float Dxx, Dyy, Dxy;
     int x, y;
 
     float* response = layer->response;
@@ -131,7 +131,6 @@ void compute_response_layer_debug(struct response_layer* layer, struct integral_
     int width = layer->width;
 
     int lobe = filter_size/3;
-    printf("ORIGINAL Lobe: %i\n", lobe);
     int border = (filter_size-1)/2;
     float inv_area = 1.f/(filter_size*filter_size);
     for (int i = 0, ind = 0; i < height; ++i) {
@@ -146,9 +145,7 @@ void compute_response_layer_debug(struct response_layer* layer, struct integral_
                     - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
             Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
                     - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
-            Dyy_large = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1);
-            Dyy_small = 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
-            
+                       
             Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
                     + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
                     - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)

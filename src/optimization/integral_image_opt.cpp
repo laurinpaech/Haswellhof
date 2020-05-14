@@ -105,44 +105,43 @@ void compute_integral_img_faster_alg(float *gray_image, int width, int height, f
 // image_height + 2 * largest_border.
 struct integral_image *create_padded_integral_img(int width, int height) {
     struct integral_image *iimage = (struct integral_image *)malloc(sizeof(struct integral_image));
-    int border = (LARGEST_FILTER_SIZE - 1) / 2;
-    //int lobe = LARGEST_FILTER_SIZE / 3;
+    iimage->height = height;
+    iimage->width = width;
 
     // Add the border above the image all values will be 0.
     // Add the border below the image, all values will be equivalent to the last row.
-    iimage->height = height;
-    // Add the lobe to the left side of the image, all values will be 0.
-    // Add the lobe to the right side of the image, all values will be equivalent to the last column.
-    iimage->width = width;
+
+    // Add the border to the left side of the image, all values will be 0.
+    // Add the border to the right side of the image, all values will be equivalent to the last column.
+
     // The right lower corner will contain only the max value of the integral image. (lowest right-most value)
 
-    // Border + 1 because A and B are always exclusive.
-    int padded_height = height + (border + 1) * 2;
-    // Lobe + 1 because A and C are always exclusive.
-    //int padded_width = width + (lobe + 1) * 2;
+    // Border + 1 because A, B and C are always exclusive.
+    int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
 
-    iimage->data = (float *)malloc(padded_height * padded_height * sizeof(float));
+    // Border as padding above and below the image because of Dyy.
+    int padded_height = height + border * 2;
+    // Border as padding to the left and right because of Dxx.
+    int padded_width = width + border * 2;
+
+    iimage->data = (float *)malloc(padded_width * padded_height * sizeof(float));
 
     return iimage;
 }
 
 void compute_padded_integral_image(float *gray_image, int original_image_width, int original_image_height,
                                    float *iimage_data) {
-    // Border + 1 because A and B are always exclusive. We would need too many special cases if we work with different
-    // upper and lower borders.
+    // The border and the lobe must be the same, since the filters are being turned dependant on Dxx/Dyy. The border is
+    // always larger than the lobe. We have to make sure that the border is available as padding in all directions.
+    // Border + 1 because A, B and C are always exclusive. We would need too many special cases if we'd work with
+    // different upper and lower borders and left and right borders.
     int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
-    // Lobe + 1 because A and C are always exclusive. We would need too many special cases if we work with different
-    // left and right lobes.
-    //int lobe = (LARGEST_FILTER_SIZE / 3) + 1;
-    printf("border: %i\n", border);
 
-    int padded_height = original_image_height + border*2;
-    printf("padded_height: %i\n", padded_height);
+    int padded_height = original_image_height + border * 2;
 
-    int padded_width = original_image_width + border*2;
-    printf("padded_width: %i\n", padded_width);
+    // The width must also pad for the border, because of Dxx.
+    int padded_width = original_image_width + border * 2;
 
-    printf("Pad top part\n");
     // Pad the top part with 0.
     for (int i = 0; i < border; i++) {
         for (int j = 0; j < padded_width; j++) {
@@ -150,26 +149,21 @@ void compute_padded_integral_image(float *gray_image, int original_image_width, 
         }
     }
 
-    printf("Pad left part\n");
     // Pad the remaining left part with 0.
     for (int i = border; i < padded_height; i++) {
-        // printf("i %i\n",i);
-        // Padded width + 1 because A and C are always exclusive.
         for (int j = 0; j < border; j++) {
             iimage_data[i * padded_width + j] = 0.0f;
         }
     }
 
-    printf("Compute actual integral image\n");
     float row_sum = 0.0f;
     float last_element_in_row = 0.0f;
     // Sum up the first row
     // The first element that is not padding.
     int ind = (border * padded_width) + border;
-    printf("PADDED INDEX: %i\n", ind);
 
     for (int i = 0; i < original_image_width; i++, ind++) {
-        /* previous rows are 0 */
+        // Previous rows are 0
         row_sum += gray_image[i];
         iimage_data[ind] = row_sum;
         last_element_in_row = row_sum;
@@ -179,18 +173,14 @@ void compute_padded_integral_image(float *gray_image, int original_image_width, 
         iimage_data[ind] = last_element_in_row;
     }
 
-    printf("First row done\n");
-    printf("ind: %i\n", ind);
     // Sum all remaining rows of the original image
     for (int i = 1; i < original_image_height; ++i) {
-        // TODO: (carla) maybe lobe-1
         row_sum = 0.0f;
         ind += border;
 
         for (int j = 0; j < original_image_width; ++j, ind++) {
             row_sum += gray_image[i * original_image_width + j];
-            // add sum of current row until current idx to sum of all previous rows until current index
-            // TODO: (carla) maybe lobe-1
+            // Add sum of current row until current idx to sum of all previous rows until current index
             last_element_in_row = row_sum + iimage_data[ind - padded_width];
             iimage_data[ind] = last_element_in_row;
         }
@@ -201,22 +191,16 @@ void compute_padded_integral_image(float *gray_image, int original_image_width, 
         }
     }
 
-    printf("Pad bottom part\n");
     // Pad the middle lower part of the integral image with the elements of the last row.
-    // TODO: (carla) maybe ind+1
-    printf("ind: %i\n", ind);
     for (int i = original_image_height + border; i < padded_height; i++) {
         for (int j = border; j < padded_width - border; j++) {
             iimage_data[i * padded_width + j] = iimage_data[(i - 1) * padded_width + j];
         }
     }
 
-    printf("Pad right part\n");
     // Pad the right lower corner of the integral image with the max value of the integral image.
     int index_last_element = (original_image_height + border - 1) * padded_width + original_image_width + border;
-    printf("index last element: %i\n", index_last_element);
     float max_value = iimage_data[index_last_element];
-    printf("max value: %f\n", max_value);
 
     for (int i = border + original_image_height; i < padded_height; i++) {
         for (int j = border + original_image_width; j < padded_width; j++) {
@@ -227,30 +211,21 @@ void compute_padded_integral_image(float *gray_image, int original_image_width, 
 
 float box_integral_with_padding(struct integral_image *iimage, int row, int col, int rows, int cols, int print) {
     float *data = (float *)iimage->data;
-    //int lobe = LARGEST_FILTER_SIZE / 3 + 1;
     int border = (LARGEST_FILTER_SIZE - 1) / 2 + 1;
 
+    // The padded width must be + border because of Dxx. If we'd only account for Dyy lobe would be sufficient.
     int padded_width = iimage->width + (border * 2);
 
     // subtracting by one for row/col because row/col is inclusive.
-    int r0 = row - 1;         // r - 3
-    int c0 = col - 1;         // c - b - 1
-    int r1 = row + rows - 1;  // r - 3 + 5
-    int c1 = col + cols - 1;  // c - b + filter_size - 1
+    int r0 = row - 1;
+    int c0 = col - 1;
+    int r1 = row + rows - 1;
+    int c1 = col + cols - 1;
 
-    // Example with 9x9 filter at (0,0)
-    // A: (-3, -5)
-    // B: (-3, 8)
-    // C: (2, -1)
-    // D: (2, 4)
     float A = data[r0 * padded_width + c0];
     float B = data[r0 * padded_width + c1];
     float C = data[r1 * padded_width + c0];
     float D = data[r1 * padded_width + c1];
-    if (print == 1) {
-        printf("lobe: %i, border: %i\n", border, border);
-        printf("OPTIMIZED r0: %i, c0: %i, r1: %i, c1: %i, A: %f, B: %f, C: %f, D: %f\n", r0, c0, r1, c1, A, B, C, D);
-    }
 
     return fmax(0.0f, A - B - C + D);
 }

@@ -8,6 +8,8 @@
 #include "fasthessian.h"
 #include "interest_point.h"
 #include "descriptor.h"
+#include "fasthessian_opt.h"
+#include "validation.h"
 
 #include "playground.h"
 
@@ -39,8 +41,18 @@ int main(int argc, char const *argv[])
 	// Compute integral image
 	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
 
+	std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
+	test_functions.push_back(compute_response_layer_with_padding);
+
+	 bool valid =validate_compute_response_layer_with_padding(compute_response_layer,test_functions, image, width, height);
+	
+        if (valid) {
+            printf("COMPUTE RESPONSE LAYER VALIDATION:    \033[0;32mSUCCESS!\033[0m\n");
+        } else {
+            printf("COMPUTE RESPONSE LAYER VALIDATION:    \033[1;31mFAILED!\033[0m\n");
+        }
 	//playground_function2();
-	playground_function1(image, width, height);
+	//playground_function1(image, width, height);
 	/*
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);

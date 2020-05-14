@@ -1050,7 +1050,7 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
     }
 }
 void compute_response_layer_with_padding(struct response_layer *layer, struct integral_image *padded_iimage) {
-    float Dxx, Dyy, Dxy, Dyy_large, Dyy_small;
+    float Dxx, Dyy, Dxy;
     int x, y;
 
     float *response = layer->response;
@@ -1068,7 +1068,7 @@ void compute_response_layer_with_padding(struct response_layer *layer, struct in
     // int padded_lobe = (LARGEST_FILTER_SIZE / 3) + 1;
     int padded_border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
 
-    printf("OPTIMIZED Lobe: %i\n", lobe);
+    //sprintf("OPTIMIZED Lobe: %i\n", lobe);
 
     for (int i = 0, ind = 0; i < original_image_height; ++i) {
 
@@ -1083,10 +1083,7 @@ void compute_response_layer_with_padding(struct response_layer *layer, struct in
             Dxx = box_integral_with_padding(padded_iimage, x - lobe + 1, y - border, 2 * lobe - 1, filter_size, 0) -
                   3 * box_integral_with_padding(padded_iimage, x - lobe + 1, y - lobe / 2, 2 * lobe - 1, lobe, 0);
 
-            Dyy_large =
-                box_integral_with_padding(padded_iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1, 0);
-            Dyy_small = 3 * box_integral_with_padding(padded_iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1, 0);
-            Dyy = box_integral_with_padding(padded_iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1, 0) -
+                       Dyy = box_integral_with_padding(padded_iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1, 0) -
                   3 * box_integral_with_padding(padded_iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1, 0);
             Dxy = box_integral_with_padding(padded_iimage, x - lobe, y + 1, lobe, lobe, 0) +
                   box_integral_with_padding(padded_iimage, x + 1, y - lobe, lobe, lobe, 0) -
