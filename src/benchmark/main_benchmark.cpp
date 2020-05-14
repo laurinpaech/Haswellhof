@@ -95,16 +95,16 @@ int main(int argc, char const *argv[]) {
             printf("compute_response_layer start\n");
 
             std::vector<void (*)(struct fasthessian *)> functions;
-            functions.push_back(compute_response_layers);
-            functions.push_back(compute_response_layers_at_once);
+            functions.push_back(compute_response_map);
+            //functions.push_back(compute_response_layers_at_once);
 
 
             struct benchmark_data default_data(image_name, width, height, "compute_response_layer", -1, (1 + height * width * 13));
-            struct benchmark_data data1(image_name, width, height, "compute_response_layers_at_once", -1, (1 + height * width * 13));
+            //struct benchmark_data data1(image_name, width, height, "compute_response_layers_at_once", -1, (1 + height * width * 13));
             
             std::vector<struct benchmark_data> data;
             data.push_back(default_data);
-            data.push_back(data1);
+            //data.push_back(data1);
 
             bench_compute_response_layer(functions, iimage, data);
 
@@ -114,7 +114,8 @@ int main(int argc, char const *argv[]) {
 #endif
         
         // Compute responses for every layer
-	    compute_response_layers(fh);
+	    //compute_response_layers(fh);
+        compute_response_map(fh);
 
         // Getting interest points with non-maximum supression
         std::vector<struct interest_point> interest_points;
@@ -170,6 +171,7 @@ int main(int argc, char const *argv[]) {
 
 #ifdef BENCHMARK_GET_MSURF_DESCRIPTORS
         {
+            /*
             printf("get_msurf_descriptor start\n");
             
             // Insert all interpolate_step functions for benchmarking here
@@ -221,6 +223,7 @@ int main(int argc, char const *argv[]) {
             all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
 
             printf("get_msurf_descriptor end\n");
+            */
         }
 #endif
 
