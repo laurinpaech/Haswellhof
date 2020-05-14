@@ -101,7 +101,7 @@ void compute_integral_img_faster_alg(float *gray_image, int width, int height, f
 }
 
 // Creates the struct of the padded integral image
-// Has a larger size for the padding. the width is image_width + 2 * largest_lobe. The height is
+// Has a larger size for the padding. the width is image_width + 2 * largest_border. The height is
 // image_height + 2 * largest_border.
 struct integral_image *create_padded_integral_img(int width, int height) {
     struct integral_image *iimage = (struct integral_image *)malloc(sizeof(struct integral_image));
@@ -168,7 +168,7 @@ void compute_padded_integral_image(float *gray_image, int original_image_width, 
         iimage_data[ind] = row_sum;
         last_element_in_row = row_sum;
     }
-    // Pad the right side with the last element of the row.
+    // Pad the right side of the first row with the last element of the row.
     for (int j = original_image_width + border; j < padded_width; j++, ind++) {
         iimage_data[ind] = last_element_in_row;
     }
@@ -227,7 +227,7 @@ float box_integral_with_padding(struct integral_image *iimage, int row, int col,
     float C = data[r1 * padded_width + c0];
     float D = data[r1 * padded_width + c1];
 
-    return fmax(0.0f, A - B - C + D);
+    return fmaxf(0.0f, A - B - C + D);
 }
 
 // Computes the integral image

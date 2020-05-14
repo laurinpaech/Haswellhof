@@ -1065,25 +1065,19 @@ void compute_response_layer_with_padding(struct response_layer *layer, struct in
     int border = (filter_size - 1) / 2;
     float inv_area = 1.f / (filter_size * filter_size);
 
-    // int padded_lobe = (LARGEST_FILTER_SIZE / 3) + 1;
     int padded_border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
 
-    //sprintf("OPTIMIZED Lobe: %i\n", lobe);
-
     for (int i = 0, ind = 0; i < original_image_height; ++i) {
-
         for (int j = 0; j < original_image_width; ++j, ind++) {
             // Image coordinates
             x = i * step + padded_border;
             y = j * step + padded_border;
 
             // Calculate Dxx, Dyy, Dxy with Box Filter
-
-            // printf("Dxy: ");
             Dxx = box_integral_with_padding(padded_iimage, x - lobe + 1, y - border, 2 * lobe - 1, filter_size, 0) -
                   3 * box_integral_with_padding(padded_iimage, x - lobe + 1, y - lobe / 2, 2 * lobe - 1, lobe, 0);
 
-                       Dyy = box_integral_with_padding(padded_iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1, 0) -
+            Dyy = box_integral_with_padding(padded_iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1, 0) -
                   3 * box_integral_with_padding(padded_iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1, 0);
             Dxy = box_integral_with_padding(padded_iimage, x - lobe, y + 1, lobe, lobe, 0) +
                   box_integral_with_padding(padded_iimage, x + 1, y - lobe, lobe, lobe, 0) -
@@ -1097,11 +1091,9 @@ void compute_response_layer_with_padding(struct response_layer *layer, struct in
 
             // Calculate Determinant
             response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
-            //printf("OPTIMIZED: (%i, %i), ind: %i, Dxx: %f, Dyy: %f, Dyy_large: %f, Dyy_small: %f,Dxy: %f, response: %f\n", x, y, ind, Dxx, Dyy, Dyy_large, Dyy_small,
-            //Dxy, response[ind]);
 
-             // Calculate Laplacian
-             laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
+            // Calculate Laplacian
+            laplacian[ind] = (Dxx + Dyy >= 0);
         }
     }
 }
