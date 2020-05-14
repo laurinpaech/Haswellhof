@@ -93,14 +93,14 @@ int main(int argc, char const *argv[]) {
         
 #ifdef BENCHMARK_COMPUTE_RESPONSE_LAYERS
         {
-            printf("compute_response_layer start\n");
+            printf("compute_response_map start\n");
 
             std::vector<void (*)(struct fasthessian *)> functions;
             functions.push_back(compute_response_map);
             //functions.push_back(compute_response_layers_at_once);
             functions.push_back(compute_response_map_Dyy);
 
-            struct benchmark_data default_data(image_name, width, height, "compute_response_layer", -1, (1 + height * width * 13));
+            struct benchmark_data default_data(image_name, width, height, "compute_response_map", -1, (1 + height * width * 13));
             struct benchmark_data data1(image_name, width, height, "compute_response_map_Dyy", -1, (1 + height * width * 13));
             
             std::vector<struct benchmark_data> data;
@@ -110,7 +110,7 @@ int main(int argc, char const *argv[]) {
             bench_compute_response_layer(functions, iimage, data);
 
             all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
-            printf("compute_response_layer end\n");
+            printf("compute_response_map end\n");
         }
 #endif
         
