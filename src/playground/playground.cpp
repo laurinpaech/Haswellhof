@@ -39,29 +39,3 @@ void playground_function2(struct integral_image *iimage) {
     }
 }
 
-void playground_function3(struct integral_image *iimage, const char* image_name) {
-    // Insert all compute_integral_img functions for benchmarking here
-    std::vector<void (*)(struct response_layer *, struct integral_image *)> functions;
-    functions.push_back(compute_response_layer);
-    functions.push_back(compute_response_layer_Dyy_leftcorner);
-    // functions.push_back(compute_integral_img_faster_alg);
-
-    // TODO: (carla) how to take the image_name as argument
-    struct benchmark_data default_data("never_gonna_give_you_up", iimage->width, iimage->height,
-                                       "compute_response_layer", -1, 1 + iimage->height*iimage->width*13);
-                                           std::vector<struct benchmark_data> data;
-    data.push_back(default_data);
-
-    struct benchmark_data default_data2("never_gonna_give_you_up", iimage->width, iimage->height,
-                                       "compute_response_layer_Dyy_leftcorner", -1, 1 + iimage->height*iimage->width*13);
-
-    data.push_back(default_data2);
-
-    bench_compute_response_layer(functions, iimage, data);
-
-
-    // Insert all respective benchmarking info for compute_integral_img here
-
-    save_benchmark_data(data);
-
-}

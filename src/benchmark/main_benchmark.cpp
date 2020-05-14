@@ -13,8 +13,9 @@
 #include "integral_image.h"
 #include "interest_point.h"
 #include "stb_image.h"
-#include "descriptor_opt.h"
 #include "fasthessian_opt.h"
+
+//#include "descriptor_opt.h"
 
 const char *images[] = {
     // "../images/sunflower/sunflower_32.jpg",  
@@ -95,12 +96,12 @@ int main(int argc, char const *argv[]) {
             printf("compute_response_layer start\n");
 
             std::vector<void (*)(struct fasthessian *)> functions;
-            functions.push_back(compute_response_layers);
-            functions.push_back(compute_response_layers_at_once);
-
+            functions.push_back(compute_response_map);
+            //functions.push_back(compute_response_layers_at_once);
+            functions.push_back(compute_response_map_Dyy);
 
             struct benchmark_data default_data(image_name, width, height, "compute_response_layer", -1, (1 + height * width * 13));
-            struct benchmark_data data1(image_name, width, height, "compute_response_layers_at_once", -1, (1 + height * width * 13));
+            struct benchmark_data data1(image_name, width, height, "compute_response_map_Dyy", -1, (1 + height * width * 13));
             
             std::vector<struct benchmark_data> data;
             data.push_back(default_data);
@@ -114,7 +115,7 @@ int main(int argc, char const *argv[]) {
 #endif
         
         // Compute responses for every layer
-	    compute_response_layers(fh);
+	    compute_response_map(fh);
 
         // Getting interest points with non-maximum supression
         std::vector<struct interest_point> interest_points;
@@ -168,6 +169,7 @@ int main(int argc, char const *argv[]) {
         }
 #endif
 
+/*
 #ifdef BENCHMARK_GET_MSURF_DESCRIPTORS
         {
             printf("get_msurf_descriptor start\n");
@@ -223,7 +225,7 @@ int main(int argc, char const *argv[]) {
             printf("get_msurf_descriptor end\n");
         }
 #endif
-
+*/
         // Getting M-SURF descriptors for each interest point
 	    get_msurf_descriptors(iimage, &interest_points);
 

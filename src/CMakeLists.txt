@@ -50,6 +50,8 @@ add_executable(benchmark
     benchmark/benchmarking.cpp
     benchmark/tsc_x86.h
     benchmark/main_benchmark.cpp
+    optimization/fasthessian_opt.h
+    optimization/fasthessian_opt.cpp
 )
 
 # Adding include directories for executable benchmark
@@ -57,6 +59,7 @@ target_include_directories(benchmark
     PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/base
     ${CMAKE_CURRENT_SOURCE_DIR}/benchmark 
+    ${CMAKE_CURRENT_SOURCE_DIR}/optimization
 )
 
 # Adding libraries to be linked with executable benchmark

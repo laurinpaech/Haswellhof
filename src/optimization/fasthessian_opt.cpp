@@ -1379,6 +1379,12 @@ void compute_response_layer_Dyy_top_mid(struct response_layer* layer, struct int
     }
 }
 
+void compute_response_map_Dyy(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_Dyy(fh->response_map[i], fh->iimage);
+    }
+}
+
 
 void compute_response_layer_Dyy(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
