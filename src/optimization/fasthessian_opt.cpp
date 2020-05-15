@@ -1066,7 +1066,7 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
         }
     }
 }
-void compute_response_layer_with_padding(struct response_layer *layer, struct integral_image *padded_iimage) {
+void compute_response_layer_uncoditional(struct response_layer *layer, struct integral_image *iimage) {
     float Dxx, Dyy, Dxy;
     int x, y;
 
@@ -1075,31 +1075,27 @@ void compute_response_layer_with_padding(struct response_layer *layer, struct in
 
     int step = layer->step;
     int filter_size = layer->filter_size;
-    int original_image_height = layer->height;
-    int original_image_width = layer->width;
+    int height = layer->height;
+    int width = layer->width;
 
-    int lobe = filter_size / 3;
-    int border = (filter_size - 1) / 2;
-    float inv_area = 1.f / (filter_size * filter_size);
-
-    int padded_border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
-
-    for (int i = 0, ind = 0; i < original_image_height; ++i) {
-        for (int j = 0; j < original_image_width; ++j, ind++) {
+    int lobe = filter_size/3;
+    int border = (filter_size-1)/2;
+    float inv_area = 1.f/(filter_size*filter_size);
+    for (int i = 0, ind = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j, ind++) {
             // Image coordinates
-            x = i * step + padded_border;
-            y = j * step + padded_border;
+            x = i*step;
+            y = j*step;
 
             // Calculate Dxx, Dyy, Dxy with Box Filter
-            Dxx = box_integral_unconditional(padded_iimage, x - lobe + 1, y - border, 2 * lobe - 1, filter_size) -
-                  3 * box_integral_unconditional(padded_iimage, x - lobe + 1, y - lobe / 2, 2 * lobe - 1, lobe);
-
-            Dyy = box_integral_unconditional(padded_iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1) -
-                  3 * box_integral_unconditional(padded_iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
-            Dxy = box_integral_unconditional(padded_iimage, x - lobe, y + 1, lobe, lobe) +
-                  box_integral_unconditional(padded_iimage, x + 1, y - lobe, lobe, lobe) -
-                  box_integral_unconditional(padded_iimage, x - lobe, y - lobe, lobe, lobe) -
-                  box_integral_unconditional(padded_iimage, x + 1, y + 1, lobe, lobe);
+            Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                    - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+            Dyy = box_integral_unconditional(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
+                    - 3 * box_integral_unconditional(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
+            Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                    + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                    - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                    - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
 
             // Normalize Responses with inverse area
             Dxx *= inv_area;
@@ -1108,11 +1104,11 @@ void compute_response_layer_with_padding(struct response_layer *layer, struct in
 
             // Calculate Determinant
             response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
-
             // Calculate Laplacian
             laplacian[ind] = (Dxx + Dyy >= 0);
         }
     }
+
 }
 
 void interpolate_step_gauss(int row, int col, struct response_layer *top, struct response_layer *middle,
