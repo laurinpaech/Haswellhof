@@ -1,8 +1,6 @@
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
-#define USE_MSURF 1
-
 #include "stb_image.h"
 #include "integral_image.h"
 #include "fasthessian.h"
@@ -52,9 +50,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_integral_image(compute_integral_img, test_functions, width, height, image);
         if (valid) {
-            printf("INTEGRAL IMAGE VALIDATION:    \033[0;32mSUCCESS!\033[0m\n");
+            printf("INTEGRAL IMAGE VALIDATION:          \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("INTEGRAL IMAGE VALIDATION:    \033[1;31mFAILED!\033[0m\n");
+            printf("INTEGRAL IMAGE VALIDATION:          \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
@@ -69,7 +67,7 @@ int main(int argc, char const *argv[])
 	create_response_map(fh);
 
 	// Compute responses for every layer
-	compute_response_map(fh);
+	compute_response_layers(fh);
 
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER
     {
@@ -81,7 +79,7 @@ int main(int argc, char const *argv[])
         if (valid) {
             printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[1;31mFAILED!\033[0m!\n");
+            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
@@ -89,36 +87,27 @@ int main(int argc, char const *argv[])
     // Getting interest points with non-maximum supression
     std::vector<struct interest_point> interest_points;
     get_interest_points(fh, &interest_points);
+    
+    // Getting M-SURF descriptors for each interest point
+	get_msurf_descriptors(iimage, &interest_points);
 
-#if !USE_MSURF
-	// Descriptor stuff
-    float* GW = get_gaussian(3.3);
-	for (size_t i=0; i<interest_points.size(); ++i) {
-        get_descriptor(iimage, &interest_points[i], GW);
-	}
-
-    free(GW);
-#else
-	// Alternative M-SURF descriptors as in OpenSURF
-	for (size_t i=0; i<interest_points.size(); ++i) {
-        get_msurf_descriptor(iimage, &interest_points[i]);
-	}
 #ifdef VALIDATE_GET_MSURF_DESCRIPTORS	
     {
         std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
+        // test_functions.push_back(get_msurf_descriptor);
         test_functions.push_back(get_msurf_descriptor_improved);
         test_functions.push_back(get_msurf_descriptor_inlined);
-        test_functions.push_back(get_msurf_descriptor_precompute_gauss_s2);
         test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
+        test_functions.push_back(get_msurf_descriptor_gauss_compute_once_case);
+        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar);
 
         bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
         if (valid) {
-            printf("MSURF DESCRIPTOR VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
+            printf("MSURF DESCRIPTOR VALIDATION:        \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("MSURF DESCRIPTOR VALIDATION:  \033[1;31mFAILED!\033[0m!\n");
+            printf("MSURF DESCRIPTOR VALIDATION:        \033[1;31mFAILED!\033[0m\n");
         }
     }
-#endif
 #endif
 
 	// Write results to file

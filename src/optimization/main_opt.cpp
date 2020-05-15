@@ -1,8 +1,6 @@
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
-#define USE_MSURF 1
-
 #include "stb_image.h"
 #include "integral_image.h"
 #include "fasthessian.h"
@@ -44,27 +42,18 @@ int main(int argc, char const *argv[])
     create_response_map(fh);
 
 	// Compute responses for every layer
-	compute_response_map(fh);
+	compute_response_layers(fh);
 
     // Getting interest points with non-maximum supression
     std::vector<struct interest_point> interest_points;
     get_interest_points(fh, &interest_points);
+    
+    // Getting M-SURF descriptors for each interest point
+	get_msurf_descriptors_gauss_pecompute_haar(iimage, &interest_points);
+    
 
-#if !USE_MSURF
-    // Descriptor stuff
-    float* GW = get_gaussian(3.3);
-    for (size_t i=0; i<interest_points.size(); ++i) {
-        get_descriptor_inlinedHaarWavelets(iimage, &interest_points[i], GW);
-    }
-
-    free(GW);
-#else
-    // Alternative M-SURF descriptors as in OpenSURF
-    for (size_t i=0; i<interest_points.size(); ++i) {
-        get_msurf_descriptor_inlinedHaarWavelets(iimage, &interest_points[i]);
-    }
-#endif
-
+    // skipping this part as it adds nise for profiler
+    /*
     // Write results to file
     FILE * fp = fopen(argv[2],"w");
     printf("%d %d %d\n", iimage->width, iimage->height, channels);
@@ -76,6 +65,7 @@ int main(int argc, char const *argv[])
         fprintf(fp, "\n");
     }
     fclose(fp);
+    */
 
     // Free memory
     stbi_image_free(image); // possibly move this to create_integral_img

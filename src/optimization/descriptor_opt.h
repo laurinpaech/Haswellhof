@@ -1,10 +1,14 @@
 #pragma once 
 
-#include <math.h>
-#include <stdlib.h>
 #include "integral_image.h"
 #include "interest_point.h"
 #include "helper.h"
+
+#include <math.h>
+#include <stdlib.h>
+
+#include "stdio.h"
+#include <vector>
 
 // #define PATCH_SIZE 20
 
@@ -29,13 +33,48 @@ inline float gaussianf(float x, float y, float sig) {
     return 1.0f / (2.0f * M_PI * sig*sig) * expf(-(x*x+y*y)/(2.0f*sig*sig));
 }
 
-void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint, float* GW);
+
 
 void get_msurf_descriptor_improved(struct integral_image* iimage, struct interest_point* ipoint);
 
+void get_msurf_descriptors_improved(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_improved_flip(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_improved_flip(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_improved_flip_flip(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
 void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest_point* ipoint);
 
+void get_msurf_descriptors_inlined(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_gauss_s1_separable_test(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_s1_separable_test(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_gauss_s2_precomputed(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_s2_precomputed(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
 void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_inlinedHaarWavelets(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_gauss_compute_once_case(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_compute_once_case(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_pecompute_haar(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
 
 inline void haarXY(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
     
@@ -89,11 +128,11 @@ inline void haarXY(struct integral_image *iimage, int row, int col, int scale, f
         r2c2 = data[r2 * data_width + c2];
     }
 
-    float r0c0_sub_r2c2 = r0c0 - r2c2;
+    float r2c2_sub_r0c0 = r2c2 - r0c0;
     float r0c2_sub_r2c0 = r0c2 - r2c0;
 
-    *haarX = -1*(r0c0_sub_r2c2 - 2*(r0c1 - r2c1) + r0c2_sub_r2c0);
-    *haarY = -1*(r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0);
+    *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
+    *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
 }
 
 inline void haarXY_precheck_boundaries(struct integral_image *iimage, int col, int row, int scale, float* haarX, float* haarY) {
@@ -130,11 +169,11 @@ inline void haarXY_precheck_boundaries(struct integral_image *iimage, int col, i
     float r2c1 = data[r2 * data_width + c1];
     float r2c2 = data[r2 * data_width + c2];
 
-    float r0c0_sub_r2c2 = r0c0 - r2c2;
+    float r2c2_sub_r0c0 = r2c2 - r0c0;
     float r0c2_sub_r2c0 = r0c2 - r2c0;
 
-    *haarX = r0c0_sub_r2c2 - 2*(r0c1 - r2c1) + r0c2_sub_r2c0;
-    *haarY = r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0;
+    *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
+    *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
 }
 
-void get_msurf_descriptor_precompute_gauss_s2(struct integral_image* iimage, struct interest_point* ipoint);
+

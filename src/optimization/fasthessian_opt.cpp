@@ -225,7 +225,7 @@ C = (r11, c10)
 D = (r11, c11)
 */
 
-void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct integral_image *iimage) {
+void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y;
     int r0, r1, c0, c1, r00, r01, c00, c01, r10, r11, c10, c11;
@@ -640,10 +640,10 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
             ind += 1;
         }
     }
-}
-*/
 
-void compute_response_layers_at_once(struct fasthessian *fh, struct integral_image *iimage) {
+}
+
+void compute_response_layers_at_once(struct fasthessian* fh) {
     /* computes all 8 response layers at once, gives same results as base implementation
     valgrind reports no improvement for l1 misses, i.e. locality is not improved as expected
     guess due to different filter sizes always accesing different cachelines
@@ -660,6 +660,7 @@ void compute_response_layers_at_once(struct fasthessian *fh, struct integral_ima
 
     int x, y;
     int step = fh->step;
+    struct integral_image* iimage = fh->iimage;
 
     // step == 1: 0,1,2,3
     // step == 2: 4,5
@@ -761,6 +762,7 @@ void compute_response_layers_at_once(struct fasthessian *fh, struct integral_ima
             // Calculate Laplacian
             laplacian0[ind] = (Dxx0 + Dyy0 >= 0 ? true : false);
 
+
             // layer1
             // Calculate Dxx, Dyy, Dxy with Box Filter
             Dxx1 = box_integral(iimage, x - lobe1 + 1, y - border1, 2 * lobe1 - 1, filter_size1) -
@@ -782,6 +784,7 @@ void compute_response_layers_at_once(struct fasthessian *fh, struct integral_ima
 
             // Calculate Laplacian
             laplacian1[ind] = (Dxx1 + Dyy1 >= 0 ? true : false);
+
 
             // layer2
             // Calculate Dxx, Dyy, Dxy with Box Filter
@@ -805,16 +808,17 @@ void compute_response_layers_at_once(struct fasthessian *fh, struct integral_ima
             // Calculate Laplacian
             laplacian2[ind] = (Dxx2 + Dyy2 >= 0 ? true : false);
 
+
             // layer3
             // Calculate Dxx, Dyy, Dxy with Box Filter
-            Dxx3 = box_integral(iimage, x - lobe3 + 1, y - border3, 2 * lobe3 - 1, filter_size3) -
-                   3 * box_integral(iimage, x - lobe3 + 1, y - lobe3 / 2, 2 * lobe3 - 1, lobe3);
-            Dyy3 = box_integral(iimage, x - border3, y - lobe3 + 1, filter_size3, 2 * lobe3 - 1) -
-                   3 * box_integral(iimage, x - lobe3 / 2, y - lobe3 + 1, lobe3, 2 * lobe3 - 1);
-            Dxy3 = box_integral(iimage, x - lobe3, y + 1, lobe3, lobe3) +
-                   box_integral(iimage, x + 1, y - lobe3, lobe3, lobe3) -
-                   box_integral(iimage, x - lobe3, y - lobe3, lobe3, lobe3) -
-                   box_integral(iimage, x + 1, y + 1, lobe3, lobe3);
+            Dxx3 = box_integral(iimage, x - lobe3 + 1, y - border3, 2*lobe3 - 1, filter_size3)
+                    - 3 * box_integral(iimage, x - lobe3 + 1, y - lobe3 / 2, 2*lobe3 - 1, lobe3);
+            Dyy3 = box_integral(iimage, x - border3, y - lobe3 + 1, filter_size3, 2*lobe3 - 1)
+                    - 3 * box_integral(iimage, x - lobe3 / 2, y - lobe3 + 1, lobe3, 2*lobe3 - 1);
+            Dxy3 = box_integral(iimage, x - lobe3, y + 1, lobe3, lobe3)
+                    + box_integral(iimage, x + 1, y - lobe3, lobe3, lobe3)
+                    - box_integral(iimage, x - lobe3, y - lobe3, lobe3, lobe3)
+                    - box_integral(iimage, x + 1, y + 1, lobe3, lobe3);
 
             // Normalize Responses with inverse area
             Dxx3 *= inv_area3;
@@ -827,18 +831,19 @@ void compute_response_layers_at_once(struct fasthessian *fh, struct integral_ima
             // Calculate Laplacian
             laplacian3[ind] = (Dxx3 + Dyy3 >= 0 ? true : false);
 
+
             // 2*step
             if (i % 2 == 0 && j % 2 == 0) {
                 // layer4
                 // Calculate Dxx, Dyy, Dxy with Box Filter
-                Dxx4 = box_integral(iimage, x - lobe4 + 1, y - border4, 2 * lobe4 - 1, filter_size4) -
-                       3 * box_integral(iimage, x - lobe4 + 1, y - lobe4 / 2, 2 * lobe4 - 1, lobe4);
-                Dyy4 = box_integral(iimage, x - border4, y - lobe4 + 1, filter_size4, 2 * lobe4 - 1) -
-                       3 * box_integral(iimage, x - lobe4 / 2, y - lobe4 + 1, lobe4, 2 * lobe4 - 1);
-                Dxy4 = box_integral(iimage, x - lobe4, y + 1, lobe4, lobe4) +
-                       box_integral(iimage, x + 1, y - lobe4, lobe4, lobe4) -
-                       box_integral(iimage, x - lobe4, y - lobe4, lobe4, lobe4) -
-                       box_integral(iimage, x + 1, y + 1, lobe4, lobe4);
+                Dxx4 = box_integral(iimage, x - lobe4 + 1, y - border4, 2*lobe4 - 1, filter_size4)
+                        - 3 * box_integral(iimage, x - lobe4 + 1, y - lobe4 / 2, 2*lobe4 - 1, lobe4);
+                Dyy4 = box_integral(iimage, x - border4, y - lobe4 + 1, filter_size4, 2*lobe4 - 1)
+                        - 3 * box_integral(iimage, x - lobe4 / 2, y - lobe4 + 1, lobe4, 2*lobe4 - 1);
+                Dxy4 = box_integral(iimage, x - lobe4, y + 1, lobe4, lobe4)
+                        + box_integral(iimage, x + 1, y - lobe4, lobe4, lobe4)
+                        - box_integral(iimage, x - lobe4, y - lobe4, lobe4, lobe4)
+                        - box_integral(iimage, x + 1, y + 1, lobe4, lobe4);
 
                 // Normalize Responses with inverse area
                 Dxx4 *= inv_area4;
@@ -851,16 +856,17 @@ void compute_response_layers_at_once(struct fasthessian *fh, struct integral_ima
                 // Calculate Laplacian
                 laplacian4[ind2] = (Dxx4 + Dyy4 >= 0 ? true : false);
 
+
                 // layer5
                 // Calculate Dxx, Dyy, Dxy with Box Filter
-                Dxx5 = box_integral(iimage, x - lobe5 + 1, y - border5, 2 * lobe5 - 1, filter_size5) -
-                       3 * box_integral(iimage, x - lobe5 + 1, y - lobe5 / 2, 2 * lobe5 - 1, lobe5);
-                Dyy5 = box_integral(iimage, x - border5, y - lobe5 + 1, filter_size5, 2 * lobe5 - 1) -
-                       3 * box_integral(iimage, x - lobe5 / 2, y - lobe5 + 1, lobe5, 2 * lobe5 - 1);
-                Dxy5 = box_integral(iimage, x - lobe5, y + 1, lobe5, lobe5) +
-                       box_integral(iimage, x + 1, y - lobe5, lobe5, lobe5) -
-                       box_integral(iimage, x - lobe5, y - lobe5, lobe5, lobe5) -
-                       box_integral(iimage, x + 1, y + 1, lobe5, lobe5);
+                Dxx5 = box_integral(iimage, x - lobe5 + 1, y - border5, 2*lobe5 - 1, filter_size5)
+                        - 3 * box_integral(iimage, x - lobe5 + 1, y - lobe5 / 2, 2*lobe5 - 1, lobe5);
+                Dyy5 = box_integral(iimage, x - border5, y - lobe5 + 1, filter_size5, 2*lobe5 - 1)
+                        - 3 * box_integral(iimage, x - lobe5 / 2, y - lobe5 + 1, lobe5, 2*lobe5 - 1);
+                Dxy5 = box_integral(iimage, x - lobe5, y + 1, lobe5, lobe5)
+                        + box_integral(iimage, x + 1, y - lobe5, lobe5, lobe5)
+                        - box_integral(iimage, x - lobe5, y - lobe5, lobe5, lobe5)
+                        - box_integral(iimage, x + 1, y + 1, lobe5, lobe5);
 
                 // Normalize Responses with inverse area
                 Dxx5 *= inv_area5;
@@ -873,20 +879,21 @@ void compute_response_layers_at_once(struct fasthessian *fh, struct integral_ima
                 // Calculate Laplacian
                 laplacian5[ind2] = (Dxx5 + Dyy5 >= 0 ? true : false);
 
+
                 ind2++;
 
                 // 4*step
                 if (i % 4 == 0 && j % 4 == 0) {
                     // layer6
                     // Calculate Dxx, Dyy, Dxy with Box Filter
-                    Dxx6 = box_integral(iimage, x - lobe6 + 1, y - border6, 2 * lobe6 - 1, filter_size6) -
-                           3 * box_integral(iimage, x - lobe6 + 1, y - lobe6 / 2, 2 * lobe6 - 1, lobe6);
-                    Dyy6 = box_integral(iimage, x - border6, y - lobe6 + 1, filter_size6, 2 * lobe6 - 1) -
-                           3 * box_integral(iimage, x - lobe6 / 2, y - lobe6 + 1, lobe6, 2 * lobe6 - 1);
-                    Dxy6 = box_integral(iimage, x - lobe6, y + 1, lobe6, lobe6) +
-                           box_integral(iimage, x + 1, y - lobe6, lobe6, lobe6) -
-                           box_integral(iimage, x - lobe6, y - lobe6, lobe6, lobe6) -
-                           box_integral(iimage, x + 1, y + 1, lobe6, lobe6);
+                    Dxx6 = box_integral(iimage, x - lobe6 + 1, y - border6, 2*lobe6 - 1, filter_size6)
+                            - 3 * box_integral(iimage, x - lobe6 + 1, y - lobe6 / 2, 2*lobe6 - 1, lobe6);
+                    Dyy6 = box_integral(iimage, x - border6, y - lobe6 + 1, filter_size6, 2*lobe6 - 1)
+                            - 3 * box_integral(iimage, x - lobe6 / 2, y - lobe6 + 1, lobe6, 2*lobe6 - 1);
+                    Dxy6 = box_integral(iimage, x - lobe6, y + 1, lobe6, lobe6)
+                            + box_integral(iimage, x + 1, y - lobe6, lobe6, lobe6)
+                            - box_integral(iimage, x - lobe6, y - lobe6, lobe6, lobe6)
+                            - box_integral(iimage, x + 1, y + 1, lobe6, lobe6);
 
                     // Normalize Responses with inverse area
                     Dxx6 *= inv_area6;
@@ -899,16 +906,17 @@ void compute_response_layers_at_once(struct fasthessian *fh, struct integral_ima
                     // Calculate Laplacian
                     laplacian6[ind4] = (Dxx6 + Dyy6 >= 0 ? true : false);
 
+
                     // layer7
                     // Calculate Dxx, Dyy, Dxy with Box Filter
-                    Dxx7 = box_integral(iimage, x - lobe7 + 1, y - border7, 2 * lobe7 - 1, filter_size7) -
-                           3 * box_integral(iimage, x - lobe7 + 1, y - lobe7 / 2, 2 * lobe7 - 1, lobe7);
-                    Dyy7 = box_integral(iimage, x - border7, y - lobe7 + 1, filter_size7, 2 * lobe7 - 1) -
-                           3 * box_integral(iimage, x - lobe7 / 2, y - lobe7 + 1, lobe7, 2 * lobe7 - 1);
-                    Dxy7 = box_integral(iimage, x - lobe7, y + 1, lobe7, lobe7) +
-                           box_integral(iimage, x + 1, y - lobe7, lobe7, lobe7) -
-                           box_integral(iimage, x - lobe7, y - lobe7, lobe7, lobe7) -
-                           box_integral(iimage, x + 1, y + 1, lobe7, lobe7);
+                    Dxx7 = box_integral(iimage, x - lobe7 + 1, y - border7, 2*lobe7 - 1, filter_size7)
+                            - 3 * box_integral(iimage, x - lobe7 + 1, y - lobe7 / 2, 2*lobe7 - 1, lobe7);
+                    Dyy7 = box_integral(iimage, x - border7, y - lobe7 + 1, filter_size7, 2*lobe7 - 1)
+                            - 3 * box_integral(iimage, x - lobe7 / 2, y - lobe7 + 1, lobe7, 2*lobe7 - 1);
+                    Dxy7 = box_integral(iimage, x - lobe7, y + 1, lobe7, lobe7)
+                            + box_integral(iimage, x + 1, y - lobe7, lobe7, lobe7)
+                            - box_integral(iimage, x - lobe7, y - lobe7, lobe7, lobe7)
+                            - box_integral(iimage, x + 1, y + 1, lobe7, lobe7);
 
                     // Normalize Responses with inverse area
                     Dxx7 *= inv_area7;
@@ -920,6 +928,7 @@ void compute_response_layers_at_once(struct fasthessian *fh, struct integral_ima
 
                     // Calculate Laplacian
                     laplacian7[ind4] = (Dxx7 + Dyy7 >= 0 ? true : false);
+
 
                     ind4++;
                 }
@@ -949,9 +958,11 @@ void compute_response_layers_at_once(struct fasthessian *fh, struct integral_ima
             // laplacianJ[ind] = (DxxJ + DyyJ >= 0 ? true : false);
         }
     }
+
 }
 
 void get_interest_points_layers(struct fasthessian *fh, std::vector<struct interest_point> *interest_points) {
+
     assert(fh != NULL);
     assert(interest_points != NULL);
 
@@ -987,11 +998,15 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
         // to find maxima accreoss scale and space
         for (int r = 0; r < height2; ++r) {
             for (int c = 0; c < width2; ++c) {
+
                 // checking if current pixel position is local maximum in 3x3x3 maximum and above threshold
                 if (is_extremum(r, c, l2, l1, l0, thresh)) {
+
                     // sub-pixel interpolating local maxium and adding to resulting interest point vector
                     interpolate_extremum(r, c, l2, l1, l0, interest_points);
+
                 }
+
             }
         }
     }
@@ -1001,11 +1016,15 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
         // to find maxima accreoss scale and space
         for (int r = 0; r < height3; ++r) {
             for (int c = 0; c < width3; ++c) {
+
                 // checking if current pixel position is local maximum in 3x3x3 maximum and above threshold
                 if (is_extremum(r, c, l3, l2, l1, thresh)) {
+
                     // sub-pixel interpolating local maxium and adding to resulting interest point vector
                     interpolate_extremum(r, c, l3, l2, l1, interest_points);
+
                 }
+
             }
         }
     }
@@ -1015,11 +1034,15 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
         // to find maxima accreoss scale and space
         for (int r = 0; r < height4; ++r) {
             for (int c = 0; c < width4; ++c) {
+
                 // checking if current pixel position is local maximum in 3x3x3 maximum and above threshold
                 if (is_extremum(r, c, l4, l3, l1, thresh)) {
+
                     // sub-pixel interpolating local maxium and adding to resulting interest point vector
                     interpolate_extremum(r, c, l4, l3, l1, interest_points);
+
                 }
+
             }
         }
     }
@@ -1029,11 +1052,15 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
         // to find maxima accreoss scale and space
         for (int r = 0; r < height5; ++r) {
             for (int c = 0; c < width5; ++c) {
+
                 // checking if current pixel position is local maximum in 3x3x3 maximum and above threshold
                 if (is_extremum(r, c, l5, l4, l3, thresh)) {
+
                     // sub-pixel interpolating local maxium and adding to resulting interest point vector
                     interpolate_extremum(r, c, l5, l4, l3, interest_points);
+
                 }
+
             }
         }
     }
@@ -1043,11 +1070,15 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
         // to find maxima accreoss scale and space
         for (int r = 0; r < height6; ++r) {
             for (int c = 0; c < width6; ++c) {
+
                 // checking if current pixel position is local maximum in 3x3x3 maximum and above threshold
                 if (is_extremum(r, c, l6, l5, l3, thresh)) {
+
                     // sub-pixel interpolating local maxium and adding to resulting interest point vector
                     interpolate_extremum(r, c, l6, l5, l3, interest_points);
+
                 }
+
             }
         }
     }
@@ -1057,15 +1088,21 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
         // to find maxima accreoss scale and space
         for (int r = 0; r < height7; ++r) {
             for (int c = 0; c < width7; ++c) {
+
                 // checking if current pixel position is local maximum in 3x3x3 maximum and above threshold
                 if (is_extremum(r, c, l7, l6, l5, thresh)) {
+
                     // sub-pixel interpolating local maxium and adding to resulting interest point vector
                     interpolate_extremum(r, c, l7, l6, l5, interest_points);
+
                 }
+
             }
         }
     }
+
 }
+
 void compute_response_layer_unconditional(struct response_layer *layer, struct integral_image *iimage) {
     float Dxx, Dyy, Dxy;
     int x, y;
@@ -1110,6 +1147,3 @@ void compute_response_layer_unconditional(struct response_layer *layer, struct i
     }
 
 }
-
-void interpolate_step_gauss(int row, int col, struct response_layer *top, struct response_layer *middle,
-                            struct response_layer *bottom, float offsets[3]) {}

@@ -57,7 +57,7 @@ struct fasthessian* create_fast_hessian(struct integral_image *iimage);
 void create_response_map(struct fasthessian* fh);
 
 // Compute responses for every layers
-void compute_response_map(struct fasthessian* fh);
+void compute_response_layers(struct fasthessian* fh);
 
 // Compute responses for layer
 void compute_response_layer(struct response_layer* layer, struct integral_image *iimage);

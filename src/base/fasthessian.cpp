@@ -65,7 +65,7 @@ void create_response_map(struct fasthessian* fh) {
     fh->response_map[7] = initialise_response_layer(LARGEST_FILTER_SIZE, w/4, h/4, init_step*4);
 }
 
-void compute_response_map(struct fasthessian* fh) {
+void compute_response_layers(struct fasthessian* fh) {
     
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer(fh->response_map[i], fh->iimage);
