@@ -1091,15 +1091,15 @@ void compute_response_layer_with_padding(struct response_layer *layer, struct in
             y = j * step + padded_border;
 
             // Calculate Dxx, Dyy, Dxy with Box Filter
-            Dxx = box_integral_with_padding(padded_iimage, x - lobe + 1, y - border, 2 * lobe - 1, filter_size, 0) -
-                  3 * box_integral_with_padding(padded_iimage, x - lobe + 1, y - lobe / 2, 2 * lobe - 1, lobe, 0);
+            Dxx = box_integral_unconditional(padded_iimage, x - lobe + 1, y - border, 2 * lobe - 1, filter_size) -
+                  3 * box_integral_unconditional(padded_iimage, x - lobe + 1, y - lobe / 2, 2 * lobe - 1, lobe);
 
-            Dyy = box_integral_with_padding(padded_iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1, 0) -
-                  3 * box_integral_with_padding(padded_iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1, 0);
-            Dxy = box_integral_with_padding(padded_iimage, x - lobe, y + 1, lobe, lobe, 0) +
-                  box_integral_with_padding(padded_iimage, x + 1, y - lobe, lobe, lobe, 0) -
-                  box_integral_with_padding(padded_iimage, x - lobe, y - lobe, lobe, lobe, 0) -
-                  box_integral_with_padding(padded_iimage, x + 1, y + 1, lobe, lobe, 0);
+            Dyy = box_integral_unconditional(padded_iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1) -
+                  3 * box_integral_unconditional(padded_iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
+            Dxy = box_integral_unconditional(padded_iimage, x - lobe, y + 1, lobe, lobe) +
+                  box_integral_unconditional(padded_iimage, x + 1, y - lobe, lobe, lobe) -
+                  box_integral_unconditional(padded_iimage, x - lobe, y - lobe, lobe, lobe) -
+                  box_integral_unconditional(padded_iimage, x + 1, y + 1, lobe, lobe);
 
             // Normalize Responses with inverse area
             Dxx *= inv_area;

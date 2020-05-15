@@ -87,7 +87,7 @@ long num_flops, struct benchmark_data &data) {
 }
 */
 
-void bench_compute_integral_img(const std::vector<void (*)(float *, int, int, float *)> &functions, float *gray_image,
+void bench_compute_integral_img(const std::vector<void (*)(float *, struct integral_image *)> &functions, float *gray_image,
                                 std::vector<struct benchmark_data> &data);
 
 // Times the function compute_integral_img from integral_image. Stores the average, minimum and maximum number of cycles
