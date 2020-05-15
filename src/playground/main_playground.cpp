@@ -39,7 +39,7 @@ int main(int argc, char const *argv[])
 	// Create integral image
 	struct integral_image* iimage = create_integral_img(width, height);
 	// Compute integral image
-	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
+	compute_integral_img(image, iimage);
 
 	std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
 	test_functions.push_back(compute_response_layer_with_padding);
@@ -96,7 +96,7 @@ int main(int argc, char const *argv[])
 */
 	// Free memory
 	stbi_image_free(image); // possibly move this to create_integral_img
-	free(iimage->data);
+	free(iimage->padded_data);
 	free(iimage);
 	/*
 	for (int i = 0; i < NUM_LAYERS; ++i) {

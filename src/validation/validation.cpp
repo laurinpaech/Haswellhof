@@ -13,30 +13,30 @@
 // Creates an integral image given an image, its corresponding height and width, the base function and a list of other
 // functions. The results of the integral images are being compared. If one of the results difers from the base
 // implementation false is being returned. Messages clarifying the equality of the results are being printed.
-bool validate_integral_image(void (*original_function)(float *, int, int, float *),
-                             const std::vector<void (*)(float *, int, int, float *)> &test_functions, int width,
-                             int height, float *image) {
+bool validate_integral_image(void (*original_function)(float *, struct integral_image *),
+                             const std::vector<void (*)(float *, struct integral_image *)> &test_functions, 
+                             int width, int height, float *image) {
     // Create integral image
     struct integral_image *original_iimage = create_integral_img(width, height);
     // Compute integral image
-    original_function(image, original_iimage->width, original_iimage->height, original_iimage->data);
+    original_function(image, original_iimage);
     bool all_functions_equal = true;
     for (auto optimized_function : test_functions) {
         // Create integral image
         struct integral_image *optimized_iimage = create_integral_img(width, height);
         // Compute integral image
-        optimized_function(image, optimized_iimage->width, optimized_iimage->height, optimized_iimage->data);
+        optimized_function(image, optimized_iimage);
 
         if (!are_float_matrices_equal(original_iimage->data, optimized_iimage->data, width, height)) {
             all_functions_equal = false;
             printf("Error: The integral images are not equal.\n");
         }
 
-        free(optimized_iimage->data);
+        free(optimized_iimage->padded_data);
         free(optimized_iimage);
     }
 
-    free(original_iimage->data);
+    free(original_iimage->padded_data);
     free(original_iimage);
 
     return all_functions_equal;
@@ -59,11 +59,11 @@ bool validate_compute_response_layer_custom_matrix(
     struct integral_image *iimage = create_integral_img(width, height);
 
     // Compute integral image
-    compute_integral_img(image, iimage->width, iimage->height, iimage->data);
+    compute_integral_img(image, iimage);
 
     bool valid = validate_compute_response_layer(original_function, test_functions, iimage);
 
-    free(iimage->data);
+    free(iimage->padded_data);
     free(iimage);
 
     return valid;
@@ -167,7 +167,7 @@ bool validate_compute_response_layer_with_padding(
     // Create integral image
     struct integral_image *original_integral_image = create_integral_img(width, height);
     // Compute integral image
-    compute_integral_img(original_image, original_integral_image->width, original_integral_image->height, original_integral_image->data);
+    compute_integral_img(original_image, original_integral_image);
 
     // Fast-Hessian
     struct fasthessian *original_fh = create_fast_hessian(original_integral_image);
@@ -246,9 +246,9 @@ bool validate_compute_response_layer_with_padding(
         free(original_fh->response_map[i]);
     }
     free(original_fh);
-    free(original_integral_image->data);
+    free(original_integral_image->padded_data);
     free(original_integral_image);
-    free(padded_integral_image->data);
+    free(padded_integral_image->padded_data);
     free(padded_integral_image);
 
     return all_valid;

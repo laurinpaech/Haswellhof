@@ -13,11 +13,12 @@
 // The results of the integral images are being compared.
 // If one of the results difers from the base implementation false is being returned.
 // Messages clarifying the equality of the results are being printed.
-bool validate_integral_image(void (*original_function)(float *, int, int, float *), const std::vector<void (*)(float *, int, int, float *)> &test_functions, 
-int width, int height, float* image);
+bool validate_integral_image(void (*original_function)(float *, struct integral_image *), 
+                             const std::vector<void (*)(float *, struct integral_image *)> &test_functions, 
+                             int width, int height, float *image);
 
 bool validate_compute_response_layer_custom_matrix(void (*original_function)(struct response_layer *, struct integral_image *), 
-                                     const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions);
+                                                   const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions);
 
 bool validate_compute_response_layer(void (*original_function)(struct response_layer *, struct integral_image *), 
                                      const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions,
