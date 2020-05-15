@@ -18,22 +18,22 @@
 //#include "descriptor_opt.h"
 
 const char *images[] = {
-    // "../images/sunflower/sunflower_32.jpg",  
-    // "../images/sunflower/sunflower_64.jpg",
-    // "../images/sunflower/sunflower_128.jpg", 
-    // "../images/sunflower/sunflower_256.jpg",
-    "../images/sunflower/sunflower_512.jpg",
+    "../images/sunflower/sunflower_32.jpg",  
+    "../images/sunflower/sunflower_64.jpg",
+    "../images/sunflower/sunflower_128.jpg", 
+    "../images/sunflower/sunflower_256.jpg",
+    "../images/sunflower/sunflower_512.jpg"
     // "../images/sunflower/sunflower_1024.jpg",
     // "../images/sunflower/sunflower_2048.jpg",
     // "../images/sunflower/sunflower_4096.jpg",
 };
 
 #define n_images (sizeof(images) / sizeof(const char *))
-#define BENCHMARK_INTEGRAL_IMAGE
+//#define BENCHMARK_INTEGRAL_IMAGE
 #define BENCHMARK_COMPUTE_RESPONSE_LAYERS
-#define BENCHMARK_INTEREST_POINTS
-#define BENCHMARK_INTERPOLATE_STEPS
-#define BENCHMARK_GET_MSURF_DESCRIPTORS
+//#define BENCHMARK_INTEREST_POINTS
+//#define BENCHMARK_INTERPOLATE_STEPS
+//#define BENCHMARK_GET_MSURF_DESCRIPTORS
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
