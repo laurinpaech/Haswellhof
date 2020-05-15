@@ -7,11 +7,14 @@
 // An optimized function to compute the integral image.
 // Parallelizes the additions which makes use of both addition ports.
 // Computes two rows simultaneously.
-void compute_integral_img_faster_alg(float *gray_image, int width, int height, float *iimage_data) {
+void compute_integral_img_faster_alg(float *gray_image, struct integral_image * iimage) {
     float sum = 0.0f;
     float sum1 = 0.0f;
+    int data_width = iimage->data_width;
+    int width = iimage->width;
     int width_limit = width - 2;
-    int height_limit = height - 2;
+    int height_limit = iimage->height - 2;
+    float* iimage_data = iimage->data;
 
     int i = 0;
     // first row extra, since we don't have 0 padding
@@ -22,9 +25,9 @@ void compute_integral_img_faster_alg(float *gray_image, int width, int height, f
         iimage_data[i + 1] = sum;
 
         sum1 += gray_image[width + i];
-        iimage_data[width + i] = iimage_data[i] + sum1;
+        iimage_data[data_width + i] = iimage_data[i] + sum1;
         sum1 += gray_image[width + i + 1];
-        iimage_data[width + i + 1] = iimage_data[i + 1] + sum1;
+        iimage_data[data_width + i + 1] = iimage_data[i + 1] + sum1;
     }
 
     // Handle last element of an image with odd width extra.
@@ -36,7 +39,7 @@ void compute_integral_img_faster_alg(float *gray_image, int width, int height, f
         // printf("row 0, col %i sum: %f\n", i, sum);
         sum1 += gray_image[width + i];
         // printf("row 1, col %i sum: %f\n", i, sum1);
-        iimage_data[width + i] = iimage_data[i] + sum1;
+        iimage_data[data_width + i] = iimage_data[i] + sum1;
     }
 
     // Handle all elements after the first row.
@@ -47,14 +50,14 @@ void compute_integral_img_faster_alg(float *gray_image, int width, int height, f
         int j = 0;
         for (; j < width_limit; j += 2) {
             sum += gray_image[i * width + j];
-            iimage_data[i * width + j] = iimage_data[(i - 1) * width + j] + sum;
+            iimage_data[i * data_width + j] = iimage_data[(i - 1) * data_width + j] + sum;
             sum += gray_image[i * width + j + 1];
-            iimage_data[i * width + j + 1] = iimage_data[(i - 1) * width + j + 1] + sum;
+            iimage_data[i * data_width + j + 1] = iimage_data[(i - 1) * data_width + j + 1] + sum;
 
             sum1 += gray_image[(i + 1) * width + j];
-            iimage_data[(i + 1) * width + j] = iimage_data[i * width + j] + sum1;
+            iimage_data[(i + 1) * data_width + j] = iimage_data[i * data_width + j] + sum1;
             sum1 += gray_image[(i + 1) * width + j + 1];
-            iimage_data[(i + 1) * width + j + 1] = iimage_data[i * width + j + 1] + sum1;
+            iimage_data[(i + 1) * data_width + j + 1] = iimage_data[i * data_width + j + 1] + sum1;
         }
         // printf("j: %i\n", j);
 
@@ -64,18 +67,18 @@ void compute_integral_img_faster_alg(float *gray_image, int width, int height, f
         for (; j < width; ++j) {
             // printf("j: %i; sum1: %f\n", j, sum1);
             sum += gray_image[i * width + j];
-            iimage_data[i * width + j] = iimage_data[(i - 1) * width + j] + sum;
+            iimage_data[i * data_width + j] = iimage_data[(i - 1) * data_width + j] + sum;
 
             sum1 += gray_image[(i + 1) * width + j];
             // printf("sum1: %f\n", sum1);
-            iimage_data[(i + 1) * width + j] = iimage_data[i * width + j] + sum1;
+            iimage_data[(i + 1) * data_width + j] = iimage_data[i * data_width + j] + sum1;
         }
     }
 
     // Handle last element of an image with odd height extra.
     // If previous stride = 2, then there should only be one row covered in this loop.
     // This might change if we increase the stride.
-    for (; i < height; ++i) {
+    for (; i < iimage->height ; ++i) {
         sum = 0.0f;
         int j = 0;
         for (; j < width_limit; j += 2) {
@@ -83,11 +86,11 @@ void compute_integral_img_faster_alg(float *gray_image, int width, int height, f
 
             sum += gray_image[i * width + j];
             // printf("j: %i; sum1: %f\n", j, sum);
-            iimage_data[i * width + j] = iimage_data[(i - 1) * width + j] + sum;
+            iimage_data[i * data_width + j] = iimage_data[(i - 1) * data_width + j] + sum;
             sum += gray_image[i * width + j + 1];
             // printf("j: %i; sum1: %f\n", j, sum);
 
-            iimage_data[i * width + j + 1] = iimage_data[(i - 1) * width + j + 1] + sum;
+            iimage_data[i * data_width + j + 1] = iimage_data[(i - 1) * data_width + j + 1] + sum;
         }
         // printf("j: %i\n", j);
 
@@ -95,7 +98,7 @@ void compute_integral_img_faster_alg(float *gray_image, int width, int height, f
             sum += gray_image[i * width + j];
             // printf("j: %i; sum1: %f\n", j, sum);
 
-            iimage_data[i * width + j] = iimage_data[(i - 1) * width + j] + sum;
+            iimage_data[i * data_width + j] = iimage_data[(i - 1) * data_width + j] + sum;
         }
     }
 }
