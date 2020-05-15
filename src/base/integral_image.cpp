@@ -48,7 +48,7 @@ void compute_integral_img(float *gray_image, struct integral_image *iimage) {
     for (int i = 1; i < height; ++i) {
         row_sum = 0.0f;
         for (int j = 0; j < width; ++j) {
-            row_sum += gray_image[i * data_width + j];
+            row_sum += gray_image[i * width + j];
             /*add sum of current row until current idx to sum of all previous rows until current index */
             iimage_data[i * data_width + j] = row_sum + iimage_data[(i - 1) * data_width + j];
         }
