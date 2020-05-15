@@ -18,8 +18,8 @@
 //#include "descriptor_opt.h"
 
 const char *images[] = {
-    "../images/sunflower/sunflower_32.jpg",  
-    "../images/sunflower/sunflower_64.jpg",
+    //"../images/sunflower/sunflower_32.jpg",  
+    //"../images/sunflower/sunflower_64.jpg",
     "../images/sunflower/sunflower_128.jpg", 
     "../images/sunflower/sunflower_256.jpg",
     "../images/sunflower/sunflower_512.jpg"

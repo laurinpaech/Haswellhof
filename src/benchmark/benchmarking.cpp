@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "fasthessian_opt.h"
 #include "tsc_x86.h"
 
 #define CYCLES_REQUIRED 1e8
@@ -86,24 +87,20 @@ void perf_compute_integral_img(void (*function)(float *, int, int, float *), flo
 void bench_compute_response_layer(const std::vector<void (*)(struct fasthessian *)> &functions,
                                   struct integral_image *iimage, std::vector<struct benchmark_data> &data) {
     assert(functions.size() == data.size());
+    // TODO: (carla) do we need a new fast hessian for every function?
+    struct fasthessian *fh = create_fast_hessian(iimage);
+    // Create octaves with response layers
+    create_response_map(fh);
 
     for (int j = 0; j < functions.size(); ++j) {
-        // TODO: (carla) do we need a new fast hessian for every function?
-        struct fasthessian *fh = create_fast_hessian(iimage);
-        // Create octaves with response layers
-        create_response_map(fh);
-
-        printf("Bench function %i\n", j);
-        
         perf_compute_response_all_layers(functions[j], fh, data[j]);
-
-        for (int i = 0; i < NUM_LAYERS; ++i) {
-            free(fh->response_map[i]->response);
-            free(fh->response_map[i]->laplacian);
-            free(fh->response_map[i]);
-        }
-        free(fh);
     }
+    for (int i = 0; i < NUM_LAYERS; ++i) {
+        free(fh->response_map[i]->response);
+        free(fh->response_map[i]->laplacian);
+        free(fh->response_map[i]);
+    }
+    free(fh);
 }
 
 /* Todo: (valentin) can these be removed?
@@ -170,11 +167,11 @@ void perf_compute_response_layer(void (*function)(struct response_layer *, struc
 // The number of flops for compute_response_layer must be set in benchmark_data.
 void perf_compute_response_all_layers(void (*function)(struct fasthessian *), struct fasthessian *fh,
                                       struct benchmark_data &data) {
-    long double cycles = 0.;
+    static int global_counter_bench_compute_response = 0;
+    double cycles = 0.;
     long num_runs = 5;
     double multiplier = 1;
     uint64_t start, end;
-    printf("Compute response layer\n");
 #ifdef WARM_UP
     // Warm-up phase: we determine a number of executions that allows
     // the code to be executed for at least CYCLES_REQUIRED cycles.
@@ -186,17 +183,15 @@ void perf_compute_response_all_layers(void (*function)(struct fasthessian *), st
             // TODO: (carla) should we do a warm up on more than one layer? feels like an overkill.
             (*function)(fh);
         }
-        printf("after warm up\n");
         end = stop_tsc(start);
 
-        cycles = (long double)end;
+        cycles = (double)end;
         multiplier = (CYCLES_REQUIRED) / (cycles);
 
     } while (multiplier > 2);
 #endif
 
-    printf("done with warm up");
-    std::vector<long double> cycleslist;
+    std::vector<double> cycleslist;
     cycleslist.reserve(REP);
 
     // Actual performance measurements repeated REP times.
@@ -209,7 +204,7 @@ void perf_compute_response_all_layers(void (*function)(struct fasthessian *), st
         }
         end = stop_tsc(start);
 
-        cycles = ((long double)end) / num_runs;
+        cycles = ((double)end) / num_runs;
         total_cycles += cycles;
 
         cycleslist.push_back(cycles);
@@ -224,6 +219,7 @@ void perf_compute_response_all_layers(void (*function)(struct fasthessian *), st
     data.max_cycles = (uint64_t)cycleslist.back();   // / MAX(1, fh->total_layers);
     // TODO: (carla) do we have to divide by total_lyers here? the total_cycles have already been divided;
     data.flops_per_cycle = flops_per_cycle;
+    global_counter_bench_compute_response++;
 }
 
 void bench_get_interest_points(
