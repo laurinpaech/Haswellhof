@@ -114,25 +114,27 @@ struct integral_image *create_padded_integral_img(int width, int height) {
     // Border + 1 because A, B and C are always exclusive.
     int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
 
+    // Getting data width  (width of padded image)
     // Border as padding to the left and right because of Dxx.
-    int padded_width = width + border * 2;
+    int data_width = width + border * 2;
 
+    // Getting data height (height of padded image)
     // Border as padding above and below the image because of Dyy.
-    int padded_height = height + border * 2;
+    int data_height = height + border * 2;
     
     // Setting real image width and height
     iimage->width = width;
     iimage->height = height;
     
-    // Setting data width and height to padded width and padded height
-    iimage->data_width = padded_width;
-    iimage->data_height = padded_height;
+    // Setting data width and height (width and height of padded image)
+    iimage->data_width = data_width;
+    iimage->data_height = data_height;
 
     // Allocating data for storing values of integral image with padding
-    iimage->padded_data = (float *)malloc(padded_width * padded_height * sizeof(float));
+    iimage->padded_data = (float *)malloc(data_width * data_height * sizeof(float));
     
     // Setting data and padded data to be inner offset and origin of original image
-    iimage->data = iimage->padded_data + (border * padded_width) + border;
+    iimage->data = iimage->padded_data + (border * data_width) + border;
 
     return iimage;
     
