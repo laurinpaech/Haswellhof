@@ -42,7 +42,7 @@ int main(int argc, char const *argv[])
 	compute_integral_img(image, iimage);
 
 	std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
-	test_functions.push_back(compute_response_layer_uncoditional);
+	test_functions.push_back(compute_response_layer_unconditional);
 
 	 bool valid =validate_compute_response_layer_with_padding(compute_response_layer,test_functions, image, width, height);
 	

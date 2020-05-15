@@ -1066,7 +1066,7 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
         }
     }
 }
-void compute_response_layer_uncoditional(struct response_layer *layer, struct integral_image *iimage) {
+void compute_response_layer_unconditional(struct response_layer *layer, struct integral_image *iimage) {
     float Dxx, Dyy, Dxy;
     int x, y;
 
