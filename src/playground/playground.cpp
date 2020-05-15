@@ -48,7 +48,7 @@ void playground_function2() {
         }
     }
 
-    compute_padded_integral_image(image, width, height, optimized_iimage->data);
+    compute_padded_integral_image(image, optimized_iimage);
     printf("PADDED IMAGE\n");
 
     int padded_lobe = (LARGEST_FILTER_SIZE / 3) + 1;

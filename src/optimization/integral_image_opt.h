@@ -25,7 +25,7 @@ void compute_integral_img_faster_alg(float *gray_image, int width, int height, f
 // image_height + 2 * largest_border.
 struct integral_image *create_padded_integral_img(int width, int height);
 
-void compute_padded_integral_image(float *gray_image, int width, int height, float *iimage_data);
+void compute_padded_integral_image(float *gray_image, struct integral_image *iimage);
 
 inline float box_integral_unconditional(struct integral_image *iimage, int row, int col, int rows, int cols) {
 

@@ -138,8 +138,14 @@ struct integral_image *create_padded_integral_img(int width, int height) {
     
 }
 
-void compute_padded_integral_image(float *gray_image, int original_image_width, int original_image_height,
-                                   float *iimage_data) {
+void compute_padded_integral_image(float *gray_image, struct integral_image *iimage) {
+
+    // TODO: (Sebastian) HACKY SOLUTION CLEANUP!
+
+    int original_image_width = iimage->width;
+    int original_image_height = iimage->height;
+    float *iimage_data = iimage->padded_data;
+
     // The border and the lobe must be the same, since the filters are being turned dependant on Dxx/Dyy. The border is
     // always larger than the lobe. We have to make sure that the border is available as padding in all directions.
     // Border + 1 because A, B and C are always exclusive. We would need too many special cases if we'd work with
