@@ -4,12 +4,27 @@
 
 // Creates the struct of the integral image with empty data
 struct integral_image *create_integral_img(int width, int height) {
+    
+    // Allocating memory to integral image that is returned
     struct integral_image *iimage = (struct integral_image *)malloc(sizeof(struct integral_image));
-    iimage->height = height;
+    
+    // Setting real image width and height
     iimage->width = width;
-    iimage->data = (float *)malloc(width * height * sizeof(float));
+    iimage->height = height;
+    
+    // Setting data width and height to be same as normal width and height
+    // since this integral image has no padding
+    iimage->data_width = width;
+    iimage->data_height = height;
+
+    // Allocating data for storing values of integral image
+    iimage->padded_data = (float *)malloc(width * height * sizeof(float));
+    
+    // Setting data and padded data to be equal since this integral image has no padding
+    iimage->data = iimage->padded_data;
 
     return iimage;
+
 }
 
 // Computes the integral image
