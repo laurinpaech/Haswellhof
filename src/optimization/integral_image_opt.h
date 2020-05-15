@@ -27,4 +27,22 @@ struct integral_image *create_padded_integral_img(int width, int height);
 
 void compute_padded_integral_image(float *gray_image, int width, int height, float *iimage_data);
 
-float box_integral_with_padding(struct integral_image *iimage, int row, int col, int rows, int cols, int print);
+inline float box_integral_unconditional(struct integral_image *iimage, int row, int col, int rows, int cols) {
+
+    float *data = iimage->data;
+    int data_width = iimage->data_width;
+
+    // subtracting by one for row/col because row/col is inclusive.
+    int r0 = row - 1;
+    int c0 = col - 1;
+    int r1 = row + rows - 1;
+    int c1 = col + cols - 1;
+
+    float A = data[r0 * data_width + c0];
+    float B = data[r0 * data_width + c1];
+    float C = data[r1 * data_width + c0];
+    float D = data[r1 * data_width + c1];
+
+    return fmaxf(0.0f, A - B - C + D);
+
+}

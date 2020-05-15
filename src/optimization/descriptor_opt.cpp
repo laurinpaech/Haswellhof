@@ -28,7 +28,6 @@ void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct in
     int desc_idx = 0;
     float sum_of_squares = 0.0f;
 
-    float *data = (float *)iimage->data;
     int width = iimage->width;
     int height = iimage->height;
 
@@ -55,9 +54,9 @@ void get_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct in
 
                     // TODO: (valentin) can parameter passing be done better?
 #if (!PRECHECK_BOUNDARIES)
-                    haarXY(data, height, width, row, col, step, &haarX, &haarY);
+                    haarXY(iimage, row, col, step, &haarX, &haarY);
 #else
-                    haarXY_precheck_boundaries(data, height, width, row, col, step, &haarX, &haarY);
+                    haarXY_precheck_boundaries(iimage, row, col, step, &haarX, &haarY);
 #endif
                     // haarX
                     float x = gw * haarX;
@@ -327,10 +326,6 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
     int ipoint_x = (int) lroundf(ipoint->x);
     int ipoint_y = (int) lroundf(ipoint->y);
 
-    float *data = (float *)iimage->data;
-    int width = iimage->width;
-    int height = iimage->height;
-
     // build descriptor
     float* descriptor = ipoint->descriptor;
     int desc_idx = 0;
@@ -388,9 +383,9 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
                     float ry = 0.0f; //box_integral(iimage, sample_y, sample_x-s, s, 2*s) - box_integral(iimage, sample_y-s, sample_x-s, s, 2*s);
 
 #if (!PRECHECK_BOUNDARIES)
-                    haarXY(data, height, width, sample_y-s, sample_x-s, s, &rx, &ry);
+                    haarXY(iimage, sample_y-s, sample_x-s, s, &rx, &ry);
 #else
-                    haarXY_precheck_boundaries(data, height, width, sample_y-s, sample_x-s, s, &rx, &ry);
+                    haarXY_precheck_boundaries(iimage, sample_y-s, sample_x-s, s, &rx, &ry);
 #endif
                     
                     //Get the gaussian weighted x and y responses on rotated axis

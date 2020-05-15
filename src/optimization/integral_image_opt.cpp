@@ -209,27 +209,6 @@ void compute_padded_integral_image(float *gray_image, int original_image_width, 
     }
 }
 
-float box_integral_with_padding(struct integral_image *iimage, int row, int col, int rows, int cols, int print) {
-    float *data = (float *)iimage->data;
-    int border = (LARGEST_FILTER_SIZE - 1) / 2 + 1;
-
-    // The padded width must be + border because of Dxx. If we'd only account for Dyy lobe would be sufficient.
-    int padded_width = iimage->width + (border * 2);
-
-    // subtracting by one for row/col because row/col is inclusive.
-    int r0 = row - 1;
-    int c0 = col - 1;
-    int r1 = row + rows - 1;
-    int c1 = col + cols - 1;
-
-    float A = data[r0 * padded_width + c0];
-    float B = data[r0 * padded_width + c1];
-    float C = data[r1 * padded_width + c0];
-    float D = data[r1 * padded_width + c1];
-
-    return fmaxf(0.0f, A - B - C + D);
-}
-
 // Computes the integral image
 /**
 void compute_integral_img_opt(float *gray_image, int width, int height, float *iimage_data) {
@@ -242,7 +221,7 @@ void compute_integral_img_opt(float *gray_image, int width, int height, float *i
 
 
     // compute first block
-for (int j = 0; j < width; j+=4) {
+    for (int j = 0; j < width; j+=4) {
 
         row1_col1 = prev_row_sum1 + gray_image[j];
         row1_col2 = row1_col1 + gray_image[j+1];
@@ -274,7 +253,7 @@ for (int j = 0; j < width; j+=4) {
 
         iimage_data[i * width + j]
 
-        }
+    }
 
 
 

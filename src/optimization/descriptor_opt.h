@@ -37,7 +37,12 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
 
 void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, struct interest_point* ipoint);
 
-inline void haarXY(float* ii_data, int height, int width, int row, int col, int scale, float* haarX, float* haarY) {
+inline void haarXY(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
+    
+    // TODO: (Sebastian) fix for iimage with padding
+    int width = iimage->width;
+    int height = iimage->height;
+
     // subtracting by one for row/col because row/col is inclusive.
     int r0 = MIN(row, height) - 1;         
     int c0 = MIN(col, width) - 1;         
@@ -55,29 +60,33 @@ inline void haarXY(float* ii_data, int height, int width, int row, int col, int 
     float r2c1 = 0.0f; // G
     float r2c2 = 0.0f; // H
 
+    float *data = iimage->data;
+    int data_width = iimage->data_width;
+
+
     if (r0 >= 0 && c0 >= 0)  {
-        r0c0 = ii_data[r0 * width + c0];
+        r0c0 = data[r0 * data_width + c0];
     }
     if (r0 >= 0 && c1 >= 0) {
-        r0c1 = ii_data[r0 * width + c1];
+        r0c1 = data[r0 * data_width + c1];
     }
     if (r0 >= 0 && c2 >= 0) {
-        r0c2 = ii_data[r0 * width + c2];
+        r0c2 = data[r0 * data_width + c2];
     }
     if (r1 >= 0 && c0 >= 0) {
-        r1c0 = ii_data[r1 * width + c0];
+        r1c0 = data[r1 * data_width + c0];
     }
     if (r1 >= 0 && c2 >= 0) {
-        r1c2 = ii_data[r1 * width + c2];
+        r1c2 = data[r1 * data_width + c2];
     }
     if (r2 >= 0 && c0 >= 0) {
-        r2c0 = ii_data[r2 * width + c0];
+        r2c0 = data[r2 * data_width + c0];
     }
     if (r2 >= 0 && c1 >= 0) {
-        r2c1 = ii_data[r2 * width + c1];
+        r2c1 = data[r2 * data_width + c1];
     }
     if (r2 >= 0 && c2 >= 0) {
-        r2c2 = ii_data[r2 * width + c2];
+        r2c2 = data[r2 * data_width + c2];
     }
 
     float r0c0_sub_r2c2 = r0c0 - r2c2;
@@ -87,13 +96,15 @@ inline void haarXY(float* ii_data, int height, int width, int row, int col, int 
     *haarY = -1*(r0c0_sub_r2c2 - 2*(r1c0 - r1c2) - r0c2_sub_r2c0);
 }
 
-inline void haarXY_precheck_boundaries(float* ii_data, int height, int width, int col, int row, int scale, float* haarX, float* haarY) {
+inline void haarXY_precheck_boundaries(struct integral_image *iimage, int col, int row, int scale, float* haarX, float* haarY) {
+    int width = iimage->width;
+    int height = iimage->height;
     // (row,col) is upper left corner of haar wavelet filter
     if (row <= 0 
         || col <= 0 
         || (row + 2*scale) > height 
         || (col + 2*scale) > width) {
-        return haarXY(ii_data, height, width, col, row, scale, haarX, haarY);
+        return haarXY(iimage, col, row, scale, haarX, haarY);
         // wavelet filters that can not be applied completely could also be skipped
         // the result will deviate from the base implementation
         // but this is how the original surf implementation is handling it
@@ -107,14 +118,17 @@ inline void haarXY_precheck_boundaries(float* ii_data, int height, int width, in
     int r2 = row + 2*scale - 1;
     int c2 = col + 2*scale - 1;
 
-    float r0c0 = ii_data[r0 * width + c0];
-    float r0c1 = ii_data[r0 * width + c1];
-    float r0c2 = ii_data[r0 * width + c2];
-    float r1c0 = ii_data[r1 * width + c0];
-    float r1c2 = ii_data[r1 * width + c2];
-    float r2c0 = ii_data[r2 * width + c0];
-    float r2c1 = ii_data[r2 * width + c1];
-    float r2c2 = ii_data[r2 * width + c2];
+    float *data = iimage->data;
+    int data_width = iimage->data_width;
+
+    float r0c0 = data[r0 * data_width + c0];
+    float r0c1 = data[r0 * data_width + c1];
+    float r0c2 = data[r0 * data_width + c2];
+    float r1c0 = data[r1 * data_width + c0];
+    float r1c2 = data[r1 * data_width + c2];
+    float r2c0 = data[r2 * data_width + c0];
+    float r2c1 = data[r2 * data_width + c1];
+    float r2c2 = data[r2 * data_width + c2];
 
     float r0c0_sub_r2c2 = r0c0 - r2c2;
     float r0c2_sub_r2c0 = r0c2 - r2c0;
