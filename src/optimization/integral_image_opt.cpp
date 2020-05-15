@@ -272,7 +272,7 @@ void compute_integral_img_opt(float *gray_image, int width, int height, float *i
         prev_row_sum3 = prev_row_sum3 + row3_col4 - prev_row_sum2;
         prev_row_sum4 = prev_row_sum4 + row4_col4 - prev_row_sum3;
 
-        iimage_data[i * width + j]
+        iimage_data[i * data_width + j]
 
     }
 

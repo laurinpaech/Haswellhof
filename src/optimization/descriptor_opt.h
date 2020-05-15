@@ -132,9 +132,11 @@ inline void haarXY(struct integral_image *iimage, int row, int col, int scale, f
 
     *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
     *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
+
 }
 
-inline void haarXY_precheck_boundaries(struct integral_image *iimage, int col, int row, int scale, float* haarX, float* haarY) {
+inline void haarXY_precheck_boundaries(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
+
     int width = iimage->width;
     int height = iimage->height;
     // (row,col) is upper left corner of haar wavelet filter
@@ -142,7 +144,10 @@ inline void haarXY_precheck_boundaries(struct integral_image *iimage, int col, i
         || col <= 0 
         || (row + 2*scale) > height 
         || (col + 2*scale) > width) {
-        return haarXY(iimage, col, row, scale, haarX, haarY);
+
+        haarXY(iimage, row, col, scale, haarX, haarY);
+
+        return;
         // wavelet filters that can not be applied completely could also be skipped
         // the result will deviate from the base implementation
         // but this is how the original surf implementation is handling it
@@ -173,6 +178,7 @@ inline void haarXY_precheck_boundaries(struct integral_image *iimage, int col, i
 
     *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
     *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
+
 }
 
 inline void haarXY_nocheck_boundaries(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
@@ -202,5 +208,6 @@ inline void haarXY_nocheck_boundaries(struct integral_image *iimage, int row, in
 
     *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
     *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
+
 }
 
