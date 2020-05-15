@@ -107,29 +107,35 @@ void compute_integral_img_faster_alg(float *gray_image, struct integral_image * 
 // Has a larger size for the padding. the width is image_width + 2 * largest_border. The height is
 // image_height + 2 * largest_border.
 struct integral_image *create_padded_integral_img(int width, int height) {
+    
+    // Allocating memory to integral image that is returned
     struct integral_image *iimage = (struct integral_image *)malloc(sizeof(struct integral_image));
-    iimage->height = height;
-    iimage->width = width;
-
-    // Add the border above the image all values will be 0.
-    // Add the border below the image, all values will be equivalent to the last row.
-
-    // Add the border to the left side of the image, all values will be 0.
-    // Add the border to the right side of the image, all values will be equivalent to the last column.
-
-    // The right lower corner will contain only the max value of the integral image. (lowest right-most value)
 
     // Border + 1 because A, B and C are always exclusive.
     int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
 
-    // Border as padding above and below the image because of Dyy.
-    int padded_height = height + border * 2;
     // Border as padding to the left and right because of Dxx.
     int padded_width = width + border * 2;
 
-    iimage->data = (float *)malloc(padded_width * padded_height * sizeof(float));
+    // Border as padding above and below the image because of Dyy.
+    int padded_height = height + border * 2;
+    
+    // Setting real image width and height
+    iimage->width = width;
+    iimage->height = height;
+    
+    // Setting data width and height to padded width and padded height
+    iimage->data_width = padded_width;
+    iimage->data_height = padded_height;
+
+    // Allocating data for storing values of integral image with padding
+    iimage->padded_data = (float *)malloc(padded_width * padded_height * sizeof(float));
+    
+    // Setting data and padded data to be inner offset and origin of original image
+    iimage->data = iimage->padded_data + (border * padded_width) + border;
 
     return iimage;
+    
 }
 
 void compute_padded_integral_image(float *gray_image, int original_image_width, int original_image_height,
