@@ -224,7 +224,7 @@ B = (r10, c11) = (x - lobe / 2 - 1, y + lobe - 1)
 C = (r11, c10)
 D = (r11, c11)
 */
-
+/**
 void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y;
@@ -401,7 +401,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
         }
     }
 }
-/*
+
 void compute_response_layer_Dyy_top(struct response_layer* layer, struct integral_image* iimage) {
     
     ///////////////////////////////////////////////////////////
@@ -642,7 +642,7 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
     }
 
 }
-
+*/
 void compute_response_layers_at_once(struct fasthessian* fh) {
     /* computes all 8 response layers at once, gives same results as base implementation
     valgrind reports no improvement for l1 misses, i.e. locality is not improved as expected
