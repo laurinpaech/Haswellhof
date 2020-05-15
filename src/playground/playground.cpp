@@ -17,7 +17,7 @@ void playground_function1(float *image, int width, int height) {
 // Create integral image
 	struct integral_image* iimage = create_integral_img(width, height);
 	// Compute integral image
-	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
+	compute_integral_img(image, iimage);
 
 	std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
 	test_functions.push_back(compute_response_layer_with_padding);
@@ -62,7 +62,7 @@ void playground_function2() {
         printf("\n\n");
     }
 
-    free(optimized_iimage->data);
+    free(optimized_iimage->padded_data);
     free(optimized_iimage);
     free(image);
 }

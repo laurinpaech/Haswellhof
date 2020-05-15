@@ -63,7 +63,7 @@ int main(int argc, char const *argv[]) {
             printf("compute_integral_img start\n");
 
             // Insert all compute_integral_img functions for benchmarking here
-            std::vector<void (*)(float *, int, int, float *)> functions;
+            std::vector<void (*)(float *, struct integral_image *)> functions;
             functions.push_back(compute_integral_img);
             //functions.push_back(compute_integral_img_faster_alg);
 
@@ -233,7 +233,7 @@ int main(int argc, char const *argv[]) {
         // Free memory
         stbi_image_free(image);  // possibly move this to create_integral_img
 
-        free(iimage->data);
+        free(iimage->padded_data);
         free(iimage);
 
         for (int i = 0; i < NUM_LAYERS; ++i) {

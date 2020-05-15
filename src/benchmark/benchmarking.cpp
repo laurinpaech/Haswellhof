@@ -14,7 +14,7 @@
 // Determines whether the warm up for the timing functions will be conducted.
 #define WARM_UP
 
-void bench_compute_integral_img(const std::vector<void (*)(float *, int, int, float *)> &functions, float *gray_image,
+void bench_compute_integral_img(const std::vector<void (*)(float *, struct integral_image *)> &functions, float *gray_image,
                                 std::vector<struct benchmark_data> &data) {
     assert(functions.size() == data.size());
 
@@ -27,13 +27,16 @@ void bench_compute_integral_img(const std::vector<void (*)(float *, int, int, fl
 // Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data.
 // The number of flops for compute_integral_img must be set in benchmark_data.
 // The height and width of the image must be set in benchmark_data.
-void perf_compute_integral_img(void (*function)(float *, int, int, float *), float *gray_image,
+void perf_compute_integral_img(void (*function)(float *, struct integral_image *), float *gray_image,
                                struct benchmark_data &data) {
     double cycles = 0.;
     long num_runs = 100;
     double multiplier = 1;
     uint64_t start, end;
-    float *dummy_iimage_data = (float *)calloc(data.width * data.height, sizeof(float));
+
+    struct integral_image *iimage = create_integral_img(data.width, data.height);
+
+    //float *dummy_iimage_data = (float *)calloc(data.width * data.height, sizeof(float));
 
 #ifdef WARM_UP
     // Warm-up phase: we determine a number of executions that allows
@@ -43,7 +46,7 @@ void perf_compute_integral_img(void (*function)(float *, int, int, float *), flo
         num_runs = num_runs * multiplier;
         start = start_tsc();
         for (size_t i = 0; i < num_runs; i++) {
-            (*function)(gray_image, data.width, data.height, dummy_iimage_data);
+            (*function)(gray_image, iimage);
         }
         end = stop_tsc(start);
 
@@ -61,7 +64,7 @@ void perf_compute_integral_img(void (*function)(float *, int, int, float *), flo
     for (size_t j = 0; j < REP; j++) {
         start = start_tsc();
         for (size_t i = 0; i < num_runs; ++i) {
-            (*function)(gray_image, data.width, data.height, dummy_iimage_data);
+            (*function)(gray_image, iimage);
         }
         end = stop_tsc(start);
 
@@ -72,7 +75,8 @@ void perf_compute_integral_img(void (*function)(float *, int, int, float *), flo
     }
     total_cycles /= REP;
 
-    free(dummy_iimage_data);
+    free(iimage->padded_data);
+    free(iimage);
 
     cycles = total_cycles;  // cyclesList.front();
     double flops_per_cycle = round((100.0 * data.num_flops) / cycles) / 100.0;

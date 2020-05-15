@@ -40,11 +40,11 @@ bool validate_integral_image_custom_matrix(void (*original_function)(float *, in
             printf("Error: The integral images are not equal.\n");
         }
 
-        free(optimized_iimage->data);
+        free(optimized_iimage->padded_data);
         free(optimized_iimage);
     }
 
-    free(original_iimage->data);
+    free(original_iimage->padded_data);
     free(original_iimage);
     free(image);
 

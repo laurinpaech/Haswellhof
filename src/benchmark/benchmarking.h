@@ -93,7 +93,7 @@ void bench_compute_integral_img(const std::vector<void (*)(float *, int, int, fl
 // Times the function compute_integral_img from integral_image. Stores the average, minimum and maximum number of cycles
 // and the flops per cycle in benchmark_data. The number of flops for compute_integral_img must be set benchmark_data.
 // The height and width of the image must be set in benchmark_data.
-void perf_compute_integral_img(void (*function)(float *, int, int, float *), float *gray_image,
+void perf_compute_integral_img(void (*function)(float *, struct integral_image *), float *gray_image,
                                struct benchmark_data &data);
 
 /* Todo: (valentin) can these be removed?

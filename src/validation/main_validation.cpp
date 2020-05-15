@@ -47,8 +47,8 @@ int main(int argc, char const *argv[])
 
 #ifdef VALIDATE_INTEGRAL_IMAGE
     {
-        std::vector<void (*)(float *, int, int, float *)> test_functions;
-        test_functions.push_back(compute_integral_img_faster_alg);
+        std::vector<void (*)(float *, struct integral_image *)> test_functions;
+        //test_functions.push_back(compute_integral_img_faster_alg);
 
         bool valid = validate_integral_image(compute_integral_img, test_functions, width, height, image);
         if (valid) {
@@ -60,7 +60,7 @@ int main(int argc, char const *argv[])
 #endif
 
 	// Compute integral image
-	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
+	compute_integral_img(image, iimage);
 
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);
@@ -135,7 +135,7 @@ int main(int argc, char const *argv[])
 
 	// Free memory
 	stbi_image_free(image); // possibly move this to create_integral_img
-	free(iimage->data);
+	free(iimage->padded_data);
 	free(iimage);
 	for (int i = 0; i < NUM_LAYERS; ++i) {
         free(fh->response_map[i]->response);

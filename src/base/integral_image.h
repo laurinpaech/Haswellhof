@@ -26,7 +26,7 @@ struct integral_image {
 struct integral_image *create_integral_img(int width, int height);
 
 // Computes the integral image
-void compute_integral_img(float *gray_image, int width, int height, float *iimage_data);
+void compute_integral_img(float *gray_image, struct integral_image *iimage);
 
 inline float box_integral(struct integral_image *iimage, int row, int col, int rows, int cols) {
     float *data = (float *)iimage->data;

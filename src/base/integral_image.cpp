@@ -13,13 +13,16 @@ struct integral_image *create_integral_img(int width, int height) {
 }
 
 // Computes the integral image
-void compute_integral_img(float *gray_image, int width, int height, float *iimage_data) {
+void compute_integral_img(float *gray_image, struct integral_image *iimage) {
+    
     float row_sum = 0.0f;
 
+    float *iimage_data = iimage->data;
     int data_width = iimage->data_width;
+    int width = iimage->width;
+    int height = iimage->height;
 
     /* sum up the first row */
-
     for (int i = 0; i < width; i++) {
         /* previous rows are 0 */
         row_sum += gray_image[i];
