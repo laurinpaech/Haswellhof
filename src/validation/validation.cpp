@@ -185,7 +185,7 @@ bool validate_compute_response_layer_with_padding(
      // Create padded integral image
     struct integral_image *padded_integral_image = create_padded_integral_img(width, height);
     // Compute padded integral image
-    compute_padded_integral_image(original_image, padded_integral_image);
+    compute_padded_integral_img(original_image, padded_integral_image);
 
 
 

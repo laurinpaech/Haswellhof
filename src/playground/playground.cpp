@@ -20,7 +20,7 @@ void playground_function1(float *image, int width, int height) {
 	compute_integral_img(image, iimage);
 
 	std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
-	test_functions.push_back(compute_response_layer_with_padding);
+	test_functions.push_back(compute_response_layer_uncoditional);
 
 	 bool valid =validate_compute_response_layer_with_padding(compute_response_layer,test_functions, image, width, height);
 	
@@ -48,7 +48,7 @@ void playground_function2() {
         }
     }
 
-    compute_padded_integral_image(image, optimized_iimage);
+    compute_padded_integral_img(image, optimized_iimage);
     printf("PADDED IMAGE\n");
 
     int padded_lobe = (LARGEST_FILTER_SIZE / 3) + 1;

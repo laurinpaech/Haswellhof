@@ -138,88 +138,92 @@ struct integral_image *create_padded_integral_img(int width, int height) {
     
 }
 
-void compute_padded_integral_image(float *gray_image, struct integral_image *iimage) {
+void compute_padded_integral_img(float *gray_image, struct integral_image *iimage) {
 
     // TODO: (Sebastian) HACKY SOLUTION CLEANUP!
 
-    int original_image_width = iimage->width;
-    int original_image_height = iimage->height;
-    float *iimage_data = iimage->padded_data;
+    // Getting width and height of original, unpadded image
+    int width = iimage->width;
+    int height = iimage->height;
+    
+    // Getting data width and data height, the width and height of the padded image
+    int data_width = iimage->data_width;
+    int data_height = iimage->data_height;
+
+    // Getting pointer to upper left corner of padded image
+    float *padded_data = iimage->padded_data;
 
     // The border and the lobe must be the same, since the filters are being turned dependant on Dxx/Dyy. The border is
     // always larger than the lobe. We have to make sure that the border is available as padding in all directions.
     // Border + 1 because A, B and C are always exclusive. We would need too many special cases if we'd work with
     // different upper and lower borders and left and right borders.
-    int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
-
-    int padded_height = original_image_height + border * 2;
-
-    // The width must also pad for the border, because of Dxx.
-    int padded_width = original_image_width + border * 2;
+    int border = (data_width - width) / 2; 
+    //int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
 
     // Pad the top part with 0.
-    for (int i = 0; i < border; i++) {
-        for (int j = 0; j < padded_width; j++) {
-            iimage_data[i * padded_width + j] = 0.0f;
+    for (int i = 0; i < border; ++i) {
+        for (int j = 0; j < data_width; ++j) {
+            padded_data[i * data_width + j] = 0.0f;
         }
     }
 
     // Pad the remaining left part with 0.
-    for (int i = border; i < padded_height; i++) {
-        for (int j = 0; j < border; j++) {
-            iimage_data[i * padded_width + j] = 0.0f;
+    for (int i = border; i < data_height; ++i) {
+        for (int j = 0; j < border; ++j) {
+            padded_data[i * data_width + j] = 0.0f;
         }
     }
 
     float row_sum = 0.0f;
     float last_element_in_row = 0.0f;
+    
     // Sum up the first row
     // The first element that is not padding.
-    int ind = (border * padded_width) + border;
+    int ind = (border * data_width) + border;
 
-    for (int i = 0; i < original_image_width; i++, ind++) {
+    for (int i = 0; i < width; ++i, ++ind) {
         // Previous rows are 0
         row_sum += gray_image[i];
-        iimage_data[ind] = row_sum;
+        padded_data[ind] = row_sum;
         last_element_in_row = row_sum;
     }
     // Pad the right side of the first row with the last element of the row.
-    for (int j = original_image_width + border; j < padded_width; j++, ind++) {
-        iimage_data[ind] = last_element_in_row;
+    for (int j = width + border; j < data_width; ++j, ++ind) {
+        padded_data[ind] = last_element_in_row;
     }
 
     // Sum all remaining rows of the original image
-    for (int i = 1; i < original_image_height; ++i) {
+    for (int i = 1; i < height; ++i) {
         row_sum = 0.0f;
         ind += border;
 
-        for (int j = 0; j < original_image_width; ++j, ind++) {
-            row_sum += gray_image[i * original_image_width + j];
+        for (int j = 0; j < width; ++j, ++ind) {
+            row_sum += gray_image[i * width + j];
             // Add sum of current row until current idx to sum of all previous rows until current index
-            last_element_in_row = row_sum + iimage_data[ind - padded_width];
-            iimage_data[ind] = last_element_in_row;
+            last_element_in_row = row_sum + padded_data[ind - data_width];
+            padded_data[ind] = last_element_in_row;
         }
 
         // Pad the right side with the last element of each row.
-        for (int j = original_image_width + border; j < padded_width; j++, ind++) {
-            iimage_data[ind] = last_element_in_row;
+        for (int j = width + border; j < data_width; ++j, ++ind) {
+            padded_data[ind] = last_element_in_row;
         }
     }
 
     // Pad the middle lower part of the integral image with the elements of the last row.
-    for (int i = original_image_height + border; i < padded_height; i++) {
-        for (int j = border; j < padded_width - border; j++) {
-            iimage_data[i * padded_width + j] = iimage_data[(i - 1) * padded_width + j];
+    for (int i = height + border; i < data_height; ++i) {
+        for (int j = border; j < data_width - border; ++j) {
+            padded_data[i * data_width + j] = padded_data[(i - 1) * data_width + j];
         }
     }
 
     // Pad the right lower corner of the integral image with the max value of the integral image.
-    int index_last_element = (original_image_height + border - 1) * padded_width + original_image_width + border;
-    float max_value = iimage_data[index_last_element];
+    int index_last_element = (height + border - 1) * data_width + width + border;
+    float max_value = padded_data[index_last_element];
 
-    for (int i = border + original_image_height; i < padded_height; i++) {
-        for (int j = border + original_image_width; j < padded_width; j++) {
-            iimage_data[i * padded_width + j] = max_value;
+    for (int i = border + height; i < data_height; ++i) {
+        for (int j = border + width; j < data_width; ++j) {
+            padded_data[i * data_width + j] = max_value;
         }
     }
 }
