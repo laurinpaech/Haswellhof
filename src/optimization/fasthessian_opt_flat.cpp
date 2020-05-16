@@ -28,7 +28,7 @@ void create_fast_hessian_flat_and_response_map(struct integral_image *iimage, st
     int w = img_width / init_step;
     int h = img_height / init_step;
 
-    std::cout << "sizeof(bool): " << sizeof(bool) << std::endl;
+    //std::cout << "sizeof(bool): " << sizeof(bool) << std::endl;
 
     size_t step_o0_r = ALIGN(w * h * sizeof(float), 64);
     size_t step_o0_l = ALIGN(w * h * sizeof(bool), 64);
