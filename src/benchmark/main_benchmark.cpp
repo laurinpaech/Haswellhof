@@ -149,14 +149,17 @@ int main(int argc, char const *argv[]) {
             // Insert all get_interest_points functions for benchmarking here
             std::vector<void (*)(struct fasthessian *, std::vector<struct interest_point> *)> functions;
             functions.push_back(get_interest_points);
+            //functions.push_back(get_interest_points);
+            functions.push_back(get_interest_points_layers);
 
             long flops = 109 * interest_points.size();
-            struct benchmark_data default_data(image_name, width, height, "get_interest_points", interest_points.size(),
-                                               flops);
+            struct benchmark_data default_data(image_name, width, height, "get_interest_points", interest_points.size(), flops);
+            struct benchmark_data data1(image_name, width, height, "get_interest_points_layers", interest_points.size(), -1);
 
             // Insert all respective benchmarking info for get_interest_points here
             std::vector<struct benchmark_data> data;
             data.push_back(default_data);
+            data.push_back(data1);
 
             // Benchmarking all get_interest_point functions and storing timing results in respective entries in data
             bench_get_interest_points(functions, fh, data);
