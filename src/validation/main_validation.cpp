@@ -20,6 +20,7 @@
 
 #define VALIDATE_INTEGRAL_IMAGE
 #define VALIDATE_COMPUTE_RESPONSE_LAYER
+#define VALIDATE_GET_INTEREST_POINTS
 #define VALIDATE_GET_MSURF_DESCRIPTORS
 
 
@@ -88,6 +89,22 @@ int main(int argc, char const *argv[])
     std::vector<struct interest_point> interest_points;
     get_interest_points(fh, &interest_points);
     
+#ifdef VALIDATE_GET_INTEREST_POINTS
+    {
+        std::vector<void (*)(struct fasthessian *, std::vector<struct interest_point> *)> test_functions;
+        //test_functions.push_back(get_interest_points);
+        test_functions.push_back(get_interest_points_layers);
+
+        bool valid = validate_get_interest_points(get_interest_points, test_functions, fh);
+        if (valid) {
+            printf("GET INTEREST POINTS VALIDATION:     \033[0;32mSUCCESS!\033[0m\n");
+        } else {
+            printf("GET INTEREST POINTS VALIDATION:     \033[1;31mFAILED!\033[0m\n");
+        }
+    }
+
+#endif
+
     // Getting M-SURF descriptors for each interest point
 	get_msurf_descriptors(iimage, &interest_points);
 
