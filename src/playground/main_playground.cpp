@@ -40,9 +40,8 @@ int main(int argc, char const *argv[])
 	// Compute integral image
 	compute_integral_img(image, iimage);
 
-	playground_function3(image, width, height);
 	//playground_function2();
-	//playground_function1(image, width, height);
+	playground_function1(iimage);
 	/*
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);

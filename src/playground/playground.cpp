@@ -2,122 +2,84 @@
 
 // NOTE: Fill this with whatever you want (preferably don't commit/push it though)
 
-#include <iostream>
-
 #include "benchmarking.h"
 #include "descriptor.h"
 #include "fasthessian_opt.h"
+#include "fasthessian_opt_flat.h"
 #include "helper.h"
 #include "integral_image.h"
 #include "integral_image_opt.h"
 #include "validation.h"
 #include "validation_integral_image.h"
-#include "benchmark_data_to_file.h"
 
-void playground_function1(float *image, int width, int height) {
-    // Create integral image
-    struct integral_image *iimage = create_integral_img(width, height);
-    // Compute integral image
-    compute_integral_img(image, iimage);
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
-    std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
-    test_functions.push_back(compute_response_layer_unconditional);
 
-    bool valid =
-        validate_compute_response_layer_with_padding(compute_response_layer, test_functions, image, width, height);
+void playground_function1(struct integral_image *iimage) {
+    // Fast-Hessian
+    struct fasthessian *fh = create_fast_hessian(iimage);
 
-    if (valid) {
-        printf("COMPUTE RESPONSE LAYER VALIDATION:    \033[0;32mSUCCESS!\033[0m\n");
-    } else {
-        printf("COMPUTE RESPONSE LAYER VALIDATION:    \033[1;31mFAILED!\033[0m\n");
-    }
-}
+    // Create octaves with response layers
+    create_response_map(fh);
 
-void playground_function3(float *image, int width, int height) {
-    std::vector<struct benchmark_data> all_benchmark_data;
+    // Compute responses for every layer
+    compute_response_layers(fh);
 
-    // Create integral image
-    struct integral_image *iimage = create_integral_img(width, height);
-    // Compute integral image
-    compute_integral_img(image, iimage);
+    // Getting interest points with non-maximum supression
+    std::vector<struct interest_point> interest_points;
+    get_interest_points(fh, &interest_points);
 
-    printf("compute_response_layer start\n");
+    // ---------------------- Trying out fast hessian flat ------------------------- //
 
-    std::vector<void (*)(struct fasthessian *)> functions;
-    functions.push_back(compute_response_layers);
-    functions.push_back(compute_response_layers_at_once);
+    struct fasthessian_flat fh_flat;
+    create_fast_hessian_flat_and_response_map(iimage, &fh_flat);
 
-    struct benchmark_data default_data("never_gonna_give_you_up", width, height, "compute_response_layer", -1,
-                                       (1 + height * width * 13));
-    struct benchmark_data data1("never_gonna_give_you_up", width, height, "compute_response_layers_at_once", -1,
-                                (1 + height * width * 13));
+    // Compute responses for every layer
+    compute_response_layers_flat(&fh_flat);
 
-    std::vector<struct benchmark_data> data;
-    data.push_back(default_data);
-    data.push_back(data1);
+    // Getting interest points with non-maximum supression
+    std::vector<struct interest_point> interest_points_flat;
+    get_interest_points_flat(&fh_flat, &interest_points_flat);
 
-    bench_compute_response_layer(functions, iimage, data);
+    std::cout << "interest_points.size: " << interest_points.size() << std::endl;
+    std::cout << "interest_points_flat.size: " << interest_points_flat.size() << std::endl;
 
-    all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
+    assert(interest_points.size() == interest_points_flat.size());
 
-    // Create integral image
-    struct integral_image *padded_iimage = create_padded_integral_img(width, height);
-    // Compute integral image
-    compute_padded_integral_img(image, iimage);
-
-    std::vector<void (*)(struct fasthessian *)> padded_functions;
-    padded_functions.push_back(compute_response_layers_unconditional);
-
-    struct benchmark_data padded_data("never_gonna_give_you_up", width, height, "compute_response_layers_unconditional", -1,
-                                       (1 + height * width * 13));
-    std::vector<struct benchmark_data> data_padded_functions;
-    data_padded_functions.push_back(padded_data);
-    bench_compute_response_layer(padded_functions, padded_iimage, data_padded_functions);
-    all_benchmark_data.insert(all_benchmark_data.end(), data_padded_functions.begin(), data_padded_functions.end());
-
-    printf("compute_response_layer end\n");
-        save_benchmark_data(all_benchmark_data);
-    
-        free(iimage->padded_data);
-        free(iimage);
-
-        free(padded_iimage->padded_data);
-        free(padded_iimage);       
-
-}
-
-void playground_function2() {
-    int width = 4, height = 4;
-
-    // Create integral image
-    struct integral_image *optimized_iimage = create_padded_integral_img(width, height);
-    // Compute integral image
-
-    float *image = (float *)malloc(height * width * sizeof(float));
-
-    int counter = 0;
-    for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j) {
-            image[i * width + j] = counter;
-            counter++;
+    for (int i = 0; i < interest_points_flat.size(); ++i) {
+        if (interest_points[i].x != interest_points_flat[i].x) {
+            std::cout << "flat: x not equal" << std::endl;
         }
-    }
-
-    compute_padded_integral_img(image, optimized_iimage);
-    printf("PADDED IMAGE\n");
-
-    int padded_lobe = (LARGEST_FILTER_SIZE / 3) + 1;
-    int padded_border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
-    int padded_width = optimized_iimage->width + 2 * padded_lobe;
-    for (size_t i = 0; i < optimized_iimage->height + 2 * padded_border; i++) {
-        printf("row: %i \n", i);
-        for (size_t j = 0; j < padded_width; j++) {
-            printf("%f ", optimized_iimage->data[i * padded_width + j]);
+        if (interest_points[i].y != interest_points_flat[i].y) {
+            std::cout << "flat: y not equal" << std::endl;
         }
-        printf("\n\n");
+        if (interest_points[i].scale != interest_points_flat[i].scale) {
+            std::cout << "flat: scale not equal" << std::endl;
+        }
+        if (interest_points[i].orientation != interest_points_flat[i].orientation) {
+            std::cout << "flat: orientation not equal" << std::endl;
+        }
+        if (interest_points[i].upright != interest_points_flat[i].upright) {
+            std::cout << "flat: upright not equal" << std::endl;
+        }
+        if (interest_points[i].laplacian != interest_points_flat[i].laplacian) {
+            std::cout << "flat: laplacian not equal" << std::endl;
+        }
+        // Not set yet
+        // if (compare_arrays(interest_points[i].descriptor, interest_points_flat[i].descriptor, 65)) {
+        //    std::cout << "flat: descriptors not equal" << std::endl;
+        //}
     }
 
-    free(optimized_iimage->padded_data);
-    free(optimized_iimage);
-    free(image);
+    aligned_free(fh_flat.response_map[0].response);
+
+    for (int i = 0; i < NUM_LAYERS; ++i) {
+        free(fh->response_map[i]->response);
+        free(fh->response_map[i]->laplacian);
+        free(fh->response_map[i]);
+    }
+    free(fh);
 }

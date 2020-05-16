@@ -1,8 +1,9 @@
 #pragma once
 
+#include "integral_image.h"
+
 #include <stdio.h>
 
-#include "integral_image.h"
 
 // Returns the number of flops of the optimized function compute_integral_img_faster_alg.
 inline long get_flops_compute_integral_img_faster_alg(int width, int height, int stride) {
@@ -14,6 +15,7 @@ inline long get_flops_compute_integral_img_faster_alg(int width, int height, int
                      (height % stride) * (2 * width + (width % stride) * 2);
     return num_flops;
 }
+
 
 // An optimized function to compute the integral image.
 // Parallelizes the additions which makes use of both addition ports.
