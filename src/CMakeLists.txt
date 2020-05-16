@@ -138,6 +138,8 @@ add_executable(validation
     optimization/descriptor_opt.cpp
     optimization/descriptors_wrapper.h
     optimization/descriptors_wrapper.cpp
+    optimization/descriptor_opt_gen.h
+    optimization/descriptor_opt_gen.cpp
     # Add validation header and source files here
     validation/validation.h
     validation/validation.cpp
@@ -183,6 +185,8 @@ add_executable(playground
     optimization/descriptor_opt.cpp
     optimization/descriptors_wrapper.h
     optimization/descriptors_wrapper.cpp
+    optimization/descriptor_opt_gen.h
+    optimization/descriptor_opt_gen.cpp
     # Add validation header and source files here
     validation/validation.h
     validation/validation.cpp
