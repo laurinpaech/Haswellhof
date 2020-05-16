@@ -21,6 +21,8 @@
 
 #define EPSILON (1e-3)
 
+#define ROUNDNUM(x) ((int)((x) + 0.5f))
+
 void solve_linear_3x3_system(float A[9], float b[3], float ret_x[3]);
 
 inline bool compare_arrays(float a[], float b[], int n) {
