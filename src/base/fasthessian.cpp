@@ -62,10 +62,10 @@ void create_response_map(struct fasthessian* fh) {
 
     // Octave 3 - 27, 51, 75, 99
     fh->response_map[6] = initialise_response_layer(75, w/4, h/4, init_step*4);
-    fh->response_map[7] = initialise_response_layer(99, w/4, h/4, init_step*4);
+    fh->response_map[7] = initialise_response_layer(LARGEST_FILTER_SIZE, w/4, h/4, init_step*4);
 }
 
-void compute_response_map(struct fasthessian* fh) {
+void compute_response_layers(struct fasthessian* fh) {
     
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer(fh->response_map[i], fh->iimage);
@@ -88,7 +88,6 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
     int lobe = filter_size/3;
     int border = (filter_size-1)/2;
     float inv_area = 1.f/(filter_size*filter_size);
-
     for (int i = 0, ind = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j, ind++) {
             // Image coordinates
@@ -112,13 +111,13 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
 
             // Calculate Determinant
             response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
-
             // Calculate Laplacian
             laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
         }
     }
 
 }
+
 
 void get_interest_points(struct fasthessian *fh, std::vector<struct interest_point> *interest_points) {
 
