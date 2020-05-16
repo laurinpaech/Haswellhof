@@ -241,6 +241,73 @@ bool validate_compute_response_layer_with_padding(
     return all_valid;
 }
 
+bool validate_get_interest_points(void (*original_function)(struct fasthessian *, std::vector<struct interest_point> *),
+                                  const std::vector<void (*)(struct fasthessian *, std::vector<struct interest_point> *)> &test_functions,
+                                  struct fasthessian *fh) {
+
+    std::vector<struct interest_point> original_interest_points;
+    original_function(fh, &original_interest_points);
+
+    bool all_valid = true;
+
+    for (int j = 0; j < test_functions.size(); ++j) {
+
+        std::vector<struct interest_point> test_interest_points;
+        test_functions[j](fh, &test_interest_points);
+
+        bool valid = true;
+
+        // Checking if original and test interest point vectors have same size
+        if (original_interest_points.size() != test_interest_points.size()) {
+            
+            printf("ERROR: interest point test function %d does not match original function (size mismatch)\n", j);
+            
+            valid = false;
+            
+            // Updating flag indicating if all functions are valid
+            all_valid &= valid;
+
+            continue;
+
+        }
+
+        // Iterating through all interest points and comparing them
+        for (int i = 0; i < original_interest_points.size(); ++i) {
+            
+            struct interest_point original_ipoint = original_interest_points[i];
+            struct interest_point test_ipoint = test_interest_points[i];
+            
+            // Checking if all fields except descriptor arrays are identical
+            if (original_ipoint.x != test_ipoint.x
+                || original_ipoint.x != test_ipoint.x 
+                || original_ipoint.scale != test_ipoint.scale
+                || original_ipoint.upright != test_ipoint.upright
+                || original_ipoint.orientation != test_ipoint.orientation
+                || original_ipoint.laplacian != test_ipoint.laplacian) {
+                printf("ERROR: interest point test function %d does not match original function (interest point mismatch)\n", j);
+                /*
+                printf(" Interest point %d mismatch:\n", i);
+                printf("  x: %d <-> %d\n", original_ipoint.x, test_ipoint.x);
+                printf("  y: %d <-> %d\n", original_ipoint.y, test_ipoint.y);
+                printf("  scale: %f <-> %f\n", original_ipoint.scale, test_ipoint.scale);
+                printf("  upright: %d <-> %d\n", original_ipoint.upright ? 1 : 0, test_ipoint.upright ? 1 : 0);
+                printf("  orientation: %f <-> %f\n", original_ipoint.orientation, test_ipoint.orientation);
+                printf("  scale:  %f <-> %f\n", original_ipoint.laplacian ? 1 : 0, test_ipoint.laplacian  ? 1 : 0);
+                */
+                valid = false;
+            }
+
+        }
+
+        // Updating flag indicating if all functions are valid
+        all_valid &= valid;
+
+    }
+
+    return all_valid;
+
+}
+
 bool validate_get_msurf_descriptors(
     void (*original_function)(struct integral_image *, struct interest_point *),
     const std::vector<void (*)(struct integral_image *, struct interest_point *)> &test_functions,
