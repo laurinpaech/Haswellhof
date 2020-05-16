@@ -31,7 +31,7 @@ struct fasthessian_flat {
 
 void create_fast_hessian_flat_and_response_map(struct integral_image *iimage, struct fasthessian_flat *fh_flat);
 
-void compute_response_map_flat(struct fasthessian_flat* fh_flat);
+void compute_response_layers_flat(struct fasthessian_flat* fh_flat);
 
 void get_interest_points_flat(struct fasthessian_flat *fh_flat, std::vector<struct interest_point> *interest_points);
 

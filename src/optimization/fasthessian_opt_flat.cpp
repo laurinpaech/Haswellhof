@@ -207,7 +207,7 @@ void create_fast_hessian_flat_and_response_map(struct integral_image *iimage, st
 
 }
 
-void compute_response_map_flat(struct fasthessian_flat* fh_flat) {
+void compute_response_layers_flat(struct fasthessian_flat* fh_flat) {
     
     int total_layers = fh_flat->total_layers;
     for (int i = 0; i < total_layers; ++i) {
