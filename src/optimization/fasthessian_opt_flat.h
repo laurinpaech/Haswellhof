@@ -35,3 +35,4 @@ void compute_response_layers_flat(struct fasthessian_flat* fh_flat);
 
 void get_interest_points_flat(struct fasthessian_flat *fh_flat, std::vector<struct interest_point> *interest_points);
 
+void compute_response_layers_at_once_flat(struct fasthessian_flat *fh_flat);
