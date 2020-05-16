@@ -204,11 +204,85 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
 
 }
 
+void compute_response_layer_precompute(struct response_layer* layer, struct integral_image* iimage) {
+    /*
+    optimizations:
+        - simplifying normalization and precomputing inv_area_square => -2 flops per loop iteration
+        - precomputation of indices
+    */
+   
+    float Dxx, Dyy, Dxy;
+    int x, y;
+
+    float* response = layer->response;
+    bool* laplacian = layer->laplacian;
+
+    int step = layer->step;
+    int filter_size = layer->filter_size;
+    int height = layer->height;
+    int width = layer->width;
+
+    int lobe = filter_size/3;
+    int border = (filter_size-1)/2;
+    float inv_area = 1.f/(filter_size*filter_size);
+
+    float inv_area_square = inv_area*inv_area;
+
+    int lobe_div_2 = lobe / 2;
+    int lobe_add_1 = lobe + 1;
+    int lobe_mul_2_sub_1 = 2*lobe - 1;
+
+    for (int i = 0, ind = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j, ind++) {
+            // Image coordinates
+            x = i*step;
+            y = j*step;
+
+            // Calculate Dxx, Dyy, Dxy with Box Filter
+            Dxx = box_integral(iimage, x - lobe_add_1, y - border, lobe_mul_2_sub_1, filter_size)
+                    - 3 * box_integral(iimage, x - lobe_add_1, y - lobe_div_2, lobe_mul_2_sub_1, lobe);
+            Dyy = box_integral(iimage, x - border, y - lobe_add_1, filter_size, lobe_mul_2_sub_1)
+                    - 3 * box_integral(iimage, x - lobe_div_2, y - lobe_add_1, lobe, lobe_mul_2_sub_1);
+            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
+                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+
+            // Normalize Responses with inverse area
+            // Dxx *= inv_area;
+            // Dyy *= inv_area;
+            // Dxy *= inv_area;
+
+            // Calculate Determinant & normalize
+            response[ind] = inv_area_square*(Dxx * Dyy - 0.81f * Dxy * Dxy);
+
+            // Calculate Laplacian (scaling does not matter as rescaling both summands keeps the sign)
+            laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
+        }
+    }
+
+}
+
+void compute_response_layers_precompute(struct fasthessian* fh) {
+    
+    for (int i = 0; i < fh->total_layers; ++i) {
+		compute_response_layer_precompute(fh->response_map[i], fh->iimage);
+	}   
+
+}
+
 void compute_response_layers_at_once(struct fasthessian* fh) {
-    /* computes all 8 response layers at once, gives same results as base implementation
-    valgrind reports no improvement for l1 misses, i.e. locality is not improved as expected
-    guess due to different filter sizes always accesing different cachelines
-    need to be smarter about computation order to gain benefit (i.e. same mem addresses are actually accessed at once)
+    /* 
+    optimizations:
+        - all of compute_response_layer_precompute
+        - computes all 8 response layers at once, gives same results as base implementation
+
+    
+    Results:
+        - slower than before :(
+        - valgrind reports no improvement for l1 misses, i.e. locality is not improved as expected
+            guess due to different filter sizes always accesing different cachelines
+            need to be smarter about computation order to gain benefit (i.e. same mem addresses are actually accessed at once)
     */
     float Dxx0, Dyy0, Dxy0;
     float Dxx1, Dyy1, Dxy1;
@@ -295,6 +369,15 @@ void compute_response_layers_at_once(struct fasthessian* fh) {
     float inv_area6 = 1.f/(filter_size6*filter_size6);
     float inv_area7 = 1.f/(filter_size7*filter_size7);
 
+    float inv_area_squared0 = (inv_area0*inv_area0);
+    float inv_area_squared1 = (inv_area1*inv_area1);
+    float inv_area_squared2 = (inv_area2*inv_area2);
+    float inv_area_squared3 = (inv_area3*inv_area3);
+    float inv_area_squared4 = (inv_area4*inv_area4);
+    float inv_area_squared5 = (inv_area5*inv_area5);
+    float inv_area_squared6 = (inv_area6*inv_area6);
+    float inv_area_squared7 = (inv_area7*inv_area7);
+
 
     for (int i = 0, ind = 0, ind2 = 0, ind4 = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j, ind++) {
@@ -314,12 +397,12 @@ void compute_response_layers_at_once(struct fasthessian* fh) {
                     - box_integral(iimage, x + 1, y + 1, lobe0, lobe0);
 
             // Normalize Responses with inverse area
-            Dxx0 *= inv_area0;
-            Dyy0 *= inv_area0;
-            Dxy0 *= inv_area0;
+            // Dxx0 *= inv_area0;
+            // Dyy0 *= inv_area0;
+            // Dxy0 *= inv_area0;
 
             // Calculate Determinant
-            response0[ind] = Dxx0 * Dyy0 - 0.81f * Dxy0 * Dxy0;
+            response0[ind] = inv_area_squared0*(Dxx0 * Dyy0 - 0.81f * Dxy0 * Dxy0);
 
             // Calculate Laplacian
             laplacian0[ind] = (Dxx0 + Dyy0 >= 0 ? true : false);
@@ -337,12 +420,12 @@ void compute_response_layers_at_once(struct fasthessian* fh) {
                     - box_integral(iimage, x + 1, y + 1, lobe1, lobe1);
 
             // Normalize Responses with inverse area
-            Dxx1 *= inv_area1;
-            Dyy1 *= inv_area1;
-            Dxy1 *= inv_area1;
+            // Dxx1 *= inv_area1;
+            // Dyy1 *= inv_area1;
+            // Dxy1 *= inv_area1;
 
             // Calculate Determinant
-            response1[ind] = Dxx1 * Dyy1 - 0.81f * Dxy1 * Dxy1;
+            response1[ind] = inv_area_squared1*(Dxx1 * Dyy1 - 0.81f * Dxy1 * Dxy1);
 
             // Calculate Laplacian
             laplacian1[ind] = (Dxx1 + Dyy1 >= 0 ? true : false);
@@ -360,12 +443,12 @@ void compute_response_layers_at_once(struct fasthessian* fh) {
                     - box_integral(iimage, x + 1, y + 1, lobe2, lobe2);
 
             // Normalize Responses with inverse area
-            Dxx2 *= inv_area2;
-            Dyy2 *= inv_area2;
-            Dxy2 *= inv_area2;
+            // Dxx2 *= inv_area2;
+            // Dyy2 *= inv_area2;
+            // Dxy2 *= inv_area2;
 
             // Calculate Determinant
-            response2[ind] = Dxx2 * Dyy2 - 0.81f * Dxy2 * Dxy2;
+            response2[ind] = inv_area_squared2*(Dxx2 * Dyy2 - 0.81f * Dxy2 * Dxy2);
 
             // Calculate Laplacian
             laplacian2[ind] = (Dxx2 + Dyy2 >= 0 ? true : false);
@@ -383,12 +466,12 @@ void compute_response_layers_at_once(struct fasthessian* fh) {
                     - box_integral(iimage, x + 1, y + 1, lobe3, lobe3);
 
             // Normalize Responses with inverse area
-            Dxx3 *= inv_area3;
-            Dyy3 *= inv_area3;
-            Dxy3 *= inv_area3;
+            // Dxx3 *= inv_area3;
+            // Dyy3 *= inv_area3;
+            // Dxy3 *= inv_area3;
 
             // Calculate Determinant
-            response3[ind] = Dxx3 * Dyy3 - 0.81f * Dxy3 * Dxy3;
+            response3[ind] = inv_area_squared3*(Dxx3 * Dyy3 - 0.81f * Dxy3 * Dxy3);
 
             // Calculate Laplacian
             laplacian3[ind] = (Dxx3 + Dyy3 >= 0 ? true : false);
@@ -408,12 +491,12 @@ void compute_response_layers_at_once(struct fasthessian* fh) {
                         - box_integral(iimage, x + 1, y + 1, lobe4, lobe4);
 
                 // Normalize Responses with inverse area
-                Dxx4 *= inv_area4;
-                Dyy4 *= inv_area4;
-                Dxy4 *= inv_area4;
+                // Dxx4 *= inv_area4;
+                // Dyy4 *= inv_area4;
+                // Dxy4 *= inv_area4;
 
                 // Calculate Determinant
-                response4[ind2] = Dxx4 * Dyy4 - 0.81f * Dxy4 * Dxy4;
+                response4[ind2] = inv_area_squared4*(Dxx4 * Dyy4 - 0.81f * Dxy4 * Dxy4);
 
                 // Calculate Laplacian
                 laplacian4[ind2] = (Dxx4 + Dyy4 >= 0 ? true : false);
@@ -431,12 +514,12 @@ void compute_response_layers_at_once(struct fasthessian* fh) {
                         - box_integral(iimage, x + 1, y + 1, lobe5, lobe5);
 
                 // Normalize Responses with inverse area
-                Dxx5 *= inv_area5;
-                Dyy5 *= inv_area5;
-                Dxy5 *= inv_area5;
+                // Dxx5 *= inv_area5;
+                // Dyy5 *= inv_area5;
+                // Dxy5 *= inv_area5;
 
                 // Calculate Determinant
-                response5[ind2] = Dxx5 * Dyy5 - 0.81f * Dxy5 * Dxy5;
+                response5[ind2] = inv_area_squared5*(Dxx5 * Dyy5 - 0.81f * Dxy5 * Dxy5);
 
                 // Calculate Laplacian
                 laplacian5[ind2] = (Dxx5 + Dyy5 >= 0 ? true : false);
@@ -458,12 +541,12 @@ void compute_response_layers_at_once(struct fasthessian* fh) {
                             - box_integral(iimage, x + 1, y + 1, lobe6, lobe6);
 
                     // Normalize Responses with inverse area
-                    Dxx6 *= inv_area6;
-                    Dyy6 *= inv_area6;
-                    Dxy6 *= inv_area6;
+                    // Dxx6 *= inv_area6;
+                    // Dyy6 *= inv_area6;
+                    // Dxy6 *= inv_area6;
 
                     // Calculate Determinant
-                    response6[ind4] = Dxx6 * Dyy6 - 0.81f * Dxy6 * Dxy6;
+                    response6[ind4] = inv_area_squared6*(Dxx6 * Dyy6 - 0.81f * Dxy6 * Dxy6);
 
                     // Calculate Laplacian
                     laplacian6[ind4] = (Dxx6 + Dyy6 >= 0 ? true : false);
@@ -481,12 +564,12 @@ void compute_response_layers_at_once(struct fasthessian* fh) {
                             - box_integral(iimage, x + 1, y + 1, lobe7, lobe7);
 
                     // Normalize Responses with inverse area
-                    Dxx7 *= inv_area7;
-                    Dyy7 *= inv_area7;
-                    Dxy7 *= inv_area7;
+                    // Dxx7 *= inv_area7;
+                    // Dyy7 *= inv_area7;
+                    // Dxy7 *= inv_area7;
 
                     // Calculate Determinant
-                    response7[ind4] = Dxx7 * Dyy7 - 0.81f * Dxy7 * Dxy7;
+                    response7[ind4] = inv_area_squared7*(Dxx7 * Dyy7 - 0.81f * Dxy7 * Dxy7);
 
                     // Calculate Laplacian
                     laplacian7[ind4] = (Dxx7 + Dyy7 >= 0 ? true : false);
