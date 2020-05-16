@@ -10,4 +10,4 @@
 #include <vector>
 
 
-void playground_function1(struct integral_image *iimage)
+void playground_function1(struct integral_image *iimage);
