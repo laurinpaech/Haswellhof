@@ -97,7 +97,6 @@ void bench_compute_response_layer(const std::vector<void (*)(struct fasthessian 
     assert(functions.size() == data.size());
 
     for (int j = 0; j < functions.size(); ++j) {
-        printf("Bench function %i\n", j);
         perf_compute_response_all_layers(functions[j], fh, data[j]);
     }
     for (int i = 0; i < NUM_LAYERS; ++i) {

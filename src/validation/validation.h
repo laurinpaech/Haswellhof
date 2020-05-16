@@ -17,12 +17,12 @@ bool validate_integral_image(void (*original_function)(float *, struct integral_
                              const std::vector<void (*)(float *, struct integral_image *)> &test_functions, 
                              int width, int height, float *image);
 
-bool validate_compute_response_layer_custom_matrix(void (*original_function)(struct response_layer *, struct integral_image *), 
-                                                   const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions);
+bool validate_compute_response_layer_custom_matrix(void (*original_function)(struct fasthessian *),
+                                                   const std::vector<void (*)(struct fasthessian *)> &test_functions);
 
-bool validate_compute_response_layer(void (*original_function)(struct response_layer *, struct integral_image *), 
-                                     const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions,
-                                     struct integral_image* iimage);
+bool validate_compute_response_layers(void (*original_function)(struct fasthessian *),
+                                      const std::vector<void (*)(struct fasthessian *)> &test_functions,
+                                      struct integral_image *iimage);
 
 bool validate_compute_response_layer_with_padding(
     void (*original_function)(struct response_layer *, struct integral_image *),

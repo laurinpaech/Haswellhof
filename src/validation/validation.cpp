@@ -14,8 +14,8 @@
 // functions. The results of the integral images are being compared. If one of the results difers from the base
 // implementation false is being returned. Messages clarifying the equality of the results are being printed.
 bool validate_integral_image(void (*original_function)(float *, struct integral_image *),
-                             const std::vector<void (*)(float *, struct integral_image *)> &test_functions, 
-                             int width, int height, float *image) {
+                             const std::vector<void (*)(float *, struct integral_image *)> &test_functions, int width,
+                             int height, float *image) {
     // Create integral image
     struct integral_image *original_iimage = create_integral_img(width, height);
     // Compute integral image
@@ -42,9 +42,8 @@ bool validate_integral_image(void (*original_function)(float *, struct integral_
     return all_functions_equal;
 }
 
-bool validate_compute_response_layer_custom_matrix(
-    void (*original_function)(struct response_layer *, struct integral_image *),
-    const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions) {
+bool validate_compute_response_layer_custom_matrix(void (*original_function)(struct fasthessian *),
+                                                   const std::vector<void (*)(struct fasthessian *)> &test_functions) {
     int width = 5, height = 5;
     float *image = (float *)malloc(height * width * sizeof(float));
     int counter = 0;
@@ -61,7 +60,7 @@ bool validate_compute_response_layer_custom_matrix(
     // Compute integral image
     compute_integral_img(image, iimage);
 
-    bool valid = validate_compute_response_layer(original_function, test_functions, iimage);
+    bool valid = validate_compute_response_layers(original_function, test_functions, iimage);
 
     free(iimage->padded_data);
     free(iimage);
@@ -69,10 +68,9 @@ bool validate_compute_response_layer_custom_matrix(
     return valid;
 }
 
-bool validate_compute_response_layer(
-    void (*original_function)(struct response_layer *, struct integral_image *),
-    const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions,
-    struct integral_image *iimage) {
+bool validate_compute_response_layers(void (*original_function)(struct fasthessian *),
+                                      const std::vector<void (*)(struct fasthessian *)> &test_functions,
+                                      struct integral_image *iimage) {
     bool all_valid = true;
 
     // Fast-Hessian
@@ -81,18 +79,7 @@ bool validate_compute_response_layer(
     create_response_map(original_fh);
 
     // Compute responses for every layer
-    for (int i = 0; i < original_fh->total_layers; i++) {
-#ifdef DEBUG_INFO
-        printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height, original_fh->response_map[i]->width);
-#endif
-        original_function(original_fh->response_map[i], iimage);
-        /**printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height, original_fh->response_map[i]->width);
-        for (int l = 0; l <  original_fh->response_map[i]->height; l++) {
-            for (int m = 0; m < original_fh->response_map[i]->width; m++) {
-                printf("i1: %f\n", original_fh->response_map[i][l * original_fh->response_map[i]->width + m]);
-            }
-        }*/
-    }
+    original_function(original_fh);
 
     for (int j = 0; j < test_functions.size(); ++j) {
         // Fast-Hessian
@@ -100,12 +87,13 @@ bool validate_compute_response_layer(
         // Create octaves with response layers
         create_response_map(optimized_fh);
         // Compute responses for every layer
-        for (int i = 0; i < optimized_fh->total_layers; i++) {
-            test_functions[j](optimized_fh->response_map[i], iimage);
-        }
+        test_functions[j](optimized_fh);
 
         if (original_fh->total_layers != optimized_fh->total_layers) {
-            printf("compute_response_layer() test function %d does not match original function - the number of layers differ.\n", j);
+            printf(
+                "compute_response_layer() test function %d does not match original function - the number of layers "
+                "differ.\n",
+                j);
             all_valid = false;
             // If the numbers of layers doesn't match, don't do any further tests.
             continue;
@@ -125,7 +113,8 @@ bool validate_compute_response_layer(
                 continue;
             }
 #ifdef DEBUG_INFO
-            print_debug(original_layer->response, optimized_layer->response, original_layer->height,original_layer->width);
+            print_debug(original_layer->response, optimized_layer->response, original_layer->height,
+                        original_layer->width);
 #endif
 
             if (!are_float_matrices_equal(original_layer->response, optimized_layer->response, original_layer->height,
@@ -154,11 +143,10 @@ bool validate_compute_response_layer(
     return all_valid;
 }
 
-
 bool validate_compute_response_layer_with_padding(
     void (*original_function)(struct response_layer *, struct integral_image *),
     const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions,
-    float* original_image, int width, int height) {
+    float *original_image, int width, int height) {
     bool all_valid = true;
 
     // Create integral image
@@ -174,17 +162,16 @@ bool validate_compute_response_layer_with_padding(
     // Compute responses for every layer
     for (int i = 0; i < original_fh->total_layers; i++) {
 #ifdef DEBUG_INFO
-        printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height, original_fh->response_map[i]->width);
+        printf("responselayer height: %i, width: %i\n", original_fh->response_map[i]->height,
+               original_fh->response_map[i]->width);
 #endif
         original_function(original_fh->response_map[i], original_integral_image);
     }
 
-     // Create padded integral image
+    // Create padded integral image
     struct integral_image *padded_integral_image = create_padded_integral_img(width, height);
     // Compute padded integral image
     compute_padded_integral_img(original_image, padded_integral_image);
-
-
 
     for (int j = 0; j < test_functions.size(); ++j) {
         // Fast-Hessian
@@ -197,8 +184,10 @@ bool validate_compute_response_layer_with_padding(
         }
 
         if (original_fh->total_layers != optimized_fh->total_layers) {
-            printf("compute_response_layer() test function %d does not match original function - the number of layers "
-                "differ.\n", j);
+            printf(
+                "compute_response_layer() test function %d does not match original function - the number of layers "
+                "differ.\n",
+                j);
             all_valid = false;
             // If the numbers of layers doesn't match, don't do any further tests.
             continue;
@@ -218,7 +207,8 @@ bool validate_compute_response_layer_with_padding(
                 continue;
             }
 #ifdef DEBUG_INFO
-            print_debug(original_layer->response, optimized_layer->response, original_layer->height,original_layer->width);
+            print_debug(original_layer->response, optimized_layer->response, original_layer->height,
+                        original_layer->width);
 #endif
 
             if (!are_float_matrices_equal(original_layer->response, optimized_layer->response, original_layer->height,
@@ -261,7 +251,6 @@ bool validate_get_msurf_descriptors(
     bool all_valid = true;
 
     for (int i = 0; i < interest_points->size(); ++i) {
-        
         struct interest_point ref_ipoint = interest_points->at(i);
         original_function(iimage, &ref_ipoint);
 
