@@ -9,6 +9,7 @@
 
 #include "integral_image_opt.h"
 #include "descriptor_opt.h"
+#include "descriptor_opt_gen.h"
 
 #include "validation.h"
 
@@ -100,6 +101,14 @@ int main(int argc, char const *argv[])
         test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
         test_functions.push_back(get_msurf_descriptor_gauss_compute_once_case);
         test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar);
+        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_unroll);
+        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_rounding);
+        test_functions.push_back(get_msurf_descriptor_arrays);
+        
+
+        test_functions.push_back(get_msurf_descriptor_haar_unroll_4_1_False);
+        test_functions.push_back(get_msurf_descriptor_haar_unroll_1_4_True);
+        
 
         bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
         if (valid) {
@@ -132,6 +141,12 @@ int main(int argc, char const *argv[])
 		free(fh->response_map[i]);
 	}
 	free(fh);
+
+    extern float* haarResponseX;
+    extern float* haarResponseY;
+
+    aligned_free(haarResponseX);
+    aligned_free(haarResponseY);
 
 	return 0;
 }
