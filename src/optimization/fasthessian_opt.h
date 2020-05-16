@@ -11,4 +11,6 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct 
 
 void compute_response_layers_at_once(struct fasthessian* fh);
 
+void compute_response_layers_unconditional(struct fasthessian* fh);
+
 void compute_response_layer_unconditional(struct response_layer* layer, struct integral_image* iimage);

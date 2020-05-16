@@ -10,25 +10,80 @@
 #include "helper.h"
 #include "integral_image.h"
 #include "integral_image_opt.h"
-#include "validation_integral_image.h"
 #include "validation.h"
+#include "validation_integral_image.h"
+#include "benchmark_data_to_file.h"
 
 void playground_function1(float *image, int width, int height) {
-// Create integral image
-	struct integral_image* iimage = create_integral_img(width, height);
-	// Compute integral image
-	compute_integral_img(image, iimage);
+    // Create integral image
+    struct integral_image *iimage = create_integral_img(width, height);
+    // Compute integral image
+    compute_integral_img(image, iimage);
 
-	std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
-	test_functions.push_back(compute_response_layer_unconditional);
+    std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
+    test_functions.push_back(compute_response_layer_unconditional);
 
-	 bool valid =validate_compute_response_layer_with_padding(compute_response_layer,test_functions, image, width, height);
-	
-        if (valid) {
-            printf("COMPUTE RESPONSE LAYER VALIDATION:    \033[0;32mSUCCESS!\033[0m\n");
-        } else {
-            printf("COMPUTE RESPONSE LAYER VALIDATION:    \033[1;31mFAILED!\033[0m\n");
-        }
+    bool valid =
+        validate_compute_response_layer_with_padding(compute_response_layer, test_functions, image, width, height);
+
+    if (valid) {
+        printf("COMPUTE RESPONSE LAYER VALIDATION:    \033[0;32mSUCCESS!\033[0m\n");
+    } else {
+        printf("COMPUTE RESPONSE LAYER VALIDATION:    \033[1;31mFAILED!\033[0m\n");
+    }
+}
+
+void playground_function3(float *image, int width, int height) {
+    std::vector<struct benchmark_data> all_benchmark_data;
+
+    // Create integral image
+    struct integral_image *iimage = create_integral_img(width, height);
+    // Compute integral image
+    compute_integral_img(image, iimage);
+
+    printf("compute_response_layer start\n");
+
+    std::vector<void (*)(struct fasthessian *)> functions;
+    functions.push_back(compute_response_layers);
+    functions.push_back(compute_response_layers_at_once);
+
+    struct benchmark_data default_data("never_gonna_give_you_up", width, height, "compute_response_layer", -1,
+                                       (1 + height * width * 13));
+    struct benchmark_data data1("never_gonna_give_you_up", width, height, "compute_response_layers_at_once", -1,
+                                (1 + height * width * 13));
+
+    std::vector<struct benchmark_data> data;
+    data.push_back(default_data);
+    data.push_back(data1);
+
+    bench_compute_response_layer(functions, iimage, data);
+
+    all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
+
+    // Create integral image
+    struct integral_image *padded_iimage = create_padded_integral_img(width, height);
+    // Compute integral image
+    compute_padded_integral_img(image, iimage);
+
+    std::vector<void (*)(struct fasthessian *)> padded_functions;
+    padded_functions.push_back(compute_response_layers_unconditional);
+
+    struct benchmark_data padded_data("never_gonna_give_you_up", width, height, "compute_response_layers_unconditional", -1,
+                                       (1 + height * width * 13));
+    std::vector<struct benchmark_data> data_padded_functions;
+    data_padded_functions.push_back(padded_data);
+    bench_compute_response_layer(padded_functions, padded_iimage, data_padded_functions);
+    all_benchmark_data.insert(all_benchmark_data.end(), data_padded_functions.begin(), data_padded_functions.end());
+
+    printf("compute_response_layer end\n");
+        save_benchmark_data(all_benchmark_data);
+    
+        free(iimage->padded_data);
+        free(iimage);
+
+        free(padded_iimage->padded_data);
+        free(padded_iimage);       
+
 }
 
 void playground_function2() {

@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#include <vector>
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -11,11 +16,7 @@
 
 #include "playground.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
 
-#include <vector>
 
 int main(int argc, char const *argv[])
 {
@@ -39,16 +40,7 @@ int main(int argc, char const *argv[])
 	// Compute integral image
 	compute_integral_img(image, iimage);
 
-	std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
-	test_functions.push_back(compute_response_layer_unconditional);
-
-	 bool valid =validate_compute_response_layer_with_padding(compute_response_layer,test_functions, image, width, height);
-	
-        if (valid) {
-            printf("COMPUTE RESPONSE LAYER VALIDATION:    \033[0;32mSUCCESS!\033[0m\n");
-        } else {
-            printf("COMPUTE RESPONSE LAYER VALIDATION:    \033[1;31mFAILED!\033[0m\n");
-        }
+	playground_function3(image, width, height);
 	//playground_function2();
 	//playground_function1(image, width, height);
 	/*
