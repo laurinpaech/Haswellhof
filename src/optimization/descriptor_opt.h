@@ -10,6 +10,29 @@
 #include "stdio.h"
 #include <vector>
 
+// Alignment only works for powers of two!
+#define ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
+#define __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
+
+// https://stackoverflow.com/questions/38088732/explanation-to-aligned-malloc-implementation
+// Alignment only works for powers of two!
+inline void *aligned_malloc(size_t required_bytes, size_t alignment) {
+    void *p1;  // original block
+    void **p2; // aligned block
+    int offset = alignment - 1 + sizeof(void *);
+    if ((p1 = (void *)malloc(required_bytes + offset)) == NULL) {
+       return NULL;
+    }
+    p2 = (void **)(((size_t)(p1) + offset) & ~(alignment - 1));
+    p2[-1] = p1;
+    return p2;
+}
+
+inline void aligned_free(void *p) {
+    free(((void **)p)[-1]);
+}
+
+
 // #define PATCH_SIZE 20
 
 // inline float* get_gaussian(float sigma) {
@@ -73,6 +96,13 @@ void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, st
 
 void get_msurf_descriptors_gauss_pecompute_haar(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
+void get_msurf_descriptor_gauss_pecompute_haar_rounding(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_pecompute_haar_rounding(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_arrays(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
 inline void haarXY(float* ii_data, int height, int width, int row, int col, int scale, float* haarX, float* haarY) {
     // subtracting by one for row/col because row/col is inclusive.
@@ -186,3 +216,7 @@ inline void haarXY_nocheck_boundaries(float* ii_data, int height, int width, int
     *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
     *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
 }
+
+void get_msurf_descriptor_gauss_pecompute_haar_unroll(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_pecompute_haar_unroll(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
