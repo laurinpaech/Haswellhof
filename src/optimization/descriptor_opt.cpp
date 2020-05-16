@@ -731,10 +731,6 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
     float ipoint_x = roundf(ipoint->x) + 0.5*scale;
     float ipoint_y = roundf(ipoint->y) + 0.5*scale;
 
-    float *data = (float *)iimage->data;
-    int width = iimage->width;
-    int height = iimage->height;
-
     // build descriptor
     float* descriptor = ipoint->descriptor;
     int desc_idx = 0;
@@ -788,7 +784,7 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
                     
                     float rx = 0.0f;
                     float ry = 0.0f;
-                    haarXY(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
+                    haarXY(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -863,10 +859,8 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
     float ipoint_x = roundf(ipoint->x) + 0.5*scale;
     float ipoint_y = roundf(ipoint->y) + 0.5*scale;
 
-    float *data = (float *)iimage->data;
     int width = iimage->width;
     int height = iimage->height;
-
 
     // build descriptor
     float* descriptor = ipoint->descriptor;
@@ -927,7 +921,7 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
                     
                     float rx = 0.0f;
                     float ry = 0.0f;
-                    haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
+                    haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -1009,7 +1003,7 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
                     
                     float rx = 0.0f;
                     float ry = 0.0f;
-                    haarXY_nocheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
+                    haarXY_nocheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -1083,10 +1077,6 @@ void get_msurf_descriptor_gauss_compute_once_case(struct integral_image* iimage,
 
     float ipoint_x = roundf(ipoint->x) + 0.5*scale;
     float ipoint_y = roundf(ipoint->y) + 0.5*scale;
-
-    float *data = (float *)iimage->data;
-    int width = iimage->width;
-    int height = iimage->height;
 
     // build descriptor
     float* descriptor = ipoint->descriptor;
@@ -1305,7 +1295,7 @@ void get_msurf_descriptor_gauss_compute_once_case(struct integral_image* iimage,
 
                     float rx = 0.0f;
                     float ry = 0.0f;
-                    haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
+                    haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -1408,7 +1398,6 @@ void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, st
     float ipoint_x_sub_int_scale = ipoint_x-int_scale;
     float ipoint_y_sub_int_scale = ipoint_y-int_scale;
 
-    float *data = (float *)iimage->data;
     int width = iimage->width;
     int height = iimage->height;
 
@@ -1441,7 +1430,7 @@ void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, st
 
                 // float rx = 0.0f;
                 // float ry = 0.0f;
-                haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+                haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
 
                 // haarResponseX[(l+12)*24+(k+12)] = rx;
                 // haarResponseY[(l+12)*24+(k+12)] = ry;
@@ -1463,7 +1452,7 @@ void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, st
 
                 // float rx = 0.0f;
                 // float ry = 0.0f;
-                haarXY_nocheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+                haarXY_nocheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
 
                 // haarResponseX[(l+12)*24+(k+12)] = rx;
                 // haarResponseY[(l+12)*24+(k+12)] = ry;
@@ -1665,7 +1654,7 @@ void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, st
 
                     float rx = haarResponseX[(l+12)*24+(k+12)];
                     float ry = haarResponseY[(l+12)*24+(k+12)];
-                    // haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
+                    // haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;

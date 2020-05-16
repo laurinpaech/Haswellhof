@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#include <vector>
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -6,14 +11,12 @@
 #include "fasthessian.h"
 #include "interest_point.h"
 #include "descriptor.h"
+#include "fasthessian_opt.h"
+#include "validation.h"
 
 #include "playground.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
 
-#include <vector>
 
 int main(int argc, char const *argv[])
 {
@@ -35,8 +38,12 @@ int main(int argc, char const *argv[])
 	// Create integral image
 	struct integral_image* iimage = create_integral_img(width, height);
 	// Compute integral image
-	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
+	compute_integral_img(image, iimage);
 
+	playground_function3(image, width, height);
+	//playground_function2();
+	//playground_function1(image, width, height);
+	/*
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);
 
@@ -65,17 +72,19 @@ int main(int argc, char const *argv[])
         fprintf(fp, "\n");
     }
     fclose(fp);
-
+*/
 	// Free memory
 	stbi_image_free(image); // possibly move this to create_integral_img
-	free(iimage->data);
+	free(iimage->padded_data);
 	free(iimage);
+	/*
 	for (int i = 0; i < NUM_LAYERS; ++i) {
 		free(fh->response_map[i]->response);
 		free(fh->response_map[i]->laplacian);
 		free(fh->response_map[i]);
 	}
 	free(fh);
+	*/
 
 	return 0;
 }

@@ -63,3 +63,5 @@ cmake-build-*
 #jupyter notebooks
 *.ipynb
 *.ipynb_checkpoints
+
+benchmarking_files/

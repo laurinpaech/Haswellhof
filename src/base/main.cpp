@@ -32,7 +32,7 @@ int main(int argc, char const *argv[])
 	// Create integral image
 	struct integral_image* iimage = create_integral_img(width, height);
 	// Compute integral image
-	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
+	compute_integral_img(image, iimage);
 
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);
@@ -64,7 +64,7 @@ int main(int argc, char const *argv[])
 
 	// Free memory
 	stbi_image_free(image); // possibly move this to create_integral_img
-	free(iimage->data);
+	free(iimage->padded_data);
 	free(iimage);
 	for (int i = 0; i < NUM_LAYERS; ++i) {
 		free(fh->response_map[i]->response);
