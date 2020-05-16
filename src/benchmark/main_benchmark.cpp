@@ -129,6 +129,9 @@ int main(int argc, char const *argv[]) {
                 bench_compute_response_layer(padded_functions, padded_iimage, data_padded_functions);
                 all_benchmark_data.insert(all_benchmark_data.end(), data_padded_functions.begin(),
                                         data_padded_functions.end());
+                                        
+                free(padded_iimage->padded_data);
+                free(padded_iimage);
             }
     #endif
             printf("compute_response_layer end\n");
