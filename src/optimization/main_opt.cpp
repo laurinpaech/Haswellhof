@@ -8,6 +8,12 @@
 #include "descriptor.h"
 #include "descriptor_opt.h"
 
+#define USE_FASTHESSIAN_FLAT 1
+
+#if USE_FASTHESSIAN_FLAT
+#include "fasthessian_opt_flat.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -35,8 +41,10 @@ int main(int argc, char const *argv[])
     // Compute integral image
     compute_integral_img(image, iimage);
 
+#if !USE_FASTHESSIAN_FLAT
+
     // Fast-Hessian
-    struct fasthessian* fh = create_fast_hessian(iimage);
+    struct fasthessian *fh = create_fast_hessian(iimage);
 
     // Create octaves with response layers
     create_response_map(fh);
@@ -47,7 +55,24 @@ int main(int argc, char const *argv[])
     // Getting interest points with non-maximum supression
     std::vector<struct interest_point> interest_points;
     get_interest_points(fh, &interest_points);
-    
+
+#else
+
+    // Initializing fast-hessian
+    struct fasthessian_flat fh_flat;
+
+	// Create octaves with response layers for every layer
+	create_fast_hessian_flat_and_response_map(iimage, &fh_flat);
+
+    // Compute responses for every layer
+	compute_response_layers_flat(&fh_flat);
+
+    // Getting interest points with non-maximum supression
+    std::vector<struct interest_point> interest_points;
+    get_interest_points_flat(&fh_flat, &interest_points);
+
+#endif
+
     // Getting M-SURF descriptors for each interest point
 	get_msurf_descriptors_gauss_pecompute_haar(iimage, &interest_points);
     
@@ -71,12 +96,16 @@ int main(int argc, char const *argv[])
     stbi_image_free(image); // possibly move this to create_integral_img
     free(iimage->padded_data);
     free(iimage);
+
+
+#if !USE_FASTHESSIAN_FLAT
     for (int i = 0; i < NUM_LAYERS; ++i) {
         free(fh->response_map[i]->response);
 		free(fh->response_map[i]->laplacian);
         free(fh->response_map[i]);
     }
     free(fh);
+#endif
 
     return 0;
 }
