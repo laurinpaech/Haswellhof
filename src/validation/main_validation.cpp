@@ -20,9 +20,9 @@
 
 #include <vector>
 
-#define VALIDATE_INTEGRAL_IMAGE
+// #define VALIDATE_INTEGRAL_IMAGE
 #define VALIDATE_COMPUTE_RESPONSE_LAYER
-#define VALIDATE_GET_MSURF_DESCRIPTORS
+// #define VALIDATE_GET_MSURF_DESCRIPTORS
 
 
 int main(int argc, char const *argv[])
@@ -74,10 +74,10 @@ int main(int argc, char const *argv[])
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER
     {
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
-        test_functions.push_back(compute_response_layer);
-        //bool valid = validate_compute_response_layer(compute_response_layer, test_functions, iimage);
+        test_functions.push_back(compute_response_layer_sonic_Dyy);
+        bool valid = validate_compute_response_layer(compute_response_layer, test_functions, iimage);
 
-        bool valid = validate_compute_response_layer_custom_matrix(compute_response_layer, test_functions);
+        // bool valid = validate_compute_response_layer_custom_matrix(compute_response_layer, test_functions);
         if (valid) {
             printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
         } else {
@@ -103,7 +103,7 @@ int main(int argc, char const *argv[])
 	for (size_t i=0; i<interest_points.size(); ++i) {
         get_msurf_descriptor(iimage, &interest_points[i]);
 	}
-#ifdef VALIDATE_GET_MSURF_DESCRIPTORS	
+#ifdef VALIDATE_GET_MSURF_DESCRIPTORS
     {
         std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
         test_functions.push_back(get_msurf_descriptor_improved);
