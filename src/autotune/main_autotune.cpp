@@ -50,7 +50,7 @@ int main(int argc, char const *argv[]) {
         // Create integral image
         struct integral_image *iimage = create_integral_img(width, height);
         // Compute integral image
-        compute_integral_img(image, iimage->width, iimage->height, iimage->data);
+        compute_integral_img(image, iimage);
 
 
         // Fast-Hessian
@@ -73,133 +73,397 @@ int main(int argc, char const *argv[]) {
             std::vector<void (*)(struct integral_image *, std::vector<struct interest_point> *)> functions;
             // Insert all respective benchmarking info for functions here
             std::vector<struct benchmark_data> data;
-            functions.push_back(get_msurf_descriptors_haar_unroll_1_1_False);
-            struct benchmark_data data_1_1_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_1_False", interest_points.size(), -1);
-            data.push_back(data_1_1_False);;
-            
             functions.push_back(get_msurf_descriptors_haar_unroll_1_1_True);
             struct benchmark_data data_1_1_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_1_True", interest_points.size(), -1);
             data.push_back(data_1_1_True);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_1_2_False);
-            struct benchmark_data data_1_2_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_2_False", interest_points.size(), -1);
-            data.push_back(data_1_2_False);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_1_2_True);
-            struct benchmark_data data_1_2_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_2_True", interest_points.size(), -1);
-            data.push_back(data_1_2_True);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_1_3_False);
-            struct benchmark_data data_1_3_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_3_False", interest_points.size(), -1);
-            data.push_back(data_1_3_False);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_1_3_True);
-            struct benchmark_data data_1_3_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_3_True", interest_points.size(), -1);
-            data.push_back(data_1_3_True);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_1_4_False);
-            struct benchmark_data data_1_4_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_4_False", interest_points.size(), -1);
-            data.push_back(data_1_4_False);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_1_False);
+            struct benchmark_data data_1_1_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_1_False", interest_points.size(), -1);
+            data.push_back(data_1_1_False);;
             
             functions.push_back(get_msurf_descriptors_haar_unroll_1_4_True);
             struct benchmark_data data_1_4_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_4_True", interest_points.size(), -1);
             data.push_back(data_1_4_True);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_2_1_False);
-            struct benchmark_data data_2_1_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_2_1_False", interest_points.size(), -1);
-            data.push_back(data_2_1_False);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_4_False);
+            struct benchmark_data data_1_4_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_4_False", interest_points.size(), -1);
+            data.push_back(data_1_4_False);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_2_1_True);
-            struct benchmark_data data_2_1_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_2_1_True", interest_points.size(), -1);
-            data.push_back(data_2_1_True);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_8_True);
+            struct benchmark_data data_1_8_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_8_True", interest_points.size(), -1);
+            data.push_back(data_1_8_True);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_2_2_False);
-            struct benchmark_data data_2_2_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_2_2_False", interest_points.size(), -1);
-            data.push_back(data_2_2_False);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_8_False);
+            struct benchmark_data data_1_8_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_8_False", interest_points.size(), -1);
+            data.push_back(data_1_8_False);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_2_2_True);
-            struct benchmark_data data_2_2_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_2_2_True", interest_points.size(), -1);
-            data.push_back(data_2_2_True);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_12_True);
+            struct benchmark_data data_1_12_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_12_True", interest_points.size(), -1);
+            data.push_back(data_1_12_True);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_2_3_False);
-            struct benchmark_data data_2_3_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_2_3_False", interest_points.size(), -1);
-            data.push_back(data_2_3_False);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_12_False);
+            struct benchmark_data data_1_12_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_12_False", interest_points.size(), -1);
+            data.push_back(data_1_12_False);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_2_3_True);
-            struct benchmark_data data_2_3_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_2_3_True", interest_points.size(), -1);
-            data.push_back(data_2_3_True);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_16_True);
+            struct benchmark_data data_1_16_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_16_True", interest_points.size(), -1);
+            data.push_back(data_1_16_True);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_2_4_False);
-            struct benchmark_data data_2_4_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_2_4_False", interest_points.size(), -1);
-            data.push_back(data_2_4_False);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_16_False);
+            struct benchmark_data data_1_16_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_16_False", interest_points.size(), -1);
+            data.push_back(data_1_16_False);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_2_4_True);
-            struct benchmark_data data_2_4_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_2_4_True", interest_points.size(), -1);
-            data.push_back(data_2_4_True);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_20_True);
+            struct benchmark_data data_1_20_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_20_True", interest_points.size(), -1);
+            data.push_back(data_1_20_True);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_3_1_False);
-            struct benchmark_data data_3_1_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_3_1_False", interest_points.size(), -1);
-            data.push_back(data_3_1_False);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_20_False);
+            struct benchmark_data data_1_20_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_20_False", interest_points.size(), -1);
+            data.push_back(data_1_20_False);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_3_1_True);
-            struct benchmark_data data_3_1_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_3_1_True", interest_points.size(), -1);
-            data.push_back(data_3_1_True);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_24_True);
+            struct benchmark_data data_1_24_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_24_True", interest_points.size(), -1);
+            data.push_back(data_1_24_True);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_3_2_False);
-            struct benchmark_data data_3_2_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_3_2_False", interest_points.size(), -1);
-            data.push_back(data_3_2_False);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_3_2_True);
-            struct benchmark_data data_3_2_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_3_2_True", interest_points.size(), -1);
-            data.push_back(data_3_2_True);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_3_3_False);
-            struct benchmark_data data_3_3_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_3_3_False", interest_points.size(), -1);
-            data.push_back(data_3_3_False);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_3_3_True);
-            struct benchmark_data data_3_3_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_3_3_True", interest_points.size(), -1);
-            data.push_back(data_3_3_True);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_3_4_False);
-            struct benchmark_data data_3_4_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_3_4_False", interest_points.size(), -1);
-            data.push_back(data_3_4_False);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_3_4_True);
-            struct benchmark_data data_3_4_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_3_4_True", interest_points.size(), -1);
-            data.push_back(data_3_4_True);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_4_1_False);
-            struct benchmark_data data_4_1_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_1_False", interest_points.size(), -1);
-            data.push_back(data_4_1_False);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_1_24_False);
+            struct benchmark_data data_1_24_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_1_24_False", interest_points.size(), -1);
+            data.push_back(data_1_24_False);;
             
             functions.push_back(get_msurf_descriptors_haar_unroll_4_1_True);
             struct benchmark_data data_4_1_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_1_True", interest_points.size(), -1);
             data.push_back(data_4_1_True);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_4_2_False);
-            struct benchmark_data data_4_2_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_2_False", interest_points.size(), -1);
-            data.push_back(data_4_2_False);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_1_False);
+            struct benchmark_data data_4_1_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_1_False", interest_points.size(), -1);
+            data.push_back(data_4_1_False);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_4_2_True);
-            struct benchmark_data data_4_2_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_2_True", interest_points.size(), -1);
-            data.push_back(data_4_2_True);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_4_3_False);
-            struct benchmark_data data_4_3_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_3_False", interest_points.size(), -1);
-            data.push_back(data_4_3_False);;
-            
-            functions.push_back(get_msurf_descriptors_haar_unroll_4_3_True);
-            struct benchmark_data data_4_3_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_3_True", interest_points.size(), -1);
-            data.push_back(data_4_3_True);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_4_True);
+            struct benchmark_data data_4_4_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_4_True", interest_points.size(), -1);
+            data.push_back(data_4_4_True);;
             
             functions.push_back(get_msurf_descriptors_haar_unroll_4_4_False);
             struct benchmark_data data_4_4_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_4_False", interest_points.size(), -1);
             data.push_back(data_4_4_False);;
             
-            functions.push_back(get_msurf_descriptors_haar_unroll_4_4_True);
-            struct benchmark_data data_4_4_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_4_True", interest_points.size(), -1);
-            data.push_back(data_4_4_True);;
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_8_True);
+            struct benchmark_data data_4_8_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_8_True", interest_points.size(), -1);
+            data.push_back(data_4_8_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_8_False);
+            struct benchmark_data data_4_8_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_8_False", interest_points.size(), -1);
+            data.push_back(data_4_8_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_12_True);
+            struct benchmark_data data_4_12_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_12_True", interest_points.size(), -1);
+            data.push_back(data_4_12_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_12_False);
+            struct benchmark_data data_4_12_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_12_False", interest_points.size(), -1);
+            data.push_back(data_4_12_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_16_True);
+            struct benchmark_data data_4_16_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_16_True", interest_points.size(), -1);
+            data.push_back(data_4_16_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_16_False);
+            struct benchmark_data data_4_16_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_16_False", interest_points.size(), -1);
+            data.push_back(data_4_16_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_20_True);
+            struct benchmark_data data_4_20_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_20_True", interest_points.size(), -1);
+            data.push_back(data_4_20_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_20_False);
+            struct benchmark_data data_4_20_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_20_False", interest_points.size(), -1);
+            data.push_back(data_4_20_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_24_True);
+            struct benchmark_data data_4_24_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_24_True", interest_points.size(), -1);
+            data.push_back(data_4_24_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_4_24_False);
+            struct benchmark_data data_4_24_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_4_24_False", interest_points.size(), -1);
+            data.push_back(data_4_24_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_1_True);
+            struct benchmark_data data_8_1_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_1_True", interest_points.size(), -1);
+            data.push_back(data_8_1_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_1_False);
+            struct benchmark_data data_8_1_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_1_False", interest_points.size(), -1);
+            data.push_back(data_8_1_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_4_True);
+            struct benchmark_data data_8_4_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_4_True", interest_points.size(), -1);
+            data.push_back(data_8_4_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_4_False);
+            struct benchmark_data data_8_4_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_4_False", interest_points.size(), -1);
+            data.push_back(data_8_4_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_8_True);
+            struct benchmark_data data_8_8_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_8_True", interest_points.size(), -1);
+            data.push_back(data_8_8_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_8_False);
+            struct benchmark_data data_8_8_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_8_False", interest_points.size(), -1);
+            data.push_back(data_8_8_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_12_True);
+            struct benchmark_data data_8_12_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_12_True", interest_points.size(), -1);
+            data.push_back(data_8_12_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_12_False);
+            struct benchmark_data data_8_12_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_12_False", interest_points.size(), -1);
+            data.push_back(data_8_12_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_16_True);
+            struct benchmark_data data_8_16_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_16_True", interest_points.size(), -1);
+            data.push_back(data_8_16_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_16_False);
+            struct benchmark_data data_8_16_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_16_False", interest_points.size(), -1);
+            data.push_back(data_8_16_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_20_True);
+            struct benchmark_data data_8_20_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_20_True", interest_points.size(), -1);
+            data.push_back(data_8_20_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_20_False);
+            struct benchmark_data data_8_20_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_20_False", interest_points.size(), -1);
+            data.push_back(data_8_20_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_24_True);
+            struct benchmark_data data_8_24_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_24_True", interest_points.size(), -1);
+            data.push_back(data_8_24_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_8_24_False);
+            struct benchmark_data data_8_24_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_8_24_False", interest_points.size(), -1);
+            data.push_back(data_8_24_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_1_True);
+            struct benchmark_data data_12_1_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_1_True", interest_points.size(), -1);
+            data.push_back(data_12_1_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_1_False);
+            struct benchmark_data data_12_1_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_1_False", interest_points.size(), -1);
+            data.push_back(data_12_1_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_4_True);
+            struct benchmark_data data_12_4_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_4_True", interest_points.size(), -1);
+            data.push_back(data_12_4_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_4_False);
+            struct benchmark_data data_12_4_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_4_False", interest_points.size(), -1);
+            data.push_back(data_12_4_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_8_True);
+            struct benchmark_data data_12_8_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_8_True", interest_points.size(), -1);
+            data.push_back(data_12_8_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_8_False);
+            struct benchmark_data data_12_8_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_8_False", interest_points.size(), -1);
+            data.push_back(data_12_8_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_12_True);
+            struct benchmark_data data_12_12_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_12_True", interest_points.size(), -1);
+            data.push_back(data_12_12_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_12_False);
+            struct benchmark_data data_12_12_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_12_False", interest_points.size(), -1);
+            data.push_back(data_12_12_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_16_True);
+            struct benchmark_data data_12_16_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_16_True", interest_points.size(), -1);
+            data.push_back(data_12_16_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_16_False);
+            struct benchmark_data data_12_16_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_16_False", interest_points.size(), -1);
+            data.push_back(data_12_16_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_20_True);
+            struct benchmark_data data_12_20_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_20_True", interest_points.size(), -1);
+            data.push_back(data_12_20_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_20_False);
+            struct benchmark_data data_12_20_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_20_False", interest_points.size(), -1);
+            data.push_back(data_12_20_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_24_True);
+            struct benchmark_data data_12_24_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_24_True", interest_points.size(), -1);
+            data.push_back(data_12_24_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_12_24_False);
+            struct benchmark_data data_12_24_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_12_24_False", interest_points.size(), -1);
+            data.push_back(data_12_24_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_1_True);
+            struct benchmark_data data_16_1_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_1_True", interest_points.size(), -1);
+            data.push_back(data_16_1_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_1_False);
+            struct benchmark_data data_16_1_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_1_False", interest_points.size(), -1);
+            data.push_back(data_16_1_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_4_True);
+            struct benchmark_data data_16_4_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_4_True", interest_points.size(), -1);
+            data.push_back(data_16_4_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_4_False);
+            struct benchmark_data data_16_4_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_4_False", interest_points.size(), -1);
+            data.push_back(data_16_4_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_8_True);
+            struct benchmark_data data_16_8_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_8_True", interest_points.size(), -1);
+            data.push_back(data_16_8_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_8_False);
+            struct benchmark_data data_16_8_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_8_False", interest_points.size(), -1);
+            data.push_back(data_16_8_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_12_True);
+            struct benchmark_data data_16_12_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_12_True", interest_points.size(), -1);
+            data.push_back(data_16_12_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_12_False);
+            struct benchmark_data data_16_12_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_12_False", interest_points.size(), -1);
+            data.push_back(data_16_12_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_16_True);
+            struct benchmark_data data_16_16_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_16_True", interest_points.size(), -1);
+            data.push_back(data_16_16_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_16_False);
+            struct benchmark_data data_16_16_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_16_False", interest_points.size(), -1);
+            data.push_back(data_16_16_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_20_True);
+            struct benchmark_data data_16_20_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_20_True", interest_points.size(), -1);
+            data.push_back(data_16_20_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_20_False);
+            struct benchmark_data data_16_20_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_20_False", interest_points.size(), -1);
+            data.push_back(data_16_20_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_24_True);
+            struct benchmark_data data_16_24_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_24_True", interest_points.size(), -1);
+            data.push_back(data_16_24_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_16_24_False);
+            struct benchmark_data data_16_24_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_16_24_False", interest_points.size(), -1);
+            data.push_back(data_16_24_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_1_True);
+            struct benchmark_data data_20_1_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_1_True", interest_points.size(), -1);
+            data.push_back(data_20_1_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_1_False);
+            struct benchmark_data data_20_1_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_1_False", interest_points.size(), -1);
+            data.push_back(data_20_1_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_4_True);
+            struct benchmark_data data_20_4_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_4_True", interest_points.size(), -1);
+            data.push_back(data_20_4_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_4_False);
+            struct benchmark_data data_20_4_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_4_False", interest_points.size(), -1);
+            data.push_back(data_20_4_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_8_True);
+            struct benchmark_data data_20_8_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_8_True", interest_points.size(), -1);
+            data.push_back(data_20_8_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_8_False);
+            struct benchmark_data data_20_8_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_8_False", interest_points.size(), -1);
+            data.push_back(data_20_8_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_12_True);
+            struct benchmark_data data_20_12_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_12_True", interest_points.size(), -1);
+            data.push_back(data_20_12_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_12_False);
+            struct benchmark_data data_20_12_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_12_False", interest_points.size(), -1);
+            data.push_back(data_20_12_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_16_True);
+            struct benchmark_data data_20_16_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_16_True", interest_points.size(), -1);
+            data.push_back(data_20_16_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_16_False);
+            struct benchmark_data data_20_16_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_16_False", interest_points.size(), -1);
+            data.push_back(data_20_16_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_20_True);
+            struct benchmark_data data_20_20_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_20_True", interest_points.size(), -1);
+            data.push_back(data_20_20_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_20_False);
+            struct benchmark_data data_20_20_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_20_False", interest_points.size(), -1);
+            data.push_back(data_20_20_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_24_True);
+            struct benchmark_data data_20_24_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_24_True", interest_points.size(), -1);
+            data.push_back(data_20_24_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_20_24_False);
+            struct benchmark_data data_20_24_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_20_24_False", interest_points.size(), -1);
+            data.push_back(data_20_24_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_1_True);
+            struct benchmark_data data_24_1_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_1_True", interest_points.size(), -1);
+            data.push_back(data_24_1_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_1_False);
+            struct benchmark_data data_24_1_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_1_False", interest_points.size(), -1);
+            data.push_back(data_24_1_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_4_True);
+            struct benchmark_data data_24_4_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_4_True", interest_points.size(), -1);
+            data.push_back(data_24_4_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_4_False);
+            struct benchmark_data data_24_4_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_4_False", interest_points.size(), -1);
+            data.push_back(data_24_4_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_8_True);
+            struct benchmark_data data_24_8_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_8_True", interest_points.size(), -1);
+            data.push_back(data_24_8_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_8_False);
+            struct benchmark_data data_24_8_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_8_False", interest_points.size(), -1);
+            data.push_back(data_24_8_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_12_True);
+            struct benchmark_data data_24_12_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_12_True", interest_points.size(), -1);
+            data.push_back(data_24_12_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_12_False);
+            struct benchmark_data data_24_12_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_12_False", interest_points.size(), -1);
+            data.push_back(data_24_12_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_16_True);
+            struct benchmark_data data_24_16_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_16_True", interest_points.size(), -1);
+            data.push_back(data_24_16_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_16_False);
+            struct benchmark_data data_24_16_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_16_False", interest_points.size(), -1);
+            data.push_back(data_24_16_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_20_True);
+            struct benchmark_data data_24_20_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_20_True", interest_points.size(), -1);
+            data.push_back(data_24_20_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_20_False);
+            struct benchmark_data data_24_20_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_20_False", interest_points.size(), -1);
+            data.push_back(data_24_20_False);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_24_True);
+            struct benchmark_data data_24_24_True(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_24_True", interest_points.size(), -1);
+            data.push_back(data_24_24_True);;
+            
+            functions.push_back(get_msurf_descriptors_haar_unroll_24_24_False);
+            struct benchmark_data data_24_24_False(image_name, width, height, "get_msurf_descriptor_haar_unroll_24_24_False", interest_points.size(), -1);
+            data.push_back(data_24_24_False);;
             
             // Benchmarking all get_msurf_descriptor functions and storing timing results in respective entries in data
             bench_get_msurf_descriptors(functions, iimage, &interest_points, data);
