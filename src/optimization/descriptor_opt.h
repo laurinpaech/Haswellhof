@@ -161,12 +161,19 @@ inline void haarXY(struct integral_image *iimage, int row, int col, int scale, f
         r2c2 = data[r2 * data_width + c2];
     }
 
+
+    // *haarX = (r0c1 - r0c2 - r2c1 + r2c2) - (r0c0 - r0c1 - r2c0 + r2c1);
+    // *haarY = (r1c0 - r1c2 - r2c0 + r2c2) - (r0c0 - r0c2 - r1c0 + r1c2);
+
     float r2c2_sub_r0c0 = r2c2 - r0c0;
-    float r0c2_sub_r2c0 = r0c2 - r2c0;
+    float r2c0_sub_r0c2 = r2c0 - r0c2;
 
-    *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
-    *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
+    *haarX = 2*(r0c1 - r2c1) + r2c2_sub_r0c0 + r2c0_sub_r0c2;
+    *haarY = 2*(r1c0 - r1c2) + r2c2_sub_r0c0 - r2c0_sub_r0c2;
 
+    // for FMA
+    // *haarX = (2*r0c1 + r2c0_sub_r0c2) - (2*r2c1 - r2c2_sub_r0c0);
+    // *haarY = (2*r1c0 - r2c0_sub_r0c2) - (2*r1c2 - r2c2_sub_r0c0);
 }
 
 inline void haarXY_precheck_boundaries(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
@@ -207,15 +214,22 @@ inline void haarXY_precheck_boundaries(struct integral_image *iimage, int row, i
     float r2c1 = data[r2 * data_width + c1];
     float r2c2 = data[r2 * data_width + c2];
 
-    float r2c2_sub_r0c0 = r2c2 - r0c0;
-    float r0c2_sub_r2c0 = r0c2 - r2c0;
+    // *haarX = (r0c1 - r0c2 - r2c1 + r2c2) - (r0c0 - r0c1 - r2c0 + r2c1);
+    // *haarY = (r1c0 - r1c2 - r2c0 + r2c2) - (r0c0 - r0c2 - r1c0 + r1c2);
 
-    *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
-    *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
+    float r2c2_sub_r0c0 = r2c2 - r0c0;
+    float r2c0_sub_r0c2 = r2c0 - r0c2;
+
+    *haarX = 2*(r0c1 - r2c1) + r2c2_sub_r0c0 + r2c0_sub_r0c2;
+    *haarY = 2*(r1c0 - r1c2) + r2c2_sub_r0c0 - r2c0_sub_r0c2;
+
+    // for FMA
+    // *haarX = (2*r0c1 + r2c0_sub_r0c2) - (2*r2c1 - r2c2_sub_r0c0);
+    // *haarY = (2*r1c0 - r2c0_sub_r0c2) - (2*r1c2 - r2c2_sub_r0c0);
 
 }
 
-inline void haarXY_nocheck_boundaries(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
+inline void haarXY_unconditional(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
     
     float *data = iimage->data;
     int data_width = iimage->data_width;
@@ -237,11 +251,18 @@ inline void haarXY_nocheck_boundaries(struct integral_image *iimage, int row, in
     float r2c1 = data[r2 * data_width + c1];
     float r2c2 = data[r2 * data_width + c2];
 
-    float r2c2_sub_r0c0 = r2c2 - r0c0;
-    float r0c2_sub_r2c0 = r0c2 - r2c0;
+    // *haarX = (r0c1 - r0c2 - r2c1 + r2c2) - (r0c0 - r0c1 - r2c0 + r2c1);
+    // *haarY = (r1c0 - r1c2 - r2c0 + r2c2) - (r0c0 - r0c2 - r1c0 + r1c2);
 
-    *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
-    *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
+    float r2c2_sub_r0c0 = r2c2 - r0c0;
+    float r2c0_sub_r0c2 = r2c0 - r0c2;
+
+    *haarX = 2*(r0c1 - r2c1) + r2c2_sub_r0c0 + r2c0_sub_r0c2;
+    *haarY = 2*(r1c0 - r1c2) + r2c2_sub_r0c0 - r2c0_sub_r0c2;
+
+    // for FMA
+    // *haarX = (2*r0c1 + r2c0_sub_r0c2) - (2*r2c1 - r2c2_sub_r0c0);
+    // *haarY = (2*r1c0 - r2c0_sub_r0c2) - (2*r1c2 - r2c2_sub_r0c0);
 
 }
 

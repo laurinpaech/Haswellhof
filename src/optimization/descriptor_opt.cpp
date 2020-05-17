@@ -785,6 +785,9 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
                     float rx = 0.0f;
                     float ry = 0.0f;
                     haarXY(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
+
+                    // float rx = haarX(iimage, sample_y, sample_x, int_scale*2);
+                    // float ry = haarY(iimage, sample_y, sample_x, int_scale*2);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -1003,7 +1006,7 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
                     
                     float rx = 0.0f;
                     float ry = 0.0f;
-                    haarXY_nocheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
+                    haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -1452,7 +1455,7 @@ void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, st
 
                 // float rx = 0.0f;
                 // float ry = 0.0f;
-                haarXY_nocheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
 
                 // haarResponseX[(l+12)*24+(k+12)] = rx;
                 // haarResponseY[(l+12)*24+(k+12)] = ry;
@@ -1750,7 +1753,6 @@ void get_msurf_descriptor_gauss_pecompute_haar_rounding(struct integral_image* i
     float ipoint_x_sub_int_scale_add_05 = ipoint_x-int_scale + 0.5;
     float ipoint_y_sub_int_scale_add_05 = ipoint_y-int_scale + 0.5;
 
-    float *data = (float *)iimage->data;
     int width = iimage->width;
     int height = iimage->height;
 
@@ -1785,7 +1787,7 @@ void get_msurf_descriptor_gauss_pecompute_haar_rounding(struct integral_image* i
 
                 // float rx = 0.0f;
                 // float ry = 0.0f;
-                haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+                haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
 
                 // haarResponseX[(l+12)*24+(k+12)] = rx;
                 // haarResponseY[(l+12)*24+(k+12)] = ry;
@@ -1807,7 +1809,7 @@ void get_msurf_descriptor_gauss_pecompute_haar_rounding(struct integral_image* i
 
                 // float rx = 0.0f;
                 // float ry = 0.0f;
-                haarXY_nocheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
 
                 // haarResponseX[(l+12)*24+(k+12)] = rx;
                 // haarResponseY[(l+12)*24+(k+12)] = ry;
@@ -2060,12 +2062,19 @@ void get_msurf_descriptors_gauss_pecompute_haar_rounding(struct integral_image* 
 	}
 }
 
+extern const float gauss_s2_arr[16] = {0.026022f, 0.040585f, 0.040585f, 0.026022f, 
+                                        0.040585f, 0.063297f, 0.063297f, 0.040585f, 
+                                        0.040585f, 0.063297f, 0.063297f, 0.040585f, 
+                                        0.026022f, 0.040585f, 0.040585f, 0.026022f};
+
+float gauss_s1_c0[9];
+float gauss_s1_c1[9];
 
 void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_point* ipoint) {
     /*
     applied optimizations:
-        - all of get_msurf_descriptors_gauss_pecompute_haar
-        - simplify rounding as (int) (x+0.5) if x>=0 and (int) (x-0.5) oterwise where return of roundf is int
+        - all of get_msurf_descriptor_gauss_pecompute_haar_rounding
+        - replaced case statements with static arrays
     */
 
     float scale = ipoint->scale;
@@ -2085,8 +2094,7 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
 
     float ipoint_x_sub_int_scale_add_05 = ipoint_x-int_scale + 0.5;
     float ipoint_y_sub_int_scale_add_05 = ipoint_y-int_scale + 0.5;
-
-    float *data = (float *)iimage->data;
+    
     int width = iimage->width;
     int height = iimage->height;
 
@@ -2106,25 +2114,17 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
         || ((int) roundf(ipoint_x + 11*scale)) + int_scale > width 
         || ((int) roundf(ipoint_y + 11*scale)) + int_scale > height) 
     { // some outside
-
         for (int l=-12, l_count=0; l<12; ++l, ++l_count) {
-            // int sample_y = (int) roundf(ipoint_y + l * scale);
             float ipoint_y_sub_int_scale_add_l_mul_scale = ipoint_y_sub_int_scale + l * scale;
             int sample_y_sub_int_scale = (int) (ipoint_y_sub_int_scale_add_l_mul_scale + (ipoint_y_sub_int_scale_add_l_mul_scale>=0 ? 0.5 : -0.5));
 
             for (int k=-12, k_count=0; k<12; ++k, k_count++) {
 
                 //Get x coords of sample point
-                // int sample_x = (int) roundf(ipoint_x + k * scale);
                 float ipoint_x_sub_int_scale_add_k_mul_scale = ipoint_x_sub_int_scale + k * scale;
                 int sample_x_sub_int_scale = (int) (ipoint_x_sub_int_scale_add_k_mul_scale + (ipoint_x_sub_int_scale_add_k_mul_scale>=0 ? 0.5 : -0.5));
 
-                // float rx = 0.0f;
-                // float ry = 0.0f;
-                haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
-
-                // haarResponseX[(l+12)*24+(k+12)] = rx;
-                // haarResponseY[(l+12)*24+(k+12)] = ry;
+                haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
             }
 
         }
@@ -2132,21 +2132,13 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
     } else {
 
         for (int l=-12, l_count=0; l<12; ++l, ++l_count) {
-            // int sample_y = (int) roundf(ipoint_y + l * scale);
             int sample_y_sub_int_scale = (int)(ipoint_y_sub_int_scale_add_05 + l * scale);
 
             for (int k=-12, k_count=0; k<12; ++k, ++k_count) {
-
                 //Get x coords of sample point
-                // int sample_x = (int) roundf(ipoint_x + k * scale);
                 int sample_x_sub_int_scale = (int)(ipoint_x_sub_int_scale_add_05 + k * scale);
 
-                // float rx = 0.0f;
-                // float ry = 0.0f;
-                haarXY_nocheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
-
-                // haarResponseX[(l+12)*24+(k+12)] = rx;
-                // haarResponseY[(l+12)*24+(k+12)] = ry;
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
             }
 
         }
@@ -2186,25 +2178,25 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
     float e_c1_p3 = s7 - s10;
     float e_c1_p4 = s7 - s11;
 
-    float gauss_s1_c0[] = {expf(g1_factor * (e_c0_m4 * e_c0_m4)),
-                           expf(g1_factor * (e_c0_m3 * e_c0_m3)),
-                           expf(g1_factor * (e_c0_m2 * e_c0_m2)),
-                           expf(g1_factor * (e_c0_m1 * e_c0_m1)),
-                           1.0f, //expf(g1_factor * (e_c0_z0 * e,_c0_z0)),
-                           expf(g1_factor * (e_c0_p1 * e_c0_p1)),
-                           expf(g1_factor * (e_c0_p2 * e_c0_p2)),
-                           expf(g1_factor * (e_c0_p3 * e_c0_p3)),
-                           expf(g1_factor * (e_c0_p4 * e_c0_p4))};
+    gauss_s1_c0[0] =  expf(g1_factor * (e_c0_m4 * e_c0_m4));
+    gauss_s1_c0[1] =  expf(g1_factor * (e_c0_m3 * e_c0_m3));
+    gauss_s1_c0[2] =  expf(g1_factor * (e_c0_m2 * e_c0_m2));
+    gauss_s1_c0[3] =  expf(g1_factor * (e_c0_m1 * e_c0_m1));
+    gauss_s1_c0[4] =  1.0f; //expf(g1_factor * (e_c0_z0 * e_c0_z0));
+    gauss_s1_c0[5] =  expf(g1_factor * (e_c0_p1 * e_c0_p1));
+    gauss_s1_c0[6] =  expf(g1_factor * (e_c0_p2 * e_c0_p2));
+    gauss_s1_c0[7] =  expf(g1_factor * (e_c0_p3 * e_c0_p3));
+    gauss_s1_c0[8] =  expf(g1_factor * (e_c0_p4 * e_c0_p4));
 
-    float gauss_s1_c1[] = {expf(g1_factor * (e_c1_m4 * e_c1_m4)),
-                           expf(g1_factor * (e_c1_m3 * e_c1_m3)),
-                           expf(g1_factor * (e_c1_m2 * e_c1_m2)),
-                           expf(g1_factor * (e_c1_m1 * e_c1_m1)),
-                           1.0f, //expf(g1_factor * (e_c1_z0 * e_c1_z0)),
-                           expf(g1_factor * (e_c1_p1 * e_c1_p1)),
-                           expf(g1_factor * (e_c1_p2 * e_c1_p2)),
-                           expf(g1_factor * (e_c1_p3 * e_c1_p3)),
-                           expf(g1_factor * (e_c1_p4 * e_c1_p4))};
+    gauss_s1_c1[0] =  expf(g1_factor * (e_c1_m4 * e_c1_m4));
+    gauss_s1_c1[1] =  expf(g1_factor * (e_c1_m3 * e_c1_m3));
+    gauss_s1_c1[2] =  expf(g1_factor * (e_c1_m2 * e_c1_m2));
+    gauss_s1_c1[3] =  expf(g1_factor * (e_c1_m1 * e_c1_m1));
+    gauss_s1_c1[4] =  1.0f; //expf(g1_factor * (e_c1_z0 * e_c1_z0));
+    gauss_s1_c1[5] =  expf(g1_factor * (e_c1_p1 * e_c1_p1));
+    gauss_s1_c1[6] =  expf(g1_factor * (e_c1_p2 * e_c1_p2));
+    gauss_s1_c1[7] =  expf(g1_factor * (e_c1_p3 * e_c1_p3));
+    gauss_s1_c1[8] =  expf(g1_factor * (e_c1_p4 * e_c1_p4));
 
     // calculate descriptor for this interest point
     for (int i=-8; i<8; i+=5) {
@@ -2219,10 +2211,11 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
             int gauss_index_l = -4;
             for (int l = j-4; l < j + 5; ++l, ++gauss_index_l) {
                 float gauss_s1_y = -1;
+
                 if (j == -8 ) {
-                    gauss_s1_y = gauss_s1_c1[8-gauss_index_l+4];
+                    gauss_s1_y = gauss_s1_c1[8-(gauss_index_l+4)];
                 } else if (j == -3) {
-                    gauss_s1_y = gauss_s1_c0[8-gauss_index_l+4];
+                    gauss_s1_y = gauss_s1_c0[8-(gauss_index_l+4)];
                 } else if (j == 2) {
                     gauss_s1_y = gauss_s1_c0[gauss_index_l+4];
                 } else if (j == 7) {
@@ -2233,13 +2226,13 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
                 for (int k = i-4; k < i + 5; ++k, ++gauss_index_k) {
 
                     float gauss_s1_x = -1;
-                    if (j == -8 ) {
-                        gauss_s1_x = gauss_s1_c1[8-gauss_index_k+4];
-                    } else if (j == -3) {
-                        gauss_s1_x = gauss_s1_c0[8-gauss_index_k+4];
-                    } else if (j == 2) {
+                    if (i == -8 ) {
+                        gauss_s1_x = gauss_s1_c1[8-(gauss_index_k+4)];
+                    } else if (i == -3) {
+                        gauss_s1_x = gauss_s1_c0[8-(gauss_index_k+4)];
+                    } else if (i == 2) {
                         gauss_s1_x = gauss_s1_c0[gauss_index_k+4];
-                    } else if (j == 7) {
+                    } else if (i == 7) {
                         gauss_s1_x = gauss_s1_c1[gauss_index_k+4];
                     }
 
@@ -2260,13 +2253,6 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
             }
 
             // Precomputed 4x4 gauss_s2 with (x,y) = {-1.5, -0.5, 0.5, 1.5}^2 and sig = 1.5f
-
-
-            float gauss_s2_arr[] = {0.026022f, 0.040585f, 0.040585f, 0.026022f, 
-                                    0.040585f, 0.063297f, 0.063297f, 0.040585f, 
-                                    0.040585f, 0.063297f, 0.063297f, 0.040585f, 
-                                    0.026022f, 0.040585f, 0.040585f, 0.026022f};
-
             float gauss_s2 = gauss_s2_arr[gauss_s2_index];
             gauss_s2_index++;
 
@@ -2328,7 +2314,6 @@ void get_msurf_descriptor_gauss_pecompute_haar_unroll(struct integral_image* iim
     float ipoint_x_sub_int_scale = ipoint_x-int_scale;
     float ipoint_y_sub_int_scale = ipoint_y-int_scale;
 
-    float *data = (float *)iimage->data;
     int width = iimage->width;
     int height = iimage->height;
 
@@ -2374,13 +2359,13 @@ void get_msurf_descriptor_gauss_pecompute_haar_unroll(struct integral_image* iim
 
                 // float rx = 0.0f;
                 // float ry = 0.0f;
-                haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale0, sample_x_sub_int_scale, int_scale, 
+                haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale, int_scale, 
                                             &haarResponseX[l_count0*24+k_count], &haarResponseY[l_count0*24+k_count]);
-                haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale1, sample_x_sub_int_scale, int_scale, 
+                haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale, int_scale, 
                                             &haarResponseX[l_count1*24+k_count], &haarResponseY[l_count1*24+k_count]);
-                haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale2, sample_x_sub_int_scale, int_scale, 
+                haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale2, sample_x_sub_int_scale, int_scale, 
                                             &haarResponseX[l_count2*24+k_count], &haarResponseY[l_count2*24+k_count]);
-                haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale3, sample_x_sub_int_scale, int_scale, 
+                haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale3, sample_x_sub_int_scale, int_scale, 
                                             &haarResponseX[l_count3*24+k_count], &haarResponseY[l_count3*24+k_count]);
 
                 // haarResponseX[(l+12)*24+(k+12)] = rx;
@@ -2415,13 +2400,13 @@ void get_msurf_descriptor_gauss_pecompute_haar_unroll(struct integral_image* iim
 
                 // float rx = 0.0f;
                 // float ry = 0.0f;
-                haarXY_nocheck_boundaries(data, height, width, sample_y_sub_int_scale0, sample_x_sub_int_scale, int_scale, 
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale, int_scale, 
                                             &haarResponseX[l_count0*24+k_count], &haarResponseY[l_count0*24+k_count]);
-                haarXY_nocheck_boundaries(data, height, width, sample_y_sub_int_scale1, sample_x_sub_int_scale, int_scale, 
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale, int_scale, 
                                             &haarResponseX[l_count1*24+k_count], &haarResponseY[l_count1*24+k_count]);
-                haarXY_nocheck_boundaries(data, height, width, sample_y_sub_int_scale2, sample_x_sub_int_scale, int_scale, 
+                haarXY_unconditional(iimage, sample_y_sub_int_scale2, sample_x_sub_int_scale, int_scale, 
                                             &haarResponseX[l_count2*24+k_count], &haarResponseY[l_count2*24+k_count]);
-                haarXY_nocheck_boundaries(data, height, width, sample_y_sub_int_scale3, sample_x_sub_int_scale, int_scale, 
+                haarXY_unconditional(iimage, sample_y_sub_int_scale3, sample_x_sub_int_scale, int_scale, 
                                             &haarResponseX[l_count3*24+k_count], &haarResponseY[l_count3*24+k_count]);
 
                 // haarResponseX[(l+12)*24+(k+12)] = rx;
@@ -2624,7 +2609,7 @@ void get_msurf_descriptor_gauss_pecompute_haar_unroll(struct integral_image* iim
 
                     float rx = haarResponseX[(l+12)*24+(k+12)];
                     float ry = haarResponseY[(l+12)*24+(k+12)];
-                    // haarXY_precheck_boundaries(data, height, width, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
+                    // haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
