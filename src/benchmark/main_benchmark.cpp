@@ -37,6 +37,7 @@ const char *images[] = {
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
+
     for (int i = 0; i < n_images; i++) {
         char *image_name = (char *)malloc(1024 * sizeof(char));
         strcpy(image_name, images[i]);
@@ -98,10 +99,10 @@ int main(int argc, char const *argv[]) {
             std::vector<void (*)(struct fasthessian *)> functions;
             functions.push_back(compute_response_map);
             //functions.push_back(compute_response_layers_at_once);
-            functions.push_back(compute_response_map_Dyy);
+            functions.push_back(compute_response_map_Dyy_laplacian);
 
             struct benchmark_data default_data(image_name, width, height, "compute_response_map", -1, (1 + height * width * 13));
-            struct benchmark_data data1(image_name, width, height, "compute_response_map_Dyy", -1, (1 + height * width * 13));
+            struct benchmark_data data1(image_name, width, height, "compute_response_map_Dyy_laplacian", -1, (1 + height * width * 13));
 
             std::vector<struct benchmark_data> data;
             data.push_back(default_data);

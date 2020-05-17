@@ -75,6 +75,7 @@ int main(int argc, char const *argv[])
     {
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_response_layer_sonic_Dyy);
+        // test_functions.push_back(compute_response_layer_Dyy_laplacian);
         bool valid = validate_compute_response_layer(compute_response_layer, test_functions, iimage);
 
         // bool valid = validate_compute_response_layer_custom_matrix(compute_response_layer, test_functions);
