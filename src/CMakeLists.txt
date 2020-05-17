@@ -157,6 +157,7 @@ target_include_directories(validation
     ${CMAKE_CURRENT_SOURCE_DIR}/benchmark
     ${CMAKE_CURRENT_SOURCE_DIR}/optimization
     ${CMAKE_CURRENT_SOURCE_DIR}/validation
+    ${CMAKE_CURRENT_SOURCE_DIR}/autotune
 )
 
 # Adding libraries to be linked with executable validation
@@ -244,7 +245,7 @@ add_executable(autotune
     # Add autotune header and source files here
     autotune/descriptor_opt_gen.h
     autotune/descriptor_opt_gen.cpp
-    playground/main_autotune.cpp
+    autotune/main_autotune.cpp
 )
 
 # Adding include directories for executable playground
