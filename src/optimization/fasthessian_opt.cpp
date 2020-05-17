@@ -149,8 +149,6 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                         r10 = x - lobe / 2 - 1;
                         r11 = r10 + lobe;
 
-                        printf("r11: %i\n", r11);
-
                         D1 = data[r11 * iwidth + (iwidth-1)];
 
                         // Compute Dyy
@@ -160,8 +158,6 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                         for (int j = 0; j < width*step; j += step) {
                             // Image coordinates
                             y = j;
-
-                            printf("1. Case - x: %i, y: %i\n", x, y);
 
                             // Calculate Dxx, Dyy, Dxy with Box Filter
                             Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
@@ -198,8 +194,6 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                         for (int j = 0; j < width*step; j += step) {
                             // Image coordinates
                             y = j;
-
-                            printf("2. Case - x: %i, y: %i\n", x, y);
 
                             // Calculate Dxx, Dyy, Dxy with Box Filter
                             Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
@@ -243,8 +237,6 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                         for (int j = 0; j < width*step; j += step) {
                             // Image coordinates
                             y = j;
-
-                            printf("3. Case - x: %i, y: %i\n", x, y);
 
                             // Calculate Dxx, Dyy, Dxy with Box Filter
                             Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
@@ -1722,7 +1714,7 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
     float Dxx, Dyy, Dxy;
     int x, y, k, k0, k1;
     int r00, r01, c00, c01, r10, r11, c10, c11;
-    float Dyy0, Dyy1, A, B, C, D;
+    float Dyy0, Dyy1, A, B, C, D, temp0, temp1;
 
     float* response = layer->response;
     bool* laplacian = layer->laplacian;
@@ -1933,7 +1925,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[r11 * iwidth + c10];
             D = data[r11 * iwidth + c11];
 
-            Dyy1 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -2041,7 +2035,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[r11 * iwidth + c10];
             D = data[r11 * iwidth + iwidth-1];
 
-            Dyy1 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -2133,10 +2129,13 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
     for (int i = k; i < height * step - border; i += step) {
         ind = (i / step) * width + (k0 / step);
 
-        for (int j = k0; j < width * step -lobe+1; j += step) {
+        for (int j = k0; j < width * step - lobe + 1; j += step) {
             // Image coordinates
             x = i;
             y = j;
+
+            int debug_x = i/step;
+            int debug_y = j/step;
 
             // Compute Dyy  
             // whole box filter
@@ -2151,7 +2150,33 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[r01 * iwidth + c00];
             D = data[r01 * iwidth + c01];
 
-            Dyy0 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
+
+            /* Dyy coords
+            // whole box filter
+            r00 = x - border;
+            r01 = x + border;  // -> x-border+filtersize-1 = x-border+(border+border+1)-1
+            c00 = y - lobe;
+            c01 = y + lobe - 1; // -> y-lobe+1 + 2*lobe -1 -1
+
+            A =
+            B =
+            C =
+            D =
+
+            // neg part box filter
+            r10 = x - lobe / 2 - 1;
+            r11 = r10 + lobe;
+            c10 = y - lobe;
+            c11 = y + lobe - 1;
+
+            A = (r10, c10)
+            B = (r10, c11) = (x - lobe / 2 - 1, y + lobe - 1)
+            C = (r11, c10)
+            D = (r11, c11)
+            */
 
             // neg part box filter
             // All inside
@@ -2165,7 +2190,23 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[r11 * iwidth + c10];
             D = data[r11 * iwidth + c11];
 
-            Dyy1 = A - B - C + D;
+            // There is a very weird floating point arithmetic bug here
+            // The original implementation is wrong too, we just try to do it
+            // in the same way as them. Maybe fix this in the future
+            // Depending on how you add/sub them they give different results
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
+
+            // Dyy1 = A - B - C + D;
+
+            // float Dyy1_orig = box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
+            //
+            // if (debug_x == 1080 &&  debug_y == 651) {
+            //     printf("Checking ABCD:\n\nA: %f, B: %f, C: %f, D: %f\n", A, B, C, D);
+            //     printf("MONSTER BUGGO\n\nDyy1: %f\nDyy1_orig: %f\n", Dyy1, Dyy1_orig);
+            // }
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -2177,8 +2218,8 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
                   box_integral(iimage, x - lobe, y - lobe, lobe, lobe) - box_integral(iimage, x + 1, y + 1, lobe, lobe);
 
             // Normalize Responses with inverse area
-            Dxx *= inv_area;
             Dyy *= inv_area;
+            Dxx *= inv_area;
             Dxy *= inv_area;
 
             // Calculate Determinant
@@ -2213,7 +2254,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[r01 * iwidth + c00];
             D = data[r01 * iwidth + iwidth-1];
 
-            Dyy0 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
 
             // neg part box filter
             // B, D outside, A, C inside
@@ -2226,7 +2269,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[r11 * iwidth + c10];
             D = data[r11 * iwidth + iwidth-1];
 
-            Dyy1 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -2391,7 +2436,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[(iheight-1) * iwidth + c00];
             D = data[(iheight-1) * iwidth + c01];
 
-            Dyy0 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
 
             // neg part box filter
             // A, B, C, D inside
@@ -2405,7 +2452,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[r11 * iwidth + c10];
             D = data[r11 * iwidth + c11];
 
-            Dyy1 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -2453,7 +2502,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[(iheight-1) * iwidth + c00];
             D = data[(iheight-1) * iwidth + c01];
 
-            Dyy0 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
 
             // neg part box filter
             // A, B inside, C, D outside
@@ -2466,7 +2517,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[(iheight-1) * iwidth + c10];
             D = data[(iheight-1) * iwidth + c11];
 
-            Dyy1 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -2514,7 +2567,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[(iheight-1) * iwidth + c00];
             D = data[(iheight-1) * iwidth + iwidth-1];
 
-            Dyy0 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
 
             // neg part box filter
             // B, D outside, A, C inside
@@ -2527,7 +2582,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[r11 * iwidth + c10];
             D = data[r11 * iwidth + iwidth-1];
 
-            Dyy1 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -2577,7 +2634,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[(iheight-1) * iwidth + c00];
             D = data[(iheight-1) * iwidth + iwidth-1];
 
-            Dyy0 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
 
             // neg part box filter
             // B, C, D outside, A inside
@@ -2589,7 +2648,9 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             C = data[(iheight-1) * iwidth + c10];
             D = data[(iheight-1) * iwidth + iwidth-1];
 
-            Dyy1 = A - B - C + D;
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
 
             Dyy = Dyy0 - 3*Dyy1;
 
