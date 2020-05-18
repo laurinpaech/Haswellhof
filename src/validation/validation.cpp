@@ -45,7 +45,7 @@ bool validate_integral_image(void (*original_function)(float *, int, int, float 
 bool validate_compute_response_layer_custom_matrix(
     void (*original_function)(struct response_layer *, struct integral_image *),
     const std::vector<void (*)(struct response_layer *, struct integral_image *)> &test_functions) {
-    int width = 128, height = 128;
+    int width = 6, height = 6;
     float *image = (float *)malloc(height * width * sizeof(float));
     for (int i = 0; i < height; ++i) {
         int counter = 0;

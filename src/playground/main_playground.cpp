@@ -19,16 +19,14 @@
 
 int main(int argc, char const *argv[])
 {
-    if (argc != 3) {
-        printf("Invaid argument count.\nUsage:\n\t./surf image_path descriptor_file_target_path\n");
-        return 1;
-    }
+    char *image_name = (char *)malloc(1024 * sizeof(char));
+        strcpy(image_name, "../images/sunflower/sunflower_256.jpg");
 
 	int width, height, channels;
 
 	// Load image
 	stbi_ldr_to_hdr_gamma(1.0f);
-	float* image = stbi_loadf(argv[1], &width, &height, &channels, STBI_grey);
+	float* image = stbi_loadf(image_name, &width, &height, &channels, STBI_grey);
 
     if (!image) {
 		printf("Could not open or find image\n");
@@ -51,7 +49,9 @@ int main(int argc, char const *argv[])
 
 	// printf("before validation of compute response layer\n");
 	// playground_function2(iimage);
-	playground_function1();
+	//playground_function1();
+
+	playground_function2(iimage);
 
 	// Compute responses for every layer
 	// compute_response_map(fh);
@@ -82,7 +82,7 @@ int main(int argc, char const *argv[])
 #endif
 
 	// Write results to file
-    FILE * fp = fopen(argv[2],"w");
+    FILE * fp = fopen("desc_play","w");
     printf("%d %d %d\n", iimage->width, iimage->height, channels);
 	for (size_t i=0; i<interest_points.size(); ++i) {
         fprintf(fp, "%f %f %f %d ", interest_points[i].x, interest_points[i].y, interest_points[i].scale, interest_points[i].laplacian);
