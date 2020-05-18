@@ -1,5 +1,5 @@
 #include "fasthessian_opt.h"
-
+#include "stdio.h"
 /*
 void super_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage) {
     
@@ -669,29 +669,24 @@ void compute_response_layer_precompute(struct response_layer* layer, struct inte
     float inv_area_square = inv_area*inv_area;
 
     int lobe_div_2 = lobe / 2;
-    int lobe_add_1 = lobe + 1;
+    int lobe_sub_1 = lobe - 1;
     int lobe_mul_2_sub_1 = 2*lobe - 1;
 
     for (int i = 0, ind = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j, ind++) {
-            // Image coordinates
-            x = i*step;
+        x = i*step;
+        for (int j = 0; j < width; ++j, ind++) {            
             y = j*step;
 
-            // Calculate Dxx, Dyy, Dxy with Box Filter
-            Dxx = box_integral(iimage, x - lobe_add_1, y - border, lobe_mul_2_sub_1, filter_size)
-                    - 3 * box_integral(iimage, x - lobe_add_1, y - lobe_div_2, lobe_mul_2_sub_1, lobe);
-            Dyy = box_integral(iimage, x - border, y - lobe_add_1, filter_size, lobe_mul_2_sub_1)
-                    - 3 * box_integral(iimage, x - lobe_div_2, y - lobe_add_1, lobe, lobe_mul_2_sub_1);
+            // // Calculate Dxx, Dyy, Dxy with Box Filter
+            Dxx = box_integral(iimage, x - lobe_sub_1, y - border, lobe_mul_2_sub_1, filter_size)
+                    - 3 * box_integral(iimage, x - lobe_sub_1, y - lobe_div_2, lobe_mul_2_sub_1, lobe);
+            Dyy = box_integral(iimage, x - border, y - lobe_sub_1, filter_size, lobe_mul_2_sub_1)
+                    - 3 * box_integral(iimage, x - lobe_div_2, y - lobe_sub_1, lobe, lobe_mul_2_sub_1);
+
             Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
                     + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
                     - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
                     - box_integral(iimage, x + 1, y + 1, lobe, lobe);
-
-            // Normalize Responses with inverse area
-            // Dxx *= inv_area;
-            // Dyy *= inv_area;
-            // Dxy *= inv_area;
 
             // Calculate Determinant & normalize
             response[ind] = inv_area_square*(Dxx * Dyy - 0.81f * Dxy * Dxy);
@@ -711,10 +706,122 @@ void compute_response_layers_precompute(struct fasthessian* fh) {
 
 }
 
+void compute_response_layer_blocking(struct response_layer* layer, struct integral_image* iimage) {
+    float* response = layer->response;
+    bool* laplacian = layer->laplacian;
+
+    int step = layer->step;
+    int filter_size = layer->filter_size;
+    int height = layer->height;
+    int width = layer->width;
+
+    int lobe = filter_size/3;
+    int border = (filter_size-1)/2;
+    float inv_area = 1.f/(filter_size*filter_size);
+
+    float inv_area_square = inv_area*inv_area;
+
+    int lobe_div_2 = lobe / 2;
+    int lobe_sub_1 = lobe - 1;
+    int lobe_mul_2_sub_1 = 2*lobe - 1;
+
+    int i;
+    for (i = 0; i < height-(1-1); i+=1) {
+
+        int i0 = (i+0);
+
+        int x0 = i0*step;
+        int j=0;
+        for (; j < width-(2-1); j+=2) {      
+            int j0 = (j+0);   
+            int j1= (j+1);   
+            
+            int y0 = j0*step;
+            int y1 = (j+1)*step;
+
+            float Dxx0_0 = box_integral(iimage, x0 - lobe_sub_1, y0 - border, lobe_mul_2_sub_1, filter_size)
+                    - 3 * box_integral(iimage, x0 - lobe_sub_1, y0 - lobe_div_2, lobe_mul_2_sub_1, lobe);
+            float Dxx0_1 = box_integral(iimage, x0 - lobe_sub_1, y1 - border, lobe_mul_2_sub_1, filter_size)
+                    - 3 * box_integral(iimage, x0 - lobe_sub_1, y1 - lobe_div_2, lobe_mul_2_sub_1, lobe);
+
+            float Dyy0_0 = box_integral(iimage, x0 - border, y0 - lobe_sub_1, filter_size, lobe_mul_2_sub_1)
+                    - 3 * box_integral(iimage, x0 - lobe_div_2, y0 - lobe_sub_1, lobe, lobe_mul_2_sub_1);
+            float Dyy0_1 = box_integral(iimage, x0 - border, y1 - lobe_sub_1, filter_size, lobe_mul_2_sub_1)
+                    - 3 * box_integral(iimage, x0 - lobe_div_2, y1 - lobe_sub_1, lobe, lobe_mul_2_sub_1);
+
+            float Dxy0_0 = box_integral(iimage, x0 - lobe, y0 + 1, lobe, lobe)
+                    + box_integral(iimage, x0 + 1, y0 - lobe, lobe, lobe)
+                    - box_integral(iimage, x0 - lobe, y0 - lobe, lobe, lobe)
+                    - box_integral(iimage, x0 + 1, y0 + 1, lobe, lobe);
+            float Dxy0_1 = box_integral(iimage, x0 - lobe, y1 + 1, lobe, lobe)
+                    + box_integral(iimage, x0 + 1, y1 - lobe, lobe, lobe)
+                    - box_integral(iimage, x0 - lobe, y1 - lobe, lobe, lobe)
+                    - box_integral(iimage, x0 + 1, y1 + 1, lobe, lobe);
+
+            response[(i0*width) + j0] = inv_area_square*(Dxx0_0 * Dyy0_0 - 0.81f * Dxy0_0 * Dxy0_0);
+            response[(i0*width) + j1] = inv_area_square*(Dxx0_1 * Dyy0_1 - 0.81f * Dxy0_1 * Dxy0_1);
+
+            laplacian[(i0*width) + j0] = (Dxx0_0 + Dyy0_0 >= 0 ? true : false);
+            laplacian[(i0*width) + j1] = (Dxx0_1 + Dyy0_1 >= 0 ? true : false);
+        }
+
+        for (; j < width; ++j) {            
+            int y = j*step;
+
+            float Dxx = box_integral(iimage, x0 - lobe_sub_1, y - border, lobe_mul_2_sub_1, filter_size)
+                    - 3 * box_integral(iimage, x0 - lobe_sub_1, y - lobe_div_2, lobe_mul_2_sub_1, lobe);
+            float Dyy = box_integral(iimage, x0 - border, y - lobe_sub_1, filter_size, lobe_mul_2_sub_1)
+                    - 3 * box_integral(iimage, x0 - lobe_div_2, y - lobe_sub_1, lobe, lobe_mul_2_sub_1);
+
+            float Dxy = box_integral(iimage, x0 - lobe, y + 1, lobe, lobe)
+                    + box_integral(iimage, x0 + 1, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x0 - lobe, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x0 + 1, y + 1, lobe, lobe);
+
+            response[(i0*width) + j] = inv_area_square*(Dxx * Dyy - 0.81f * Dxy * Dxy);
+
+            laplacian[(i0*width) + j] = (Dxx + Dyy >= 0 ? true : false);
+        }
+    }
+
+    for (; i < height; ++i) {
+        int x = i*step;
+        for (int j = 0; j < width; ++j) {            
+            int y = j*step;
+
+            float Dxx = box_integral(iimage, x - lobe_sub_1, y - border, lobe_mul_2_sub_1, filter_size)
+                    - 3 * box_integral(iimage, x - lobe_sub_1, y - lobe_div_2, lobe_mul_2_sub_1, lobe);
+            float Dyy = box_integral(iimage, x - border, y - lobe_sub_1, filter_size, lobe_mul_2_sub_1)
+                    - 3 * box_integral(iimage, x - lobe_div_2, y - lobe_sub_1, lobe, lobe_mul_2_sub_1);
+
+            float Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
+                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
+                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+
+            response[(i*width) + j] = inv_area_square*(Dxx * Dyy - 0.81f * Dxy * Dxy);
+
+            laplacian[(i*width) + j] = (Dxx + Dyy >= 0 ? true : false);
+        }
+    }
+
+}
+
+void compute_response_layers_blocking(struct fasthessian* fh) {
+    
+    for (int i = 0; i < fh->total_layers; ++i) {
+		compute_response_layer_blocking(fh->response_map[i], fh->iimage);
+	}   
+
+}
+
+
 void compute_response_layers_at_once(struct fasthessian* fh) {
     /* 
+    TODO: (valentin) add index precomputation as in compute_response_layer_precompute
+
     optimizations:
-        - all of compute_response_layer_precompute
+        - precompute inv_area_squared as in compute_response_layer_precompute
         - computes all 8 response layers at once, gives same results as base implementation
 
     
@@ -1188,14 +1295,6 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
 
 }
 
-
-void compute_response_layers_unconditional(struct fasthessian* fh){
-    for (int i = 0; i < fh->total_layers; ++i) {
-		compute_response_layer_unconditional(fh->response_map[i], fh->iimage);
-	}   
-}
-
-
 void compute_response_layer_unconditional(struct response_layer *layer, struct integral_image *iimage) {
     float Dxx, Dyy, Dxy;
     int x, y;
@@ -1233,10 +1332,276 @@ void compute_response_layer_unconditional(struct response_layer *layer, struct i
             Dxy *= inv_area;
 
             // Calculate Determinant
+            // response[ind] -= 0.81f * Dxy * Dxy;
             response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
             // Calculate Laplacian
             laplacian[ind] = (Dxx + Dyy >= 0);
         }
     }
 
+}
+
+void compute_response_layers_unconditional(struct fasthessian* fh){
+    for (int i = 0; i < fh->total_layers; ++i) { //fh->total_layers
+		compute_response_layer_unconditional(fh->response_map[i], fh->iimage);
+	}   
+}
+
+
+void compute_response_layer_unconditional_stridedDxy(struct response_layer *layer, struct integral_image *iimage) {
+    float Dxx, Dyy, Dxy;
+    int x, y;
+
+    float *response = layer->response;
+    bool *laplacian = layer->laplacian;
+
+    int step = layer->step;
+    int filter_size = layer->filter_size;
+    int height = layer->height;
+    int width = layer->width;
+
+    int lobe = filter_size/3;
+    int border = (filter_size-1)/2;
+    float inv_area = 1.f/(filter_size*filter_size);
+
+    int Dxy_stride = (lobe+1)/step;
+    // printf("\nDxy_stride: lobe+1:%d step:%d Dxy_stride:%d\n", lobe+1, step, Dxy_stride);
+
+    int Dxx_col_stride = lobe/step;
+    // printf("Dyy_row_stride/Dxx_col_stride: lobe:%d step:%d Dxx_col_stride:%d\n", lobe, step, Dxx_col_stride);
+
+    Dxx_col_stride = (2*lobe)/step;
+    // printf("2*Dyy_row_stride/2*Dxx_col_stride: lobe:%d step:%d 2*Dxx_col_stride:%d\n", lobe, step, Dxx_col_stride);
+
+    int Dxx_row_stride = (2*lobe - 1)/step;
+    // printf("Dyy_col_stride/Dxx_row_stride: 2*lobe-1:%d step:%d Dxx_row_stride:%d\n", 2*lobe-1, step, Dxx_row_stride);
+
+    int Dyy_col_stride = (2*lobe - 1)/step;
+    int Dyy_row_stride = (lobe)/step;
+
+    for (int i = 0, ind = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j, ind++) {
+            // Image coordinates
+            x = i*step;
+            y = j*step;
+
+            // Calculate Dxx, Dyy, Dxy with Box Filter
+            Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                    - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+            Dyy = box_integral_unconditional(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
+                    - 3 * box_integral_unconditional(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy;
+            // Calculate Laplacian
+            laplacian[ind] = (Dxx + Dyy >= 0);
+        }
+    }
+
+
+    // strided Dxy
+    int i_unroll = 4;
+    int j_unroll = 8;
+    // printf("Dxy_stride %d step %d\n", Dxy_stride, step);
+    // for (int i_offset=0; i_offset<Dxy_stride-i_unroll+1; i_offset+=i_unroll) {
+        for (int j_offset=0; j_offset<Dxy_stride-j_unroll+1; j_offset+=j_unroll) {
+
+            for (int i = 0; i < height; i+=1) {
+                int i_width = (i*width);
+                for (int j = j_offset; j < width; j+=Dxy_stride) {
+
+                    for (int ii = i; ii<i+i_unroll; ii++) {
+                        for (int jj = j; jj<j+j_unroll; jj++) {
+                             // Image coordinates
+                            x = ii*step;
+                            y = jj*step;
+
+                            // Calculate Dxx, Dyy, Dxy with Box Filter
+                            Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                                    + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                                    - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                                    - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
+                            
+                            // printf("i:%d j:%d ii:%d jj:%d New Filter: %d %d | %d %d | %d %d | %d %d\n", i, j, ii, jj, x - lobe, y + 1, x + 1, y - lobe, x - lobe, y - lobe, x + 1, y + 1);
+                            
+
+                            // Normalize Responses with inverse area
+                            Dxy *= inv_area;
+
+                            // Calculate Determinant
+                            response[ii*width + jj] -= 0.81f * Dxy * Dxy;
+                        
+                        }
+                    }
+                   
+                }
+            }
+        
+        }
+    // }
+
+
+}
+
+void compute_response_layers_unconditional_stridedDxy(struct fasthessian* fh){
+    for (int i = 0; i < fh->total_layers; ++i) {
+		compute_response_layer_unconditional_stridedDxy(fh->response_map[i], fh->iimage);
+	} 
+}
+
+void compute_response_layer_unconditional_strided(struct response_layer *layer, struct integral_image *iimage) {
+    // float Dxx, Dyy, Dxy;
+    // int x, y;
+
+    float *response = layer->response;
+    bool *laplacian = layer->laplacian;
+
+    int step = layer->step;
+    int filter_size = layer->filter_size;
+    int height = layer->height;
+    int width = layer->width;
+
+    int lobe = filter_size/3;
+    int border = (filter_size-1)/2;
+    float inv_area = 1.f/(filter_size*filter_size);
+
+    int Dxy_stride = (lobe+1)/step;
+    // printf("\nDxy_stride: lobe+1:%d step:%d Dxy_stride:%d\n", lobe+1, step, Dxy_stride);
+
+    // int Dxx_col_stride = lobe/step;
+    // printf("Dyy_row_stride/Dxx_col_stride: lobe:%d step:%d Dxx_col_stride:%d\n", lobe, step, Dxx_col_stride);
+
+    int Dxx_col_stride = (2*lobe)/step;
+    // printf("2*Dyy_row_stride/2*Dxx_col_stride: lobe:%d step:%d 2*Dxx_col_stride:%d\n", lobe, step, Dxx_col_stride);
+
+    // int Dxx_row_stride = (2*lobe - 1)/step;
+    // printf("Dyy_col_stride/Dxx_row_stride: 2*lobe-1:%d step:%d Dxx_row_stride:%d\n", 2*lobe-1, step, Dxx_row_stride);
+
+    // int Dyy_col_stride = (2*lobe - 1)/step;
+    int Dyy_row_stride = (2*lobe)/step;
+
+    for (int i = 0, ind = 0; i < height; ++i) {
+        int x = i*step;
+        for (int j = 0; j < width; ++j, ind++) {
+            // Image coordinates
+            int y = j*step;
+
+            // Calculate Dxx, Dyy, Dxy with Box Filter
+            float Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                    - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+            float Dyy = box_integral_unconditional(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
+                    - 3 * box_integral_unconditional(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy;
+            // Calculate Laplacian
+            laplacian[ind] = (Dxx + Dyy >= 0);
+        }
+    }
+
+
+    // strided Dxy
+    int j_unroll = 2;
+    // printf("\n");
+    // printf("Dxy_stride %d step %d \n", Dxy_stride, step);
+    // for (int i_offset=0; i_offset<Dxy_stride-i_unroll+1; i_offset+=i_unroll) {
+        int j_offset=0;
+        /**/
+        for (; j_offset<Dxy_stride-j_unroll+1; j_offset+=j_unroll) {
+            // printf("j_offset: %d - %d ", j_offset, j_offset+j_unroll-1);
+            for (int i = 0; i < height; ++i) {
+                int j = j_offset;
+                int x = i*step;
+                for (; j < width-j_unroll+1; j+=Dxy_stride) {
+                    for (int jj = j; jj<j+j_unroll; jj++) {
+                        // Image coordinates
+                        
+                        int y = jj*step;
+
+                        // Calculate Dxx, Dyy, Dxy with Box Filter
+                        float Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                                + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                                - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                                - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
+                        
+                        // printf("i:%d j:%d ii:%d jj:%d New Filter: %d %d | %d %d | %d %d | %d %d\n", i, j, ii, jj, x - lobe, y + 1, x + 1, y - lobe, x - lobe, y - lobe, x + 1, y + 1);
+                        
+
+                        // Normalize Responses with inverse area
+                        Dxy *= inv_area;
+
+                        // Calculate Determinant
+                        response[i*width + jj] -= 0.81f * Dxy * Dxy;
+                    
+                    }
+                }
+
+                for (; j < width; j+=1) {
+                    // Image coordinates
+                    int y = j*step;
+
+                    // Calculate Dxx, Dyy, Dxy with Box Filter
+                    float Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                            + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                            - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                            - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
+                    
+                    // printf("i:%d j:%d ii:%d jj:%d New Filter: %d %d | %d %d | %d %d | %d %d\n", i, j, ii, jj, x - lobe, y + 1, x + 1, y - lobe, x - lobe, y - lobe, x + 1, y + 1);
+                    
+
+                    // Normalize Responses with inverse area
+                    Dxy *= inv_area;
+
+                    // Calculate Determinant
+                    response[i*width + j] -= 0.81f * Dxy * Dxy;
+
+                }
+                    
+            }
+        }
+        /**/
+        for (; j_offset<Dxy_stride; j_offset+=1) {
+            // printf("j_offset: %d ", j_offset);
+            for (int i = 0; i < height; ++i) {
+                int x = i*step;
+                for (int j = j_offset; j < width; j+=Dxy_stride) {
+                    // Image coordinates
+                    int y = j*step;
+
+                    // Calculate Dxx, Dyy, Dxy with Box Filter
+                    float Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                            + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                            - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                            - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
+                    
+                    // printf("i:%d j:%d ii:%d jj:%d New Filter: %d %d | %d %d | %d %d | %d %d\n", i, j, ii, jj, x - lobe, y + 1, x + 1, y - lobe, x - lobe, y - lobe, x + 1, y + 1);
+                    
+
+                    // Normalize Responses with inverse area
+                    Dxy *= inv_area;
+
+                    // Calculate Determinant
+                    response[i*width + j] -= 0.81f * Dxy * Dxy;
+
+                }
+                    
+            }
+        }
+        
+    // }
+}
+
+void compute_response_layers_unconditional_strided(struct fasthessian* fh){
+
+    for (int i = 0; i < fh->total_layers; ++i) {
+		compute_response_layer_unconditional_strided(fh->response_map[i], fh->iimage);
+	} 
 }

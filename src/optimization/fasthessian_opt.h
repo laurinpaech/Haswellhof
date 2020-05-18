@@ -13,8 +13,16 @@ void compute_response_layer_precompute(struct response_layer* layer, struct inte
 
 void compute_response_layers_precompute(struct fasthessian* fh);
 
+void compute_response_layer_blocking(struct response_layer* layer, struct integral_image* iimage);
+
+void compute_response_layers_blocking(struct fasthessian* fh);
+
 void compute_response_layers_at_once(struct fasthessian* fh);
 
 void compute_response_layers_unconditional(struct fasthessian* fh);
 
 void compute_response_layer_unconditional(struct response_layer* layer, struct integral_image* iimage);
+
+void compute_response_layers_unconditional_strided(struct fasthessian* fh);
+
+void compute_response_layer_unconditional_strided(struct response_layer* layer, struct integral_image* iimage);
