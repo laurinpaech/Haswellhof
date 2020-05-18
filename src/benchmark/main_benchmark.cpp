@@ -18,14 +18,14 @@
 //#include "descriptor_opt.h"
 
 const char *images[] = {
-    //"../images/sunflower/sunflower_32.jpg",
-    //"../images/sunflower/sunflower_64.jpg",
+    // "../images/sunflower/sunflower_32.jpg",
+    // "../images/sunflower/sunflower_64.jpg",
     "../images/sunflower/sunflower_128.jpg",
     "../images/sunflower/sunflower_256.jpg",
     "../images/sunflower/sunflower_512.jpg",
     "../images/sunflower/sunflower_1024.jpg",
     "../images/sunflower/sunflower_2048.jpg",
-    "../images/sunflower/sunflower_4096.jpg",
+    // "../images/sunflower/sunflower_4096.jpg",
 };
 
 #define n_images (sizeof(images) / sizeof(const char *))
@@ -98,11 +98,12 @@ int main(int argc, char const *argv[]) {
 
             std::vector<void (*)(struct fasthessian *)> functions;
             functions.push_back(compute_response_map);
-            //functions.push_back(compute_response_layers_at_once);
-            functions.push_back(compute_response_map_Dyy_laplacian);
+            // functions.push_back(compute_response_layers_at_once);
+            // functions.push_back(compute_response_map_sonic_Dyy); TODO BENCH THIS TOO
+            functions.push_back(compute_response_map_Dyy_laplacian_localityloops);
 
             struct benchmark_data default_data(image_name, width, height, "compute_response_map", -1, (1 + height * width * 13));
-            struct benchmark_data data1(image_name, width, height, "compute_response_map_Dyy_laplacian", -1, (1 + height * width * 13));
+            struct benchmark_data data1(image_name, width, height, "compute_response_map_Dyy_laplacian_localityloops", -1, (1 + height * width * 13));
 
             std::vector<struct benchmark_data> data;
             data.push_back(default_data);

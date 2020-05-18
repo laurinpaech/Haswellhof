@@ -24,4 +24,8 @@ void compute_response_map_sonic_Dyy(struct fasthessian *fh);
 
 void compute_response_map_Dyy_laplacian(struct fasthessian *fh);
 
+void compute_response_map_Dyy_laplacian_localityloops(struct fasthessian *fh);
+
+void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* layer, struct integral_image* iimage);
+
 void compute_response_layers_at_once(struct fasthessian* fh, struct integral_image *iimage);
