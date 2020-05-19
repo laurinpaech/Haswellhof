@@ -5479,60 +5479,6 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
 
 }
 
-void compute_response_layers_unconditional(struct fasthessian* fh){
-    for (int i = 0; i < fh->total_layers; ++i) {
-		compute_response_layer_unconditional(fh->response_map[i], fh->iimage);
-	}
-}
-
-
-void compute_response_layer_unconditional(struct response_layer *layer, struct integral_image *iimage) {
-    float Dxx, Dyy, Dxy;
-    int x, y;
-
-    float *response = layer->response;
-    bool *laplacian = layer->laplacian;
-
-    int step = layer->step;
-    int filter_size = layer->filter_size;
-    int height = layer->height;
-    int width = layer->width;
-
-    int lobe = filter_size/3;
-    int border = (filter_size-1)/2;
-    float inv_area = 1.f/(filter_size*filter_size);
-
-    for (int i = 0, ind = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j, ind++) {
-            // Image coordinates
-            x = i*step;
-            y = j*step;
-
-            // Calculate Dxx, Dyy, Dxy with Box Filter
-            Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
-                    - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
-            Dyy = box_integral_unconditional(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
-                    - 3 * box_integral_unconditional(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
-            Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
-                    + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
-                    - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
-                    - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
-
-            // Normalize Responses with inverse area
-            Dxx *= inv_area;
-            Dyy *= inv_area;
-            Dxy *= inv_area;
-
-            // Calculate Determinant
-            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
-            // Calculate Laplacian
-            laplacian[ind] = (Dxx + Dyy >= 0);
-        }
-    }
-
-}
-
-
 void compute_response_layer_precompute(struct response_layer* layer, struct integral_image* iimage) {
     /*
     optimizations:
