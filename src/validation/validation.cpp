@@ -6,6 +6,7 @@
 
 #include "helper.h"
 #include "validation_integral_image.h"
+#include "integral_image_simd.h"
 
 //#define DEBUG_INFO
 #define VALIDATION_PRECISION (1e-3)
@@ -15,21 +16,41 @@
 // implementation false is being returned. Messages clarifying the equality of the results are being printed.
 bool validate_integral_image(void (*original_function)(float *, struct integral_image *),
                              const std::vector<void (*)(float *, struct integral_image *)> &test_functions, int width,
-                             int height, float *image) {
-    // Create integral image
-    struct integral_image *original_iimage = create_integral_img(width, height);
-    // Compute integral image
-    original_function(image, original_iimage);
-    bool all_functions_equal = true;
-    for (auto optimized_function : test_functions) {
-        // Create integral image
-        struct integral_image *optimized_iimage = create_integral_img(width, height);
-        // Compute integral image
-        optimized_function(image, optimized_iimage);
+                             int height, float *image, bool is_padded) {
 
-        if (!are_float_matrices_equal(original_iimage->data, optimized_iimage->data, width, height)) {
+    // Checking if original integral image should be padded and initializing it   
+    struct integral_image *original_iimage;
+    if (!is_padded) {
+        original_iimage = create_integral_img(width, height);
+    } else {
+        original_iimage = create_padded_integral_img(width, height);
+    }
+
+    // Compute original integral image
+    original_function(image, original_iimage);
+    
+    bool all_functions_equal = true;
+
+    // Iterating through all test functions
+    for (int j = 0; j < test_functions.size(); ++j) {
+        
+        // Checking if optimized integral image should be padded and initializing it   
+        struct integral_image *optimized_iimage;
+        if (!is_padded) {
+            optimized_iimage = create_integral_img(width, height);
+        } else {
+            optimized_iimage = create_padded_integral_img(width, height);
+        }
+        
+        // Compute optimized integral image of optimized test function j 
+        test_functions[j](image, optimized_iimage);
+
+        if (!are_float_matrices_equal(original_iimage->padded_data, 
+                                      optimized_iimage->padded_data, 
+                                      original_iimage->data_width, 
+                                      original_iimage->data_height)) {
             all_functions_equal = false;
-            printf("Error: The integral images are not equal.\n");
+            printf("Error: compute_integral_img() test function %d does not match original function.\n", j);
         }
 
         free(optimized_iimage->padded_data);
@@ -40,6 +61,57 @@ bool validate_integral_image(void (*original_function)(float *, struct integral_
     free(original_iimage);
 
     return all_functions_equal;
+
+}
+
+bool validate_integral_image_int(void (*original_function)(uint8_t *, struct integral_image *),
+                                 const std::vector<void (*)(uint8_t *, struct integral_image *)> &test_functions, int width,
+                                 int height, uint8_t *image, bool is_padded) {
+   
+    // Checking if original integral image should be padded and initializing it   
+    struct integral_image *original_iimage;
+    if (!is_padded) {
+        original_iimage = create_integral_img(width, height);
+    } else {
+        original_iimage = create_padded_integral_img(width, height);
+    }
+
+    // Compute original integral image
+    original_function(image, original_iimage);
+
+    bool all_functions_equal = true;
+
+    // Iterating through all test functions
+    for (int j = 0; j < test_functions.size(); ++j) {
+
+        // Checking if original integral image should be padded and initializing it   
+        struct integral_image *optimized_iimage;
+        if (!is_padded) {
+            optimized_iimage = create_integral_img(width, height);
+        } else {
+            optimized_iimage = create_padded_integral_img(width, height);
+        }       
+
+        // Compute integral image
+        test_functions[j](image, optimized_iimage);
+
+        if (!are_float_matrices_equal(original_iimage->padded_data, 
+                                      optimized_iimage->padded_data, 
+                                      original_iimage->data_width, 
+                                      original_iimage->data_height)) {
+            all_functions_equal = false;
+            printf("Error: compute_integral_img_int() test function %d does not match original function.\n", j);
+        }
+
+        free(optimized_iimage->padded_data);
+        free(optimized_iimage);
+    }
+
+    free(original_iimage->padded_data);
+    free(original_iimage);
+
+    return all_functions_equal;
+
 }
 
 bool validate_compute_response_layer_custom_matrix(void (*original_function)(struct fasthessian *),
