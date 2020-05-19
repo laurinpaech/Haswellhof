@@ -55,7 +55,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
     // 1. Case The filter is smaller than the image
     if (filter_size <= iheight) {
         // Split the image into 9 cases - corners, borders and middle part.
-        compute_response_layer_Dyy_laplacian(layer, iimage);
+        compute_response_layer_Dyy_laplacian_localityloops(layer, iimage);
     } else {
         // 2. Case The filter is somewhat larger than the image
         if (iheight > border) {
