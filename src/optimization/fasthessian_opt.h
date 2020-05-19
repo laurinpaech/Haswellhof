@@ -59,3 +59,7 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
 void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct response_layer* layer, struct integral_image* iimage);
 
 void compute_response_layers_Dyy_laplacian_localityloops_unconditional(struct fasthessian* fh);
+
+void compute_response_layers_Dyy_laplacian_locality_uncond_opt(struct fasthessian* fh);
+
+void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_layer* layer, struct integral_image* iimage);

@@ -401,7 +401,7 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
     // 1. Case The filter is smaller than the image
     if (filter_size <= iheight) {
         // Split the image into 9 cases - corners, borders and middle part.
-        compute_response_layer_Dyy_laplacian_localityloops_unconditional(layer, iimage);
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt(layer, iimage);
 
     } else {
         // 2. Case The filter is somewhat larger than the image
@@ -6565,7 +6565,994 @@ void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct res
     }
 }
 
+void compute_response_layers_Dyy_laplacian_locality_uncond_opt(struct fasthessian* fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+		compute_response_layer_Dyy_laplacian_locality_uncond_opt(fh->response_map[i], fh->iimage);
+	}
+}
 
+void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_layer* layer, struct integral_image* iimage) {
+    /*
+        Box integral angepasst, damit wir weniger flops haben und diese dann rausgezogen aus der Loop
+        um mehrfaches unnötiges computen zu vermeiden
+    */
+    float Dxx, Dyy, Dxy;
+    int x, y, k, k0, k1;
+    int r00, r01, c00, c01, r10, r11, c10, c11;
+    float Dyy0, Dyy1, A, B, C, D, temp0, temp1;
+
+    float* response = layer->response;
+    bool* laplacian = layer->laplacian;
+
+    int step = layer->step;
+    int filter_size = layer->filter_size;
+    int height = layer->height;
+    int width = layer->width;
+
+    int lobe = filter_size/3;
+    int border = (filter_size-1)/2;
+    float inv_area = 1.f/(filter_size*filter_size);
+
+    int ind = 0;  // oder alternativ (i+1)*j
+
+    float *data = iimage->data;
+    int iheight = iimage->height;
+    int iwidth = iimage->width;
+    int data_width = iimage->data_width;
+
+    int j, i, t0, t1, t2, t3, t4, t5, t6, t7, t8;
+
+    /****************
+    *   TOP
+    *****************/
+
+    for (x = 0; x < lobe / 2 + 1; x += step) {  // Inner B is outside, i.e. 0
+
+        // precompute
+        t0 = x - lobe;
+        t1 = x + lobe - 1;
+        t2 = lobe/2 + 1;
+        t3 = x - 1;
+        t5 = x - lobe - 1;
+        t7 = x + lobe;
+
+        // Top Left Corner - Case 1: B of neg part outside
+        for (y = 0; y < lobe; y += step) {  // c0 = col - 1 = (y - lobe + 1) -1 < 0
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy  
+            // whole box filter
+            r01 = x + border;
+            c01 = y + lobe - 1;
+
+            Dyy0 = data[r01 * data_width + c01];
+
+            // neg part box filter
+            r10 = x - lobe / 2 - 1;
+            r11 = x - lobe / 2 + lobe - 1;
+            c11 = y + lobe - 1;
+
+            D = data[r11 * data_width + c11];
+            Dyy1 = D;
+
+            Dyy = Dyy0 - 3 * Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+        // Top Mid - Case 1: B of neg part outside
+        for (; y < width * step - lobe+1; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy
+            // whole box filter
+            // A and B are outside (= 0), C and D inside
+            r01 = x + border;
+            c00 = y - lobe;
+            c01 = y + lobe - 1;
+
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + c01];
+            Dyy0 = D - C;
+
+            // neg part box filter
+            // A and B are outside (= 0), C and D inside
+            r10 = x - lobe / 2 - 1;
+            r11 = x + lobe/2;   // r10 und r11 kann man vereinfachen
+            c10 = y - lobe;
+            c11 = y + lobe - 1;
+
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + c11];
+
+            Dyy1 = D - C;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+        // Top Right - Case 1: A of neg part outside
+        for (; y < width * step; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // whole filter
+            r01 = x + border;
+            c00 = y - lobe;
+
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + iwidth-1];
+            Dyy0 = D - C;
+
+            // neg part box filter
+            r10 = x - lobe / 2 - 1;
+            r11 = x + lobe/2;
+            c10 = y - lobe;
+
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + iwidth-1];
+
+            Dyy1 = D - C;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+    }
+
+    for (; x < border + 1; x += step) {  // Inner B is inside
+
+        t0 = x - lobe;
+        t1 = x + lobe - 1;
+        t2 = lobe/2 + 1;
+        t3 = x - 1;
+        t5 = x - lobe - 1;
+        t7 = x + lobe;
+
+        // Top Left Corner - Case 2: B of neg part inside
+        for (y = 0; y < lobe; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy
+            // whole box filter
+            r01 = x + border;
+            c01 = y + lobe - 1;
+
+            Dyy0 = data[r01 * data_width + c01];
+
+            // neg part box filter
+            r10 = x - lobe / 2 - 1;
+            r11 = x + lobe/2;   // -1 is already part of r10
+            c11 = y + lobe - 1;
+
+            B = data[r10 * data_width + c11];
+            D = data[r11 * data_width + c11];
+            Dyy1 = D - B;
+
+            Dyy = Dyy0 - 3 * Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+        // Top Mid - Case 2: B of neg part inside
+        for (; y < width * step -lobe+1; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy
+            // whole box filter
+            r01 = x + border;
+            c00 = y - lobe;
+            c01 = y + lobe - 1;
+
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + c01];
+            Dyy0 = D - C;
+
+            // neg part box filter
+            r10 = x - lobe / 2 - 1;
+            r11 = x + lobe/2;
+            c10 = y - lobe;
+            c11 = y + lobe - 1;
+
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + c11];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + c11];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+        // Top Right - Case 2: A of neg part inside
+        for (; y < width * step; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // whole filter
+            r01 = x + border;
+            c00 = y - lobe;
+
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + iwidth-1];
+            Dyy0 = D - C;
+
+            // neg part box filter
+            r10 = x - lobe / 2 - 1;
+            r11 = x + lobe/2;
+            c10 = y - lobe;
+
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + iwidth-1];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + iwidth-1];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+    }
+
+    /****************
+    *   MID
+    *****************/
+
+    for (; x < height * step - border; x += step) {
+
+        t0 = x - lobe;
+        t1 = x + lobe - 1;
+        t2 = lobe/2 + 1;
+        t3 = x - 1;
+        t5 = x - lobe - 1;
+        t7 = x + lobe;
+
+        // Mid Left
+        for (y = 0; y < lobe; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy  
+            // whole box filter
+            // A, C outside (= 0). B, D inside
+            r00 = x - border - 1;
+            r01 = x + border;
+            c01 = y + lobe - 1;
+
+            B = data[r00 * data_width + c01];
+            D = data[r01 * data_width + c01];
+            Dyy0 = D - B;
+
+            // neg part box filter
+            // A, C outside (= 0). B, D inside
+            r10 = x - lobe / 2 - 1;
+            r11 = x + lobe/2;
+            c11 = y + lobe - 1;
+
+            B = data[r10 * data_width + c11];
+            D = data[r11 * data_width + c11];
+
+            Dyy1 = D - B;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+        // Mid Mid
+        for (; y < width * step - lobe + 1; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // int debug_x = i/step;
+            // int debug_y = j/step;
+
+            // Compute Dyy  
+            // whole box filter
+            // All inside
+            r00 = x - border - 1;
+            r01 = x + border;
+            c00 = y - lobe;
+            c01 = y + lobe - 1;
+
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + c01];
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + c01];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
+
+            // neg part box filter
+            // All inside
+            r10 = x - lobe / 2 - 1;
+            r11 = x + lobe/2;
+            c10 = y - lobe;
+            c11 = y + lobe - 1;
+
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + c11];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + c11];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dyy *= inv_area;
+            Dxx *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+        // Mid Right
+        for (; y < width * step; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy  
+            // whole box filter
+            // B, D outside, A, C inside
+            r00 = x - border - 1;
+            r01 = x + border;
+            c00 = y - lobe;
+
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + iwidth-1];
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + iwidth-1];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
+
+            // neg part box filter
+            // B, D outside, A, C inside
+            r10 = x - lobe / 2 - 1;
+            r11 = x + lobe/2;
+            c10 = y - lobe;
+
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + iwidth-1];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + iwidth-1];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+    }
+
+    /****************
+    *   BOTTOM
+    *****************/
+
+    for (; x < height * step - lobe / 2; x += step) {
+
+        t0 = x - lobe;
+        t1 = x + lobe - 1;
+        t2 = lobe/2 + 1;
+        t3 = x - 1;
+        t5 = x - lobe - 1;
+        t7 = x + lobe;
+
+        // Bottom Left - Case 1: inner D inside
+        for (y = 0; y < lobe; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy  
+            // whole box filter
+            // A, C outside, B inside, D below
+            r00 = x - border - 1;
+            c01 = y + lobe - 1;
+
+            B = data[r00 * data_width + c01];
+            D = data[(iheight-1) * data_width + c01];
+
+            Dyy0 = D - B;
+
+            // neg part box filter
+            // A, C outside, B, D inside
+            r10 = x - lobe / 2 - 1;
+            r11 = x + lobe/2;
+            c11 = y + lobe - 1;
+
+            B = data[r10 * data_width + c11];
+            D = data[r11 * data_width + c11];
+
+            Dyy1 = D - B;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+        // Bottom Mid - Case 1: inner D inside
+        for (; y < width * step - lobe + 1; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy  
+            // whole box filter
+            // A, B inside, C, D outside
+            r00 = x - border - 1;
+            c00 = y - lobe;
+            c01 = y + lobe - 1;
+
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + c01];
+            C = data[(iheight-1) * data_width + c00];
+            D = data[(iheight-1) * data_width + c01];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
+
+            // neg part box filter
+            // A, B, C, D inside
+            r10 = x - lobe / 2 - 1;
+            r11 = x + lobe/2;
+            c10 = y - lobe;
+            c11 = y + lobe - 1;
+
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + c11];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + c11];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+        // Bottom Right - Case 1: inner C inside
+        for (; y < width * step; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy  
+            // whole box filter
+            // B, C, D outside A inside
+            r00 = x - border - 1;
+            c00 = y - lobe;
+
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + iwidth-1];
+            C = data[(iheight-1) * data_width + c00];
+            D = data[(iheight-1) * data_width + iwidth-1];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
+
+            // neg part box filter
+            // B, D outside, A, C inside
+            r10 = x - lobe / 2 - 1;
+            r11 = x + lobe/2;
+            c10 = y - lobe;
+
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + iwidth-1];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + iwidth-1];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+    }
+
+    for (; x < height * step; x += step) {
+
+        t0 = x - lobe;
+        t1 = x + lobe - 1;
+        t2 = lobe/2 + 1;
+        t3 = x - 1;
+        t5 = x - lobe - 1;
+        t7 = x + lobe;
+
+        // Bottom Left - Case 2: inner D outside
+        for (y = 0; y < lobe; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy  
+            // whole box filter
+            // A, C outside, B inside, D below
+            r00 = x - border - 1;
+            c01 = y + lobe - 1;
+
+            B = data[r00 * data_width + c01];
+            D = data[(iheight-1) * data_width + c01];
+
+            Dyy0 = D - B;
+
+            // neg part box filter
+            // A, C, D outside, B inside
+            r10 = x - lobe / 2 - 1;
+            c11 = y + lobe - 1;
+
+            B = data[r10 * data_width + c11];
+            D = data[(iheight - 1) * data_width + c11];
+
+            Dyy1 = D - B;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+        // Bottom Mid - Case 2: inner D outside
+        for (; y < width * step - lobe + 1; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy  
+            // whole box filter
+            // A, B inside, C, D outside
+            r00 = x - border - 1;
+            c00 = y - lobe;
+            c01 = y + lobe - 1;
+
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + c01];
+            C = data[(iheight-1) * data_width + c00];
+            D = data[(iheight-1) * data_width + c01];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
+
+            // neg part box filter
+            // A, B inside, C, D outside
+            r10 = x - lobe / 2 - 1;
+            c10 = y - lobe;
+            c11 = y + lobe - 1;
+
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + c11];
+            C = data[(iheight-1) * data_width + c10];
+            D = data[(iheight-1) * data_width + c11];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+
+        // Bottom Right - Case 2: inner C outside
+        for (; y < width * step; y += step) {
+            // Image coordinates
+            // x = i;
+            // y = j;
+
+            // Compute Dyy  
+            // whole box filter
+            // B, C, D outside A inside
+            r00 = x - border - 1;
+            r01 = x + border;
+            c00 = y - lobe;
+            c01 = y + lobe - 1;
+
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + iwidth-1];
+            C = data[(iheight-1) * data_width + c00];
+            D = data[(iheight-1) * data_width + iwidth-1];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy0 = temp0 + temp1;
+
+            // neg part box filter
+            // B, C, D outside, A inside
+            r10 = x - lobe / 2 - 1;
+            c10 = y - lobe;
+
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + iwidth-1];
+            C = data[(iheight-1) * data_width + c10];
+            D = data[(iheight-1) * data_width + iwidth-1];
+
+            temp0 = A - C;
+            temp1 = D - B;
+            Dyy1 = temp0 + temp1;
+
+            Dyy = Dyy0 - 3*Dyy1;
+
+            // box_integral_unconditional precompute
+            t4 = y - 1;
+            t6 = y - lobe - 1;
+            t8 = y + lobe;
+
+            // Compute Dxx, Dxy
+            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                    + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                    - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                    - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+            // Calculate Laplacian
+            laplacian[ind] = Dxx + Dyy >= 0;
+            ind += 1;
+        }
+    }
+}
 
 void compute_response_layer_precompute(struct response_layer* layer, struct integral_image* iimage) {
     /*
