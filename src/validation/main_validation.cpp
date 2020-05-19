@@ -9,7 +9,9 @@
 
 #include "integral_image_opt.h"
 #include "descriptor_opt.h"
-#include "descriptor_opt_gen.h"
+// #include "descriptor_opt_gen.h"
+#include "fasthessian_opt.h"
+// #include "fasthessian_opt_gen.h"
 
 #include "validation.h"
 
@@ -75,7 +77,14 @@ int main(int argc, char const *argv[])
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER
     {
         std::vector<void (*)(struct fasthessian *)> test_functions;
+        test_functions.push_back(compute_response_layers_precompute);
+        test_functions.push_back(compute_response_layers_blocking);
         test_functions.push_back(compute_response_layers_at_once);
+
+        // test_functions.push_back(compute_response_layers_blocking_3_3_False);
+        // test_functions.push_back(compute_response_layers_blocking_3_7_False);
+        // test_functions.push_back(compute_response_layers_blocking_7_3_False);
+        // test_functions.push_back(compute_response_layers_blocking_7_7_False);
 
         bool valid = validate_compute_response_layers(compute_response_layers, test_functions, iimage);
         if (valid) {
@@ -90,6 +99,7 @@ int main(int argc, char const *argv[])
     {
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_response_layer_unconditional);
+        test_functions.push_back(compute_response_layer_unconditional_strided);
         bool valid =
             validate_compute_response_layer_with_padding(compute_response_layer, test_functions, image, width, height);
         if (valid) {
@@ -137,8 +147,8 @@ int main(int argc, char const *argv[])
         test_functions.push_back(get_msurf_descriptor_arrays);
         
 
-        test_functions.push_back(get_msurf_descriptor_haar_unroll_4_1_False);
-        test_functions.push_back(get_msurf_descriptor_haar_unroll_1_4_True);
+        // test_functions.push_back(get_msurf_descriptor_haar_unroll_4_1_False);
+        // test_functions.push_back(get_msurf_descriptor_haar_unroll_1_4_True);
         
 
         bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
