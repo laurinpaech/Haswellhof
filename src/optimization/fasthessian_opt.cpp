@@ -944,6 +944,7 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
     laplacian[ind] = (Dxx + Dyy >= 0);
     ind += 1;
     j += step;
+    counter+=1;
 
     // last row before blue line Right
     // k0 = (width * step - lobe + 1 + step - 1) / step * step;
