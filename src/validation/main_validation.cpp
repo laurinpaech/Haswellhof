@@ -75,7 +75,7 @@ int main(int argc, char const *argv[])
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER
     {
         std::vector<void (*)(struct fasthessian *)> test_functions;
-        test_functions.push_back(compute_response_layers_at_once);
+        test_functions.push_back(compute_response_map_sonic_Dyy);
 
         bool valid = validate_compute_response_layers(compute_response_layers, test_functions, iimage);
         if (valid) {
