@@ -208,37 +208,15 @@ void super_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage
 void blue_lines_Dyy(struct response_layer *layer, struct integral_image *iimage) {
     // Filter_size > height
     // 2. Case The filter is somewhat larger than the image
-    /*  if (height > border) {
-          // 2.1. D is sometimes outside the image. Blue lines edition brings the sonic into Dyy
-          // Idea: Do compute_response_layer_Dyy_leftcorner
-          // but everytime all corners are outside, we just use row values above
+    /*  (height > border && (iwidth > 2 * lobe - 1))
+          2.1. D is sometimes outside the image. Blue lines edition brings the sonic into Dyy
+          Idea: Do compute_response_layer_Dyy_leftcorner
+          but everytime all corners are outside, we just use row values above
 
-          // TODO:
-//limit if the blue line starts at e.g. index = 1
-int limit = min(height-border, lobe/2)
-//Top
-int i = 0;
-                  for (i; i < limit; i++) {
-                      //Top
-}
-i++;
-//Middle
-for(i; i < height-border; i++)
-
-
-
-          // blue line
-          for (int i = height-border; i < border+1; i++) {
-              for (int j = 0; j < width; j++) {
-                      // for every blue row, copy values above it
-                      Dyy[i, j] = Dyy[height-border-1, j];  // alternative memcopy for very row?
-              }
-          }
-
-
-        // Bottom
-                  for (int i = border+1; i < height; i++) {
-
+          Top: Left - Middle (just one case) - Bottom
+          Last Row Before Blue Lines: Left - Middle (just one case) - Bottom
+          Blue Lines: Use previously stored values
+          Bottom: Left - Middle (just one case) - Bottom
 
           */
 
@@ -259,24 +237,22 @@ for(i; i < height-border; i++)
     int border = (filter_size - 1) / 2;
     float inv_area = 1.f / (filter_size * filter_size);
 
-    int ind = 0;  // oder alternativ (i+1)*j
+    int ind = 0;
 
     float *data = (float *)iimage->data;  // brauch hier keinen cast weil es eig float sein sollte
     int iheight = iimage->height;
     int iwidth = iimage->width;
 
-    // TODO: (carla) iwdith or width*step?
-    float dyy_row_before_blue[width * step];
+    float dyy_row_before_blue[width];
 
     /****************
      *   TOP
      *****************/
     int i = 0;
-    while (i < height * step - border - 1) {
-        // ind = (i / step) * width;
+    for (; i < height * step - border - 1; i += step) {
         int j = 0;
         // Top Left Corner
-        for (j; j < lobe; j += step) {
+        for (; j < lobe; j += step) {
             x = i;
             y = j;
 
@@ -284,7 +260,8 @@ for(i; i < height-border; i++)
             // whole box filter
             r01 = x + border;
             c01 = y + lobe - 1;
-
+            // A, B, C outside A, B, C = 0
+            // D inside
             Dyy0 = data[r01 * iwidth + c01];
 
             // neg part box filter
@@ -311,20 +288,19 @@ for(i; i < height-border; i++)
         }
 
         // Top Mid
-        // k0 = (lobe + step - 1) / step * step;  // initial y value to next multiple of step
-
-        for (j; j < width * step - lobe + 1; j += step) {
+        for (; j < width * step - lobe + 1; j += step) {
             // Image coordinates
             x = i;
             y = j;
 
             // Compute Dyy
             // whole box filter
-            // A and B are outside (= 0), C and D inside
             r01 = x + border;
             c00 = y - lobe;
             c01 = y + lobe - 1;
 
+            // A, B outside A, B = 0
+            // C, D inside
             C = data[r01 * iwidth + c00];
             D = data[r01 * iwidth + c01];
             Dyy0 = D - C;
@@ -353,9 +329,7 @@ for(i; i < height-border; i++)
         }
 
         // Top Right
-        // k0 = (width * step - lobe + 1 + step - 1) / step * step;
-
-        for (j; j < width * step; j += step) {
+        for (; j < width * step; j += step) {
             // Image coordinates
             x = i;
             y = j;
@@ -364,6 +338,9 @@ for(i; i < height-border; i++)
             r01 = x + border;
             c00 = y - lobe;
 
+            // A, B outside A, B = 0
+            // C inside
+            // D outside D = last element of row
             C = data[r01 * iwidth + c00];
             D = data[r01 * iwidth + iwidth - 1];
             Dyy0 = D - C;
@@ -390,31 +367,27 @@ for(i; i < height-border; i++)
             laplacian[ind] = (Dxx + Dyy >= 0);
             ind += 1;
         }
-
-        i += step;
     }
 
     /*********************************
      *    LAST ROW BEFORE BLUE LINE
      *********************************/
-    // TODO: (carla) iheight or height*step?
     int idx_store_row = ((height * step - border - 1 + step - 1) / step) * step;
     i = idx_store_row;
     int counter = 0;
-    // TODO: (carla) Should only go through here once. Replace loop with just i?
-    // while (i < idx_store_row) {
-    // ind = (i / step) * width;
+
     int j = 0;
-    // Top Left Corner
-    while (j < lobe) {
+    // Last Row Before Blue Line Left
+    for (; j < lobe; j += step) {
         x = i;
         y = j;
 
         // Compute Dyy  
         // whole box filter
-        r01 = x + border;
         c01 = y + lobe - 1;
 
+        // A, B, C outside A, B, C = 0
+        // D below D = last value of column.
         Dyy0 = data[(iheight - 1) * iwidth + c01];
 
         // Store value for blue line.
@@ -440,26 +413,21 @@ for(i; i < height-border; i++)
         laplacian[ind] = (Dxx + Dyy >= 0);
         ind += 1;
         counter += 1;
-        j += step;
     }
 
-    // Top Mid
-    // k0 = (lobe + step - 1) / step * step;  // initial y value to next multiple of step
-
-    while (j < width * step - lobe + 1) {
+    // Last Row Before Blue Line Mid
+    for (; j < width * step - lobe + 1; j += step) {
         // Image coordinates
         x = i;
         y = j;
 
         // Compute Dyy
         // whole box filter
-        // A and B are outside (= 0), C and D inside
-        r01 = x + border;
         c00 = y - lobe;
         c01 = y + lobe - 1;
 
-        // C = data[r01 * iwidth + c00];
-        // D = data[r01 * iwidth + c01];
+        // A, B outside A, B = 0
+        // C and D below C, D last element of column.
         C = data[(iheight - 1) * iwidth + c00];
         D = data[(iheight - 1) * iwidth + c01];
 
@@ -486,26 +454,23 @@ for(i; i < height-border; i++)
         response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
 
         // Calculate Laplacian
-        laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
+        laplacian[ind] = (Dxx + Dyy >= 0);
         ind += 1;
         counter += 1;
-        j += step;
     }
 
-    // Top Right
-    // k0 = (width * step - lobe + 1 + step - 1) / step * step;
-
-    while (j < width * step) {
+    // Last Row Before Blue Line Right
+    for (j; j < width * step; j += step) {
         // Image coordinates
         x = i;
         y = j;
 
         // whole filter
-        r01 = x + border;
         c00 = y - lobe;
 
-        // C = data[r01 * iwidth + c00];
-        // D = data[r01 * iwidth + iwidth - 1];
+        // A, B outside A, B = 0
+        // C below C = last element of column
+        // D outside D = last element.
         C = data[(iheight - 1) * iwidth + c00];
         D = data[(iheight - 1) * iwidth + iwidth - 1];
         Dyy0 = D - C;
@@ -534,10 +499,8 @@ for(i; i < height-border; i++)
         laplacian[ind] = (Dxx + Dyy >= 0);
         ind += 1;
         counter += 1;
-        j += step;
     }
     i += step;
-    //}
 
     /*****************
      *    BLUE LINE
@@ -582,20 +545,22 @@ for(i; i < height-border; i++)
      *****************/
 
     // Bottom
-    while (i < height * step) {
+    for (; i < height * step; i += step) {
         int j = 0;
         // Bottom left
-        for (j; j < lobe; j += step) {
+        for (; j < lobe; j += step) {
             // Image coordinates
             x = i;
             y = j;
 
             // Compute Dyy  
             // whole box filter
-            // A, C outside, B inside, D below
             r00 = x - border - 1;
             c01 = y + lobe - 1;
 
+            // A, C outside A, C = 0
+            // B inside
+            // D below D = laste element of column
             B = data[r00 * iwidth + c01];
             D = data[(iheight - 1) * iwidth + c01];
 
@@ -625,7 +590,6 @@ for(i; i < height-border; i++)
         }
 
         // Bottom Mid
-
         for (j; j < width * step - lobe + 1; j += step) {
             // Image coordinates
             x = i;
@@ -633,11 +597,12 @@ for(i; i < height-border; i++)
 
             // Compute Dyy  
             // whole box filter
-            // A, B inside, C, D outside
             r00 = x - border - 1;
             c00 = y - lobe;
             c01 = y + lobe - 1;
 
+            // A, B inside
+            // C, D below C, D last element of column
             A = data[r00 * iwidth + c00];
             B = data[r00 * iwidth + c01];
             C = data[(iheight - 1) * iwidth + c00];
@@ -645,7 +610,6 @@ for(i; i < height-border; i++)
 
             Dyy0 = A - B - C + D;
 
-            // neg part box filter
             // neg part box filter
             Dyy = Dyy0 - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
 
@@ -677,10 +641,12 @@ for(i; i < height-border; i++)
 
             // Compute Dyy  
             // whole box filter
-            // B, C, D outside A inside
             r00 = x - border - 1;
             c00 = y - lobe;
-
+            // A inside
+            // B outside B = last element of row
+            // C below C = last element of column
+            // D outside D = last element
             A = data[r00 * iwidth + c00];
             B = data[r00 * iwidth + iwidth - 1];
             C = data[(iheight - 1) * iwidth + c00];
@@ -710,19 +676,23 @@ for(i; i < height-border; i++)
             laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
             ind += 1;
         }
-
-        i += step;
     }
 }
 
 void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *iimage) {
     // Filter_size > height
     // 2. Case The filter is somewhat larger than the image
-    /*  if (height > border) {
-          // 2.1. D is sometimes outside the image. Blue lines edition brings the sonic into Dyy
-          // Idea: Do compute_response_layer_Dyy_leftcorner
-          // but everytime all corners are outside, we just use row values above
-*/
+    /*  (height > border && (iwidth < 2 * lobe))
+          2.1. D is sometimes outside the image. Blue lines edition brings the sonic into Dyy
+          Idea: Do compute_response_layer_Dyy_leftcorner
+          but everytime all corners are outside, we just use row values above
+
+          Top: Left - Middle (just one case) - Bottom
+          Last Row Before Blue Lines: Left - Middle (just one case) - Bottom
+          Blue Lines: Use previously stored values
+          Bottom: Left - Middle (just one case) - Bottom
+
+          */
 
     float Dxx, Dyy, Dxy;
     int x, y, k, k0, k1;
@@ -741,14 +711,12 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
     int border = (filter_size - 1) / 2;
     float inv_area = 1.f / (filter_size * filter_size);
 
-    int ind = 0;  // oder alternativ (i+1)*j
-
+    int ind = 0;  
     float *data = (float *)iimage->data;  // brauch hier keinen cast weil es eig float sein sollte
     int iheight = iimage->height;
     int iwidth = iimage->width;
 
-    // TODO: (carla) iwdith or width*step?
-    float dyy_row_before_blue[width * step];
+    float dyy_row_before_blue[width];
 
     /****************
      *   TOP
