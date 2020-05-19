@@ -48,7 +48,8 @@ inline bool compare_arrays_close(float a[], float b[], int n, float epsilon = EP
 inline bool are_float_matrices_equal(float *matrix1, float *matrix2, int width, int height) {
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            if (matrix1[i * width + j] != matrix2[i * width + j]) {
+            if (fabsf(matrix1[i * width + j] - matrix2[i * width + j]) > 0.000001) {
+            // if (matrix1[i * width + j] - matrix2[i * width + j]) {
                 printf("DIFFERENCE: (%i, %i) original: %f, optimized: %f\n", i, j, matrix1[i * width + j],
                        matrix2[i * width + j]);
                 return false;

@@ -45,21 +45,9 @@ int main(int argc, char const *argv[])
 	// Create octaves with response layers
 	create_response_map(fh);
 
-	// playground_function3(iimage, argv[1]);
-
-	// printf("before validation of compute response layer\n");
-	// playground_function2(iimage);
-	//playground_function1();
-
-	playground_function2(iimage);
 
 	// Compute responses for every layer
-	// compute_response_map(fh);
-
-	for (int i = 0; i < fh->total_layers; ++i) {
-        compute_response_layer_Dyy_leftcorner(fh->response_map[i], fh->iimage);
-    }
-
+	 compute_response_map(fh);
 
 
 	// Getting interest points with non-maximum supression
