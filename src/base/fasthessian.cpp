@@ -72,7 +72,7 @@ void compute_response_map(struct fasthessian *fh) {
 }
 
 void compute_response_layer(struct response_layer *layer, struct integral_image *iimage) {
-    float Dxx, Dyy, Dxy;
+    float Dxx, Dyy, Dxy, Dyy_large, Dyy_neg;
     int x, y;
 
     float *response = layer->response;
@@ -90,12 +90,14 @@ void compute_response_layer(struct response_layer *layer, struct integral_image 
     for (int i = 0, ind = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j, ind++) {
             // Image coordinates
-            x = i * step;
+            x = i * step;  // step = 2; height = 2; x = 0; x = 2, image_height = 5
             y = j * step;
 
             // Calculate Dxx, Dyy, Dxy with Box Filter
             Dxx = box_integral(iimage, x - lobe + 1, y - border, 2 * lobe - 1, filter_size) -
                   3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2 * lobe - 1, lobe);
+            Dyy_large = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1);
+            Dyy_neg = box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
             Dyy = box_integral(iimage, x - border, y - lobe + 1, filter_size, 2 * lobe - 1) -
                   3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
             Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe) +
@@ -112,6 +114,9 @@ void compute_response_layer(struct response_layer *layer, struct integral_image 
 
             // Calculate Laplacian
             laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
+            if (filter_size == 51) {
+                printf("ORIGINAL: (%i, %i), ind: %i, Dxx: %f, Dyy: %f, Dyy_large: %f, Dyy_neg: %f, Dxy: %f, response: %f\n", x, y, ind, Dxx, Dyy, Dyy_large, Dyy_neg, Dxy, response[ind]);
+            }
         }
     }
 }

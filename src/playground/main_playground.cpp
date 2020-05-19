@@ -20,7 +20,7 @@
 int main(int argc, char const *argv[])
 {
     char *image_name = (char *)malloc(1024 * sizeof(char));
-        strcpy(image_name, "../images/sunflower/sunflower_256.jpg");
+        strcpy(image_name, "../images/sunflower/sunflower_32.jpg");
 
 	int width, height, channels;
 
