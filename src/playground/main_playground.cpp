@@ -8,6 +8,8 @@
 #include "fasthessian.h"
 #include "interest_point.h"
 #include "descriptor.h"
+#include "fasthessian_opt.h"
+#include "validation.h"
 
 #include "playground.h"
 
@@ -19,14 +21,15 @@
 
 int main(int argc, char const *argv[])
 {
-    char *image_name = (char *)malloc(1024 * sizeof(char));
-        strcpy(image_name, "../images/sunflower/sunflower_32.jpg");
-
+    if (argc != 3) {
+        printf("Invaid argument count.\nUsage:\n\t./surf image_path descriptor_file_target_path\n");
+        return 1;
+    }
 	int width, height, channels;
 
 	// Load image
 	stbi_ldr_to_hdr_gamma(1.0f);
-	float* image = stbi_loadf(image_name, &width, &height, &channels, STBI_grey);
+	float* image = stbi_loadf(argv[1], &width, &height, &channels, STBI_grey);
 
     if (!image) {
 		printf("Could not open or find image\n");
@@ -36,41 +39,28 @@ int main(int argc, char const *argv[])
 	// Create integral image
 	struct integral_image* iimage = create_integral_img(width, height);
 	// Compute integral image
-	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
+	compute_integral_img(image, iimage);
 
 	// Fast-Hessian
-	// printf("\n\nCreate fasthessian for actual image in main:\n");
 	struct fasthessian* fh = create_fast_hessian(iimage);
 
 	// Create octaves with response layers
 	create_response_map(fh);
 
-
 	// Compute responses for every layer
-	 compute_response_map(fh);
-
+	compute_response_layers(fh);
 
 	// Getting interest points with non-maximum supression
 	std::vector<struct interest_point> interest_points;
 	get_interest_points(fh, &interest_points);
 
-#if !USE_MSURF
-	// Descriptor stuff
-    float* GW = get_gaussian(3.3);
-	for (size_t i=0; i<interest_points.size(); ++i) {
-        get_descriptor(iimage, &interest_points[i], GW);
-	}
+	// Getting M-SURF descriptors for each interest point
+	get_msurf_descriptors(iimage, &interest_points);
 
-    free(GW);
-#else
-	// Alternative M-SURF descriptors as in OpenSURF
-	for (size_t i=0; i<interest_points.size(); ++i) {
-        get_msurf_descriptor(iimage, &interest_points[i]);
-	}
-#endif
+
 
 	// Write results to file
-    FILE * fp = fopen("desc_play","w");
+    FILE * fp = fopen(argv[2],"w");
     printf("%d %d %d\n", iimage->width, iimage->height, channels);
 	for (size_t i=0; i<interest_points.size(); ++i) {
         fprintf(fp, "%f %f %f %d ", interest_points[i].x, interest_points[i].y, interest_points[i].scale, interest_points[i].laplacian);
@@ -91,7 +81,6 @@ int main(int argc, char const *argv[])
 		free(fh->response_map[i]);
 	}
 	free(fh);
-
 
 	return 0;
 }

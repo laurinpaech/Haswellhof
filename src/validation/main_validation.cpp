@@ -1,7 +1,6 @@
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
-#define USE_MSURF 1
 
 #include "stb_image.h"
 #include "integral_image.h"
@@ -20,9 +19,11 @@
 
 #include <vector>
 
-// #define VALIDATE_INTEGRAL_IMAGE
+#define VALIDATE_INTEGRAL_IMAGE
 #define VALIDATE_COMPUTE_RESPONSE_LAYER
-// #define VALIDATE_GET_MSURF_DESCRIPTORS
+#define VALIDATE_COMPUTE_RESPONSE_LAYER_PADDED
+#define VALIDATE_GET_INTEREST_POINTS
+#define VALIDATE_GET_MSURF_DESCRIPTORS
 
 
 int main(int argc, char const *argv[])
@@ -47,8 +48,8 @@ int main(int argc, char const *argv[])
 
 #ifdef VALIDATE_INTEGRAL_IMAGE
     {
-        std::vector<void (*)(float *, int, int, float *)> test_functions;
-        test_functions.push_back(compute_integral_img_faster_alg);
+        std::vector<void (*)(float *, struct integral_image *)> test_functions;
+        //test_functions.push_back(compute_integral_img_faster_alg);
 
         bool valid = validate_integral_image(compute_integral_img, test_functions, width, height, image);
         if (valid) {
@@ -60,7 +61,7 @@ int main(int argc, char const *argv[])
 #endif
 
 	// Compute integral image
-	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
+	compute_integral_img(image, iimage);
 
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);
@@ -69,17 +70,14 @@ int main(int argc, char const *argv[])
 	create_response_map(fh);
 
 	// Compute responses for every layer
-	compute_response_map(fh);
+	compute_response_layers(fh);
 
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER
     {
-        std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
-        test_functions.push_back(compute_response_layer_sonic_Dyy);
-        // test_functions.push_back(compute_response_layer_Dyy_laplacian);
+        std::vector<void (*)(struct fasthessian *)> test_functions;
+        test_functions.push_back(compute_response_layers_at_once);
 
-        bool valid = validate_compute_response_layer(compute_response_layer, test_functions, iimage);
-
-        // bool valid = validate_compute_response_layer_custom_matrix(compute_response_layer, test_functions);
+        bool valid = validate_compute_response_layers(compute_response_layers, test_functions, iimage);
         if (valid) {
             printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
         } else {
@@ -88,40 +86,62 @@ int main(int argc, char const *argv[])
     }
 #endif
 
-    // Getting interest points with non-maximum supression
-    std::vector<struct interest_point> interest_points;
-    get_interest_points(fh, &interest_points);
-
-#if !USE_MSURF
-	// Descriptor stuff
-    float* GW = get_gaussian(3.3);
-	for (size_t i=0; i<interest_points.size(); ++i) {
-        get_descriptor(iimage, &interest_points[i], GW);
-	}
-
-    free(GW);
-#else
-	// Alternative M-SURF descriptors as in OpenSURF
-	for (size_t i=0; i<interest_points.size(); ++i) {
-        get_msurf_descriptor(iimage, &interest_points[i]);
-	}
-#ifdef VALIDATE_GET_MSURF_DESCRIPTORS
+#ifdef VALIDATE_COMPUTE_RESPONSE_LAYER_PADDED
     {
-        std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
-        test_functions.push_back(get_msurf_descriptor_improved);
-        test_functions.push_back(get_msurf_descriptor_inlined);
-        test_functions.push_back(get_msurf_descriptor_precompute_gauss_s2);
-        test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
-
-        bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
+        std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
+        test_functions.push_back(compute_response_layer_unconditional);
+        bool valid =
+            validate_compute_response_layer_with_padding(compute_response_layer, test_functions, image, width, height);
         if (valid) {
-            printf("MSURF DESCRIPTOR VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
+            printf("COMPUTE RESPONSE LAYER PADDED VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("MSURF DESCRIPTOR VALIDATION:  \033[1;31mFAILED!\033[0m!\n");
+            printf("COMPUTE RESPONSE LAYER PADDED VALIDATION:  \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
+
+// Getting interest points with non-maximum supression
+    std::vector<struct interest_point> interest_points;
+    get_interest_points(fh, &interest_points);
+    
+#ifdef VALIDATE_GET_INTEREST_POINTS
+    {
+        std::vector<void (*)(struct fasthessian *, std::vector<struct interest_point> *)> test_functions;
+        //test_functions.push_back(get_interest_points);
+        test_functions.push_back(get_interest_points_layers);
+
+        bool valid = validate_get_interest_points(get_interest_points, test_functions, fh);
+        if (valid) {
+            printf("GET INTEREST POINTS VALIDATION:     \033[0;32mSUCCESS!\033[0m\n");
+        } else {
+            printf("GET INTEREST POINTS VALIDATION:     \033[1;31mFAILED!\033[0m\n");
+        }
+    }
+
 #endif
+    
+    // Getting M-SURF descriptors for each interest point
+	get_msurf_descriptors(iimage, &interest_points);
+
+#ifdef VALIDATE_GET_MSURF_DESCRIPTORS	
+    {
+        std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
+        // test_functions.push_back(get_msurf_descriptor);
+        test_functions.push_back(get_msurf_descriptor_improved);
+        test_functions.push_back(get_msurf_descriptor_inlined);
+        test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
+        test_functions.push_back(get_msurf_descriptor_gauss_compute_once_case);
+        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar);
+
+        bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
+        if (valid) {
+            printf("MSURF DESCRIPTOR VALIDATION:        \033[0;32mSUCCESS!\033[0m\n");
+        } else {
+            printf("MSURF DESCRIPTOR VALIDATION:        \033[1;31mFAILED!\033[0m\n");
+        }
+    }
+#endif
+
 
 	// Write results to file
     FILE * fp = fopen(argv[2],"w");
@@ -137,7 +157,7 @@ int main(int argc, char const *argv[])
 
 	// Free memory
 	stbi_image_free(image); // possibly move this to create_integral_img
-	free(iimage->data);
+	free(iimage->padded_data);
 	free(iimage);
 	for (int i = 0; i < NUM_LAYERS; ++i) {
         free(fh->response_map[i]->response);

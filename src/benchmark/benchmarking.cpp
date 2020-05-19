@@ -1,3 +1,4 @@
+#include "fasthessian_opt.h"
 #include "benchmarking.h"
 
 #include <stdio.h>
@@ -6,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "fasthessian_opt.h"
 #include "tsc_x86.h"
 
 #define CYCLES_REQUIRED 1e8
@@ -15,26 +15,34 @@
 // Determines whether the warm up for the timing functions will be conducted.
 #define WARM_UP
 
-void bench_compute_integral_img(const std::vector<void (*)(float *, int, int, float *)> &functions, float *gray_image,
-                                std::vector<struct benchmark_data> &data) {
+
+void bench_compute_integral_img(const std::vector<void (*)(float *, struct integral_image *)> &functions,
+                                float *gray_image, std::vector<struct benchmark_data> &data){
+
     assert(functions.size() == data.size());
 
     for (int j = 0; j < functions.size(); ++j) {
+
         perf_compute_integral_img(functions[j], gray_image, data[j]);
+
     }
+
 }
 
 // Times the function compute_integral_img.
 // Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data.
 // The number of flops for compute_integral_img must be set in benchmark_data.
 // The height and width of the image must be set in benchmark_data.
-void perf_compute_integral_img(void (*function)(float *, int, int, float *), float *gray_image,
+void perf_compute_integral_img(void (*function)(float *, struct integral_image *), float *gray_image,
                                struct benchmark_data &data) {
     double cycles = 0.;
     long num_runs = 100;
     double multiplier = 1;
     uint64_t start, end;
-    float *dummy_iimage_data = (float *)calloc(data.width * data.height, sizeof(float));
+
+    struct integral_image *iimage = create_integral_img(data.width, data.height);
+
+    // float *dummy_iimage_data = (float *)calloc(data.width * data.height, sizeof(float));
 
 #ifdef WARM_UP
     // Warm-up phase: we determine a number of executions that allows
@@ -44,7 +52,7 @@ void perf_compute_integral_img(void (*function)(float *, int, int, float *), flo
         num_runs = num_runs * multiplier;
         start = start_tsc();
         for (size_t i = 0; i < num_runs; i++) {
-            (*function)(gray_image, data.width, data.height, dummy_iimage_data);
+            (*function)(gray_image, iimage);
         }
         end = stop_tsc(start);
 
@@ -62,7 +70,7 @@ void perf_compute_integral_img(void (*function)(float *, int, int, float *), flo
     for (size_t j = 0; j < REP; j++) {
         start = start_tsc();
         for (size_t i = 0; i < num_runs; ++i) {
-            (*function)(gray_image, data.width, data.height, dummy_iimage_data);
+            (*function)(gray_image, iimage);
         }
         end = stop_tsc(start);
 
@@ -73,7 +81,8 @@ void perf_compute_integral_img(void (*function)(float *, int, int, float *), flo
     }
     total_cycles /= REP;
 
-    free(dummy_iimage_data);
+    free(iimage->padded_data);
+    free(iimage);
 
     cycles = total_cycles;  // cyclesList.front();
     double flops_per_cycle = round((100.0 * data.num_flops) / cycles) / 100.0;
@@ -86,11 +95,12 @@ void perf_compute_integral_img(void (*function)(float *, int, int, float *), flo
 
 void bench_compute_response_layer(const std::vector<void (*)(struct fasthessian *)> &functions,
                                   struct integral_image *iimage, std::vector<struct benchmark_data> &data) {
-    assert(functions.size() == data.size());
     // TODO: (carla) do we need a new fast hessian for every function?
     struct fasthessian *fh = create_fast_hessian(iimage);
     // Create octaves with response layers
     create_response_map(fh);
+
+    assert(functions.size() == data.size());
 
     for (int j = 0; j < functions.size(); ++j) {
         perf_compute_response_all_layers(functions[j], fh, data[j]);
@@ -167,11 +177,11 @@ void perf_compute_response_layer(void (*function)(struct response_layer *, struc
 // The number of flops for compute_response_layer must be set in benchmark_data.
 void perf_compute_response_all_layers(void (*function)(struct fasthessian *), struct fasthessian *fh,
                                       struct benchmark_data &data) {
-    static int global_counter_bench_compute_response = 0;
     double cycles = 0.;
     long num_runs = 5;
     double multiplier = 1;
     uint64_t start, end;
+
 #ifdef WARM_UP
     // Warm-up phase: we determine a number of executions that allows
     // the code to be executed for at least CYCLES_REQUIRED cycles.
@@ -192,7 +202,6 @@ void perf_compute_response_all_layers(void (*function)(struct fasthessian *), st
 #endif
 
     std::vector<double> cycleslist;
-    cycleslist.reserve(REP);
 
     // Actual performance measurements repeated REP times.
     // We simply store all results and compute medians during post-processing.
@@ -219,7 +228,6 @@ void perf_compute_response_all_layers(void (*function)(struct fasthessian *), st
     data.max_cycles = (uint64_t)cycleslist.back();   // / MAX(1, fh->total_layers);
     // TODO: (carla) do we have to divide by total_lyers here? the total_cycles have already been divided;
     data.flops_per_cycle = flops_per_cycle;
-    global_counter_bench_compute_response++;
 }
 
 void bench_get_interest_points(
@@ -228,8 +236,11 @@ void bench_get_interest_points(
     assert(functions.size() == data.size());
 
     for (int j = 0; j < functions.size(); ++j) {
+
         perf_get_interest_points(functions[j], fh, data[j]);
+
     }
+
 }
 
 // Times the function get_interest_points from fasthessian.
@@ -300,15 +311,17 @@ void perf_get_interest_points(void (*function)(struct fasthessian *, std::vector
 }
 
 // Calls the timing function for interpolate_step. The number of times the timing should be conducted can be
-// specified in this function.
+// specified in this function. 
 // The number of flops for interpolate_step must be set in benchmark_data.
-void bench_interpolate_step(const std::vector<void (*)(int, int, struct response_layer *, struct response_layer *,
-                                                       struct response_layer *, float[3])> &functions,
-                            struct fasthessian *fh, std::vector<struct benchmark_data> &data) {
+void bench_interpolate_step(const std::vector<void (*)(int, int, struct response_layer *, struct response_layer *, struct response_layer *, float[3])> &functions, 
+                            struct fasthessian *fh, 
+                            std::vector<struct benchmark_data> &data) {
+    
     assert(functions.size() == data.size());
 
     // Iterating through all functions that should be benchmarked
     for (int j = 0; j < functions.size(); ++j) {
+
         int counter = 1;
         // Specifies how many times the benchmarikng for interpolate_step is called.
         // The average of the outcome will be taken
@@ -318,7 +331,9 @@ void bench_interpolate_step(const std::vector<void (*)(int, int, struct response
 
         // filter index map
         const int filter_map[NUM_OCTAVES][NUM_LAYERS] = {
-            {0, 1, 2, 3}, {1, 3, 4, 5}, {3, 5, 6, 7},
+            {0, 1, 2, 3}, 
+            {1, 3, 4, 5}, 
+            {3, 5, 6, 7},
             //{5, 7, 8, 9},
             //{7, 9, 10, 11}
         };
@@ -361,14 +376,15 @@ void bench_interpolate_step(const std::vector<void (*)(int, int, struct response
         data[j].max_cycles /= counter;
         data[j].min_cycles /= counter;
         data[j].flops_per_cycle /= counter;
+
     }
+
 }
 
-// Times the function interpolate_step from fasthessian.
-// Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data.
+// Times the function interpolate_step from fasthessian. 
+// Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data. 
 // The number of flops for interpolate_step must be set in benchmark_data.
-void perf_interpolate_step(void (*function)(int, int, struct response_layer *, struct response_layer *,
-                                            struct response_layer *, float[3]),
+void perf_interpolate_step(void (*function)(int, int, struct response_layer *, struct response_layer *, struct response_layer *, float[3]),
                            int row, int col, struct response_layer *top, struct response_layer *middle,
                            struct response_layer *bottom, struct benchmark_data &data) {
     double cycles = 0.;
@@ -595,27 +611,28 @@ void perf_get_msurf_descriptor(void (*function)(struct integral_image *, struct 
     data.flops_per_cycle += flops_per_cycle;
 }
 
-// Calls timing function for multiple versions of get_msurf_descriptors.
-// The number of times the timing should be conducted can be specified in this function.
+// Calls timing function for multiple versions of get_msurf_descriptors. 
+// The number of times the timing should be conducted can be specified in this function. 
 // The number of flops for the version of get_msurf_descriptors must be set in the respective benchmark_data.
-void bench_get_msurf_descriptors(
-    const std::vector<void (*)(struct integral_image *, std::vector<struct interest_point> *)> &functions,
-    struct integral_image *iimage, std::vector<struct interest_point> *interest_points,
-    std::vector<struct benchmark_data> &data) {
+void bench_get_msurf_descriptors(const std::vector<void (*)(struct integral_image *, std::vector<struct interest_point> *)> &functions,
+                                struct integral_image *iimage, std::vector<struct interest_point> *interest_points,
+                                std::vector<struct benchmark_data> &data) {
+    
     assert(functions.size() == data.size());
 
     // Iterating through all functions that should be benchmarked
     for (int j = 0; j < functions.size(); ++j) {
         perf_get_msurf_descriptors(functions[j], iimage, interest_points, data[j]);
     }
+    
 }
 
-// Times the function get_msurf_descriptors from descriptor.
-// Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data.
+// Times the function get_msurf_descriptors from descriptor. 
+// Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data. 
 // The number of flops for get_msurf_descriptor must be set in benchmark_data.
 void perf_get_msurf_descriptors(void (*function)(struct integral_image *, std::vector<struct interest_point> *),
-                                struct integral_image *iimage, std::vector<struct interest_point> *ipoints,
-                                struct benchmark_data &data) {
+                               struct integral_image *iimage, std::vector<struct interest_point> *ipoints,
+                               struct benchmark_data &data) {
     double cycles = 0.;
     long num_runs = 5;
     double multiplier = 1;
@@ -652,7 +669,7 @@ void perf_get_msurf_descriptors(void (*function)(struct integral_image *, std::v
         end = stop_tsc(start);
 
         // get avg cycles per keypoint
-        cycles = ((double)end) / (num_runs * ipoints->size());
+        cycles = ((double)end) / (num_runs*ipoints->size());
         total_cycles += cycles;
 
         cycleslist.push_back(cycles);

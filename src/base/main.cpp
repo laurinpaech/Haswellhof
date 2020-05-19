@@ -1,8 +1,6 @@
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
-#define USE_MSURF 1
-
 #include "stb_image.h"
 #include "integral_image.h"
 #include "fasthessian.h"
@@ -34,7 +32,7 @@ int main(int argc, char const *argv[])
 	// Create integral image
 	struct integral_image* iimage = create_integral_img(width, height);
 	// Compute integral image
-	compute_integral_img(image, iimage->width, iimage->height, iimage->data);
+	compute_integral_img(image, iimage);
 
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);
@@ -43,26 +41,14 @@ int main(int argc, char const *argv[])
 	create_response_map(fh);
 
 	// Compute responses for every layer
-	compute_response_map(fh);
+	compute_response_layers(fh);
 
 	// Getting interest points with non-maximum supression
 	std::vector<struct interest_point> interest_points;
 	get_interest_points(fh, &interest_points);
 
-#if !USE_MSURF
-	// Descriptor stuff
-    float* GW = get_gaussian(3.3);
-	for (size_t i=0; i<interest_points.size(); ++i) {
-        get_descriptor(iimage, &interest_points[i], GW);
-	}
-
-    free(GW);
-#else
-	// Alternative M-SURF descriptors as in OpenSURF
-	for (size_t i=0; i<interest_points.size(); ++i) {
-        get_msurf_descriptor(iimage, &interest_points[i]);
-	}
-#endif
+	// Getting M-SURF descriptors for each interest point
+	get_msurf_descriptors(iimage, &interest_points);
 
 	// Write results to file
     FILE * fp = fopen(argv[2],"w");
@@ -78,7 +64,7 @@ int main(int argc, char const *argv[])
 
 	// Free memory
 	stbi_image_free(image); // possibly move this to create_integral_img
-	free(iimage->data);
+	free(iimage->padded_data);
 	free(iimage);
 	for (int i = 0; i < NUM_LAYERS; ++i) {
 		free(fh->response_map[i]->response);

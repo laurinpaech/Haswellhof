@@ -50,8 +50,15 @@ add_executable(benchmark
     benchmark/benchmarking.cpp
     benchmark/tsc_x86.h
     benchmark/main_benchmark.cpp
+    # Add optimization header and source files here
+    optimization/integral_image_opt.h
+    optimization/integral_image_opt.cpp
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
+    optimization/descriptor_opt.h
+    optimization/descriptor_opt.cpp
+    optimization/descriptors_wrapper.h
+    optimization/descriptors_wrapper.cpp
 )
 
 # Adding include directories for executable benchmark
@@ -91,6 +98,8 @@ add_executable(optimization
     optimization/main_opt.cpp
     optimization/descriptor_opt.h
     optimization/descriptor_opt.cpp
+    optimization/descriptors_wrapper.h
+    optimization/descriptors_wrapper.cpp
 )
 
 # Adding include directories for executable optimization
@@ -129,6 +138,8 @@ add_executable(validation
     optimization/fasthessian_opt.cpp
     optimization/descriptor_opt.h
     optimization/descriptor_opt.cpp
+    optimization/descriptors_wrapper.h
+    optimization/descriptors_wrapper.cpp
     # Add validation header and source files here
     validation/validation.h
     validation/validation.cpp
@@ -168,10 +179,14 @@ add_executable(playground
     benchmark/benchmarking.cpp
     benchmark/tsc_x86.h
     # Add optimization header and source files here
+    optimization/integral_image_opt.h
+    optimization/integral_image_opt.cpp
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
     optimization/descriptor_opt.h
     optimization/descriptor_opt.cpp
+    optimization/descriptors_wrapper.h
+    optimization/descriptors_wrapper.cpp
     # Add validation header and source files here
     validation/validation.h
     validation/validation.cpp
