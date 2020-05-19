@@ -6573,8 +6573,8 @@ void compute_response_layers_Dyy_laplacian_locality_uncond_opt(struct fasthessia
 
 void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_layer* layer, struct integral_image* iimage) {
     /*
-        Box integral angepasst, damit wir weniger flops haben und diese dann rausgezogen aus der Loop
-        um mehrfaches unnötiges computen zu vermeiden
+        Optimized flop count and removed unnecessary computations
+        and changed i to x and j to y
     */
     float Dxx, Dyy, Dxy;
     int x, y, k, k0, k1;
@@ -6606,6 +6606,8 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
     *   TOP
     *****************/
 
+    // Image coordinates x and y (row and column)
+
     for (x = 0; x < lobe / 2 + 1; x += step) {  // Inner B is outside, i.e. 0
 
         // precompute
@@ -6618,10 +6620,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Top Left Corner - Case 1: B of neg part outside
         for (y = 0; y < lobe; y += step) {  // c0 = col - 1 = (y - lobe + 1) -1 < 0
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy  
             // whole box filter
             r01 = x + border;
@@ -6667,10 +6665,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Top Mid - Case 1: B of neg part outside
         for (; y < width * step - lobe+1; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy
             // whole box filter
             // A and B are outside (= 0), C and D inside
@@ -6724,10 +6718,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Top Right - Case 1: A of neg part outside
         for (; y < width * step; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // whole filter
             r01 = x + border;
             c00 = y - lobe;
@@ -6787,10 +6777,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Top Left Corner - Case 2: B of neg part inside
         for (y = 0; y < lobe; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy
             // whole box filter
             r01 = x + border;
@@ -6837,10 +6823,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Top Mid - Case 2: B of neg part inside
         for (; y < width * step -lobe+1; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy
             // whole box filter
             r01 = x + border;
@@ -6896,10 +6878,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Top Right - Case 2: A of neg part inside
         for (; y < width * step; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // whole filter
             r01 = x + border;
             c00 = y - lobe;
@@ -6967,10 +6945,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Mid Left
         for (y = 0; y < lobe; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy  
             // whole box filter
             // A, C outside (= 0). B, D inside
@@ -7023,13 +6997,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Mid Mid
         for (; y < width * step - lobe + 1; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
-            // int debug_x = i/step;
-            // int debug_y = j/step;
-
             // Compute Dyy  
             // whole box filter
             // All inside
@@ -7093,10 +7060,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Mid Right
         for (; y < width * step; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy  
             // whole box filter
             // B, D outside, A, C inside
@@ -7173,10 +7136,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Bottom Left - Case 1: inner D inside
         for (y = 0; y < lobe; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy  
             // whole box filter
             // A, C outside, B inside, D below
@@ -7229,10 +7188,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Bottom Mid - Case 1: inner D inside
         for (; y < width * step - lobe + 1; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy  
             // whole box filter
             // A, B inside, C, D outside
@@ -7295,10 +7250,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Bottom Right - Case 1: inner C inside
         for (; y < width * step; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy  
             // whole box filter
             // B, C, D outside A inside
@@ -7369,10 +7320,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Bottom Left - Case 2: inner D outside
         for (y = 0; y < lobe; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy  
             // whole box filter
             // A, C outside, B inside, D below
@@ -7424,10 +7371,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Bottom Mid - Case 2: inner D outside
         for (; y < width * step - lobe + 1; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy  
             // whole box filter
             // A, B inside, C, D outside
@@ -7489,10 +7432,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 
         // Bottom Right - Case 2: inner C outside
         for (; y < width * step; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy  
             // whole box filter
             // B, C, D outside A inside
