@@ -28,11 +28,6 @@ void compute_response_map_Dyy_laplacian_localityloops(struct fasthessian *fh) {
 }
 
 void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage) {
-    ///////////////////////////////////////////////////////////
-    // TODO: (Sebastian) HELP!                               //
-    // We need to change this to use iimage->data_width      //
-    // instead of iimage->width for iimage->data[] accesses! //
-    ///////////////////////////////////////////////////////////
 
     int height = layer->height;
     int width = layer->width;
@@ -66,6 +61,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
         // Split the image into 9 cases - corners, borders and middle part.
         // compute_response_layer_Dyy_laplacian_localityloops(layer, iimage);
         compute_response_layer_unconditional(layer, iimage);
+        
     } else {
         // 2. Case The filter is somewhat larger than the image
         if (iheight > border) {

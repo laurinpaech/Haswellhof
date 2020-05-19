@@ -75,7 +75,7 @@ int main(int argc, char const *argv[])
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER
     {
         std::vector<void (*)(struct fasthessian *)> test_functions;
-        test_functions.push_back(compute_response_map_sonic_Dyy);
+        test_functions.push_back(compute_response_layers_at_once);
 
         bool valid = validate_compute_response_layers(compute_response_layers, test_functions, iimage);
         if (valid) {
@@ -89,7 +89,7 @@ int main(int argc, char const *argv[])
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER_PADDED
     {
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
-        test_functions.push_back(compute_response_layer_unconditional);
+        test_functions.push_back(compute_response_layer_sonic_Dyy);
 
         bool valid = validate_compute_response_layer_with_padding(compute_response_layer, test_functions, image, width, height);
         if (valid) {
