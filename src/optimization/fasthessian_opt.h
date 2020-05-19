@@ -67,3 +67,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
 void compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops(struct fasthessian* fh);
 
 void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(struct response_layer* layer, struct integral_image* iimage);
+
+void compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct fasthessian* fh);
+
+void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct response_layer* layer, struct integral_image* iimage);
