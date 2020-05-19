@@ -8,13 +8,15 @@
 // Parallelizes the additions which makes use of both addition ports.
 // Computes two rows simultaneously.
 void compute_integral_img_faster_alg(float *gray_image, struct integral_image * iimage) {
+    
     float sum = 0.0f;
     float sum1 = 0.0f;
+    
     int data_width = iimage->data_width;
     int width = iimage->width;
     int width_limit = width - 2;
     int height_limit = iimage->height - 2;
-    float* iimage_data = iimage->data;
+    float *iimage_data = iimage->data;
 
     int i = 0;
     // first row extra, since we don't have 0 padding
@@ -220,7 +222,7 @@ void compute_padded_integral_img(float *gray_image, struct integral_image *iimag
     }
 
     // Pad the right lower corner of the integral image with the max value of the integral image.
-    int index_last_element = (height + border - 1) * data_width + width + border;
+    int index_last_element = (height + border - 1) * data_width + width + border - 1;
     float max_value = padded_data[index_last_element];
 
     for (int i = border + height; i < data_height; ++i) {
