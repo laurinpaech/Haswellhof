@@ -140,10 +140,10 @@ add_executable(validation
     optimization/descriptor_opt.cpp
     optimization/descriptors_wrapper.h
     optimization/descriptors_wrapper.cpp
-    autotune/descriptor_opt_gen.h
-    autotune/descriptor_opt_gen.cpp
-    # autotune/fasthessian_opt_gen.h
-    # autotune/fasthessian_opt_gen.cpp
+    #autotune/descriptor_opt_gen.h
+    #autotune/descriptor_opt_gen.cpp
+    #autotune/fasthessian_opt_gen.h
+    #autotune/fasthessian_opt_gen.cpp
     # Add validation header and source files here
     validation/validation.h
     validation/validation.cpp
@@ -192,8 +192,8 @@ add_executable(playground
     optimization/descriptor_opt.cpp
     optimization/descriptors_wrapper.h
     optimization/descriptors_wrapper.cpp
-    autotune/descriptor_opt_gen.h
-    autotune/descriptor_opt_gen.cpp
+    #autotune/descriptor_opt_gen.h
+    #autotune/descriptor_opt_gen.cpp
     # Add validation header and source files here
     validation/validation.h
     validation/validation.cpp
@@ -247,10 +247,10 @@ add_executable(autotune
     optimization/integral_image_opt.h
     optimization/integral_image_opt.cpp
     # Add autotune header and source files here
-    autotune/descriptor_opt_gen.h
-    autotune/descriptor_opt_gen.cpp
-    autotune/fasthessian_opt_gen.h
-    autotune/fasthessian_opt_gen.cpp
+    #autotune/descriptor_opt_gen.h
+    #autotune/descriptor_opt_gen.cpp
+    #autotune/fasthessian_opt_gen.h
+    #autotune/fasthessian_opt_gen.cpp
     autotune/main_autotune.cpp
 )
 

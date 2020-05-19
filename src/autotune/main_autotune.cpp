@@ -12,7 +12,7 @@
 #include "descriptor_opt.h"
 #include "fasthessian.h"
 #include "fasthessian_opt.h"
-#include "fasthessian_opt_gen.h"
+// #include "fasthessian_opt_gen.h"
 #include "integral_image.h"
 #include "interest_point.h"
 #include "stb_image.h"
@@ -68,7 +68,7 @@ int main(int argc, char const *argv[]) {
         
         std::vector<void (*)(struct fasthessian *)> functions;
         std::vector<struct benchmark_data> data;
-
+        /*
         functions.push_back(compute_response_layers_blocking_20_4_False);
         struct benchmark_data data_20_4_False(image_name, width, height, (char *)"compute_response_layers_blocking_20_4_False", -1, (1 + height * width * 13));
         data.push_back(data_20_4_False);;
@@ -100,6 +100,7 @@ int main(int argc, char const *argv[]) {
         functions.push_back(compute_response_layers_blocking_20_32_False);
         struct benchmark_data data_20_32_False(image_name, width, height, (char *)"compute_response_layers_blocking_20_32_False", -1, (1 + height * width * 13));
         data.push_back(data_20_32_False);;
+        */
         
         bench_compute_response_layer(functions, padded_iimage, data);
 
