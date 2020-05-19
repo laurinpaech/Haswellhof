@@ -27,13 +27,13 @@ const char *images[] = {
     //"../images/sunflower/sunflower_4096.jpg"
 };
 #define n_images (sizeof(images) / sizeof(const char *))
-// #define BENCHMARK_INTEGRAL_IMAGE
+#define BENCHMARK_INTEGRAL_IMAGE
 #define BENCHMARK_COMPUTE_RESPONSE_LAYERS
 // BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED only works with BENCHMARK_COMPUTE_RESPONSE_LAYERS enabled
 #define BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED
-// #define BENCHMARK_INTEREST_POINTS
-// #define BENCHMARK_INTERPOLATE_STEPS
-// #define BENCHMARK_GET_MSURF_DESCRIPTORS
+#define BENCHMARK_INTEREST_POINTS
+#define BENCHMARK_INTERPOLATE_STEPS
+#define BENCHMARK_GET_MSURF_DESCRIPTORS
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
