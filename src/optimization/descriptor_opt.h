@@ -106,6 +106,10 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
 
 void get_msurf_descriptors_arrays(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
+void get_msurf_descriptor_arrays_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_arrays_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
 void get_msurf_descriptor_gauss_pecompute_haar_unroll(struct integral_image* iimage, struct interest_point* ipoint);
 
 void get_msurf_descriptors_gauss_pecompute_haar_unroll(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
