@@ -32,12 +32,12 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
     // TODO: (Sebastian) HELP!                               //
     // We need to change this to use iimage->data_width      //
     // instead of iimage->width for iimage->data[] accesses! //
-    ///////////////////////////////////////////////////////////       
+    ///////////////////////////////////////////////////////////
 
     int height = layer->height;
     int width = layer->width;
-    
-    int dwidth = iimage->data_width;
+
+    int data_width = iimage->data_width;
 
     int iwidth = iimage->width;  // TODO: fix where needs to be fixed
     int iheight = iimage->height;
@@ -64,7 +64,8 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
     // 1. Case The filter is smaller than the image
     if (filter_size <= iheight) {
         // Split the image into 9 cases - corners, borders and middle part.
-        compute_response_layer_Dyy_laplacian_localityloops(layer, iimage);
+        // compute_response_layer_Dyy_laplacian_localityloops(layer, iimage);
+        compute_response_layer_unconditional(layer, iimage);
     } else {
         // 2. Case The filter is somewhat larger than the image
         if (iheight > border) {
@@ -86,7 +87,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
 
                 // D is right bottom corner or to the right (possibly below image)
                 // A, B, C = 0
-                D0 = data[(iheight-1) * iwidth + (iwidth-1)];
+                D0 = data[(iheight-1) * data_width + (iwidth-1)];
 
                 // Differentiate 2 cases
                 // for the negative part:
@@ -102,9 +103,9 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                     Dyy = D0 - 3 * D1;
                     Dyy *= inv_area;
 
-                    for (i = 0; i < height; i += step) {
+                    for (i = 0; i < height * step; i += step) {
 
-                        for (j = 0; j < width; j += step) {
+                        for (j = 0; j < width * step; j += step) {
                             // Image coordinates
                             x = i;
                             y = j;
@@ -151,13 +152,13 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                         r10 = x - lobe / 2 - 1;
                         r11 = r10 + lobe;
 
-                        D1 = data[r11 * iwidth + (iwidth-1)];
+                        D1 = data[r11 * data_width + (iwidth-1)];
 
                         // Compute Dyy
                         Dyy = D0 - 3 * D1;
                         Dyy *= inv_area;
 
-                        for (j = 0; j < width*step; j += step) {
+                        for (j = 0; j < width * step; j += step) {
                             // Image coordinates
                             y = j;
 
@@ -219,7 +220,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                         x = i;
                         r10 = x - lobe / 2 - 1;
 
-                        B = data[r10 * iwidth + (iwidth-1)];
+                        B = data[r10 * data_width + (iwidth-1)];
                         // D1 = D0 - B;
                         // Dyy = D0 - 3 * D1;
                         // Dyy *= inv_area;
@@ -229,7 +230,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                         Dyy = 3*B - 2*D0;
                         Dyy *= inv_area;
 
-                        for (j = 0; j < width*step; j += step) {
+                        for (j = 0; j < width * step; j += step) {
                             // Image coordinates
                             y = j;
 
@@ -277,12 +278,12 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                 for (i = 0; i < width*step-lobe; i += step) {  // 0 - 7
                     // C = 0
                     // D = [height-1, i+lobe-1]
-                    D = data[(iheight-1) * iwidth + (i+lobe-1)];
+                    D = data[(iheight-1) * data_width + (i+lobe-1)];
                     Dyy_arr[i] = D;
                 }
 
                 // only bottom left corner value needed
-                D = data[(iheight-1) * iwidth + (iwidth-1)];
+                D = data[(iheight-1) * data_width + (iwidth-1)];
 
                 // C = 0 and D = [height-1, width-1] (below or right of bottom corner)
                 // C is still outside and D now too
@@ -295,7 +296,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                 for (; i < width*step; i += step) {  // 25 - 32
                     // C = [height-1, i-lobe]
                     // D = [height-1, width-1]
-                    C = data[(iheight-1) * iwidth + (i-lobe)];
+                    C = data[(iheight-1) * data_width + (i-lobe)];
                     Dyy_arr[i] = D - C;
                 }
 
@@ -359,6 +360,7 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
     float *response = layer->response;
     bool *laplacian = layer->laplacian;
 
+    int data_width = iimage->data_width;
     int step = layer->step;
     int filter_size = layer->filter_size;
     int height = layer->height;
@@ -393,7 +395,7 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
             c01 = y + lobe - 1;
             // A, B, C outside A, B, C = 0
             // D inside
-            Dyy0 = data[r01 * iwidth + c01];
+            Dyy0 = data[r01 * data_width + c01];
 
             // neg part box filter
             Dyy = Dyy0 - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
@@ -432,8 +434,8 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
 
             // A, B outside A, B = 0
             // C, D inside
-            C = data[r01 * iwidth + c00];
-            D = data[r01 * iwidth + c01];
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + c01];
             Dyy0 = D - C;
 
             // neg part box filter
@@ -472,8 +474,8 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
             // A, B outside A, B = 0
             // C inside
             // D outside D = last element of row
-            C = data[r01 * iwidth + c00];
-            D = data[r01 * iwidth + iwidth - 1];
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + iwidth - 1];
             Dyy0 = D - C;
 
             // neg part box filter
@@ -519,7 +521,7 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
 
         // A, B, C outside A, B, C = 0
         // D below D = last value of column.
-        Dyy0 = data[(iheight - 1) * iwidth + c01];
+        Dyy0 = data[(iheight - 1) * data_width + c01];
 
         // Store value for blue line.
         dyy_row_before_blue[counter] = Dyy0;
@@ -559,8 +561,8 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
 
         // A, B outside A, B = 0
         // C and D below C, D last element of column.
-        C = data[(iheight - 1) * iwidth + c00];
-        D = data[(iheight - 1) * iwidth + c01];
+        C = data[(iheight - 1) * data_width + c00];
+        D = data[(iheight - 1) * data_width + c01];
 
         Dyy0 = D - C;
 
@@ -602,8 +604,8 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
         // A, B outside A, B = 0
         // C below C = last element of column
         // D outside D = last element.
-        C = data[(iheight - 1) * iwidth + c00];
-        D = data[(iheight - 1) * iwidth + iwidth - 1];
+        C = data[(iheight - 1) * data_width + c00];
+        D = data[(iheight - 1) * data_width + iwidth - 1];
         Dyy0 = D - C;
 
         // Store value for blue line.
@@ -692,8 +694,8 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
             // A, C outside A, C = 0
             // B inside
             // D below D = last element of column
-            B = data[r00 * iwidth + c01];
-            D = data[(iheight - 1) * iwidth + c01];
+            B = data[r00 * data_width + c01];
+            D = data[(iheight - 1) * data_width + c01];
 
             Dyy0 = D - B;
 
@@ -734,10 +736,10 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
 
             // A, B inside
             // C, D below C, D last element of column
-            A = data[r00 * iwidth + c00];
-            B = data[r00 * iwidth + c01];
-            C = data[(iheight - 1) * iwidth + c00];
-            D = data[(iheight - 1) * iwidth + c01];
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + c01];
+            C = data[(iheight - 1) * data_width + c00];
+            D = data[(iheight - 1) * data_width + c01];
 
             Dyy0 = A - B - C + D;
 
@@ -778,10 +780,10 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
             // B outside B = last element of row
             // C below C = last element of column
             // D outside D = last element
-            A = data[r00 * iwidth + c00];
-            B = data[r00 * iwidth + iwidth - 1];
-            C = data[(iheight - 1) * iwidth + c00];
-            D = data[(iheight - 1) * iwidth + iwidth - 1];
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + iwidth - 1];
+            C = data[(iheight - 1) * data_width + c00];
+            D = data[(iheight - 1) * data_width + iwidth - 1];
 
             Dyy0 = A - B - C + D;
 
@@ -833,6 +835,7 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
     float *response = layer->response;
     bool *laplacian = layer->laplacian;
 
+    int data_width = iimage->data_width;
     int step = layer->step;
     int filter_size = layer->filter_size;
     int height = layer->height;
@@ -853,6 +856,7 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
      *   TOP
      *****************/
     int i = 0;
+
     for (; i < height * step - border - 1; i += step) {
         int j = 0;
         // Top Left
@@ -867,7 +871,7 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
 
             // A, B, C outside A, B, C = 0
             // D inside
-            Dyy0 = data[r01 * iwidth + c01];
+            Dyy0 = data[r01 * data_width + c01];
 
             // neg part box filter
             Dyy = Dyy0 - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
@@ -903,7 +907,7 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
 
         // A, B, C outside A, B, C = 0
         // D outside, D = last element of row
-        D = data[r01 * iwidth + iwidth - 1];
+        D = data[r01 * data_width + iwidth - 1];
         Dyy0 = D;
 
         // neg part box filter
@@ -941,8 +945,8 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
             // A, B outside A, B = 0
             // C inside
             // D outside D = last element of row
-            C = data[r01 * iwidth + c00];
-            D = data[r01 * iwidth + iwidth - 1];
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + iwidth - 1];
             Dyy0 = D - C;
 
             // neg part box filter
@@ -989,7 +993,7 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
 
         // A, B, C outside A, B, C = 0
         // D below D = last value of column.
-        Dyy0 = data[(iheight - 1) * iwidth + c01];
+        Dyy0 = data[(iheight - 1) * data_width + c01];
 
         // Store value for blue line.
         dyy_row_before_blue[counter] = Dyy0;
@@ -1027,7 +1031,7 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
 
     // A, B, C outside A, B, C = 0
     // D outside D = last element.
-    D = data[(iheight - 1) * iwidth + iwidth - 1];
+    D = data[(iheight - 1) * data_width + iwidth - 1];
     Dyy0 = D;
     // Store value for blue line.
     dyy_row_before_blue[counter] = Dyy0;
@@ -1067,8 +1071,8 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
         // A, B outside A, B = 0
         // C below C = last element of column
         // D outside D = last element.
-        C = data[(iheight - 1) * iwidth + c00];
-        D = data[(iheight - 1) * iwidth + iwidth - 1];
+        C = data[(iheight - 1) * data_width + c00];
+        D = data[(iheight - 1) * data_width + iwidth - 1];
         Dyy0 = D - C;
 
         // Store value for blue line.
@@ -1157,8 +1161,8 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
             // A, C outside A, C = 0
             // B inside
             // D below D = last element of column
-            B = data[r00 * iwidth + c01];
-            D = data[(iheight - 1) * iwidth + c01];
+            B = data[r00 * data_width + c01];
+            D = data[(iheight - 1) * data_width + c01];
 
             Dyy0 = D - B;
 
@@ -1198,8 +1202,8 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
         // A, C outside A, C = 0
         // B outside B = last element of row
         // D outside D = last element
-        B = data[r00 * iwidth + iwidth - 1];
-        D = data[(iheight - 1) * iwidth + iwidth - 1];
+        B = data[r00 * data_width + iwidth - 1];
+        D = data[(iheight - 1) * data_width + iwidth - 1];
         Dyy0 = D - B;
         // Store value for blue line.
         dyy_row_before_blue[counter] = Dyy0;
@@ -1241,10 +1245,10 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
             // B outside B = last element of row
             // C below C = last element of column
             // D outside D = last element
-            A = data[r00 * iwidth + c00];
-            B = data[r00 * iwidth + iwidth - 1];
-            C = data[(iheight - 1) * iwidth + c00];
-            D = data[(iheight - 1) * iwidth + iwidth - 1];
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + iwidth - 1];
+            C = data[(iheight - 1) * data_width + c00];
+            D = data[(iheight - 1) * data_width + iwidth - 1];
 
             Dyy0 = A - B - C + D;
 
@@ -1691,7 +1695,6 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
     }
 }
 
-
 void compute_response_layer_Dyy_top(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y, k, k0;
@@ -2073,7 +2076,6 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
         }
     }
 }
-
 
 void compute_response_layer_Dyy_top_mid(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
@@ -5480,6 +5482,60 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
 
 }
 
+void compute_response_layers_unconditional(struct fasthessian* fh){
+    for (int i = 0; i < fh->total_layers; ++i) {
+		compute_response_layer_unconditional(fh->response_map[i], fh->iimage);
+	}
+}
+
+
+void compute_response_layer_unconditional(struct response_layer *layer, struct integral_image *iimage) {
+    float Dxx, Dyy, Dxy;
+    int x, y;
+
+    float *response = layer->response;
+    bool *laplacian = layer->laplacian;
+
+    int step = layer->step;
+    int filter_size = layer->filter_size;
+    int height = layer->height;
+    int width = layer->width;
+
+    int lobe = filter_size/3;
+    int border = (filter_size-1)/2;
+    float inv_area = 1.f/(filter_size*filter_size);
+
+    for (int i = 0, ind = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j, ind++) {
+            // Image coordinates
+            x = i*step;
+            y = j*step;
+
+            // Calculate Dxx, Dyy, Dxy with Box Filter
+            Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                    - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+            Dyy = box_integral_unconditional(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
+                    - 3 * box_integral_unconditional(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
+            Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                    + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                    - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                    - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
+
+            // Normalize Responses with inverse area
+            Dxx *= inv_area;
+            Dyy *= inv_area;
+            Dxy *= inv_area;
+
+            // Calculate Determinant
+            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+            // Calculate Laplacian
+            laplacian[ind] = (Dxx + Dyy >= 0);
+        }
+    }
+
+}
+
+
 void compute_response_layers_at_once(struct fasthessian* fh) {
     /* computes all 8 response layers at once, gives same results as base implementation
     valgrind reports no improvement for l1 misses, i.e. locality is not improved as expected
@@ -5798,8 +5854,6 @@ void compute_response_layers_at_once(struct fasthessian* fh) {
 
 }
 
-
-
 void get_interest_points_layers(struct fasthessian *fh, std::vector<struct interest_point> *interest_points) {
 
     assert(fh != NULL);
@@ -5937,59 +5991,6 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
                 }
 
             }
-        }
-    }
-
-}
-
-
-void compute_response_layers_unconditional(struct fasthessian* fh){
-    for (int i = 0; i < fh->total_layers; ++i) {
-		compute_response_layer_unconditional(fh->response_map[i], fh->iimage);
-	}   
-}
-
-
-void compute_response_layer_unconditional(struct response_layer *layer, struct integral_image *iimage) {
-    float Dxx, Dyy, Dxy;
-    int x, y;
-
-    float *response = layer->response;
-    bool *laplacian = layer->laplacian;
-
-    int step = layer->step;
-    int filter_size = layer->filter_size;
-    int height = layer->height;
-    int width = layer->width;
-
-    int lobe = filter_size/3;
-    int border = (filter_size-1)/2;
-    float inv_area = 1.f/(filter_size*filter_size);
-    for (int i = 0, ind = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j, ind++) {
-            // Image coordinates
-            x = i*step;
-            y = j*step;
-
-            // Calculate Dxx, Dyy, Dxy with Box Filter
-            Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
-                    - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
-            Dyy = box_integral_unconditional(iimage, x - border, y - lobe + 1, filter_size, 2*lobe - 1)
-                    - 3 * box_integral_unconditional(iimage, x - lobe / 2, y - lobe + 1, lobe, 2*lobe - 1);
-            Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
-                    + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
-                    - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
-                    - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
-
-            // Normalize Responses with inverse area
-            Dxx *= inv_area;
-            Dyy *= inv_area;
-            Dxy *= inv_area;
-
-            // Calculate Determinant
-            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
-            // Calculate Laplacian
-            laplacian[ind] = (Dxx + Dyy >= 0);
         }
     }
 

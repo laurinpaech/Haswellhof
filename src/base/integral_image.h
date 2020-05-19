@@ -13,7 +13,7 @@
     })
 
 struct integral_image {
-    
+
     // Width and height of (original) image
     int width;
     int height;
@@ -21,7 +21,7 @@ struct integral_image {
     // Pointer to upper left corner (origin) of integral image
     float *data;
 
-    // Width and height of (potentially) padded image (use this for indexing with data) 
+    // Width and height of (potentially) padded image (use this for indexing with data)
     int data_width;
     int data_height;
 
