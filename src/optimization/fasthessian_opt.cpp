@@ -415,7 +415,7 @@ for(i; i < height-border; i++)
         r01 = x + border;
         c01 = y + lobe - 1;
 
-        Dyy0 = data[r01 * iwidth + c01];
+        Dyy0 = data[(iheight - 1) * iwidth + c01];
 
         // Store value for blue line.
         dyy_row_before_blue[counter] = Dyy0;
@@ -458,8 +458,11 @@ for(i; i < height-border; i++)
         c00 = y - lobe;
         c01 = y + lobe - 1;
 
-        C = data[r01 * iwidth + c00];
-        D = data[r01 * iwidth + c01];
+        // C = data[r01 * iwidth + c00];
+        // D = data[r01 * iwidth + c01];
+        C = data[(iheight - 1) * iwidth + c00];
+        D = data[(iheight - 1) * iwidth + c01];
+
         Dyy0 = D - C;
 
         // Store value for blue line.
@@ -501,8 +504,10 @@ for(i; i < height-border; i++)
         r01 = x + border;
         c00 = y - lobe;
 
-        C = data[r01 * iwidth + c00];
-        D = data[r01 * iwidth + iwidth - 1];
+        // C = data[r01 * iwidth + c00];
+        // D = data[r01 * iwidth + iwidth - 1];
+        C = data[(iheight - 1) * iwidth + c00];
+        D = data[(iheight - 1) * iwidth + iwidth - 1];
         Dyy0 = D - C;
 
         // Store value for blue line.
@@ -882,7 +887,7 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
         r01 = x + border;
         c01 = y + lobe - 1;
 
-        Dyy0 = data[(iheight-1) * iwidth + c01];
+        Dyy0 = data[(iheight - 1) * iwidth + c01];
 
         // Store value for blue line.
         dyy_row_before_blue[counter] = Dyy0;
@@ -918,7 +923,7 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
     // whole filter
     r01 = x + border;
 
-    D = data[(iheight-1) * iwidth + iwidth - 1];
+    D = data[(iheight - 1) * iwidth + iwidth - 1];
     Dyy0 = D;
     // Store value for blue line.
     dyy_row_before_blue[counter] = Dyy0;
@@ -944,7 +949,7 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
     laplacian[ind] = (Dxx + Dyy >= 0);
     ind += 1;
     j += step;
-    counter+=1;
+    counter += 1;
 
     // last row before blue line Right
     // k0 = (width * step - lobe + 1 + step - 1) / step * step;
@@ -957,8 +962,8 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
         r01 = x + border;
         c00 = y - lobe;
 
-        C = data[(iheight-1) * iwidth + c00];
-        D = data[(iheight-1) * iwidth + iwidth - 1];
+        C = data[(iheight - 1) * iwidth + c00];
+        D = data[(iheight - 1) * iwidth + iwidth - 1];
         Dyy0 = D - C;
 
         // Store value for blue line.

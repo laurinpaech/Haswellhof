@@ -114,7 +114,7 @@ void compute_response_layer(struct response_layer *layer, struct integral_image 
 
             // Calculate Laplacian
             laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
-            if (filter_size == 51) {
+            if (filter_size == 75) {
                 printf("ORIGINAL: (%i, %i), ind: %i, Dxx: %f, Dyy: %f, Dyy_large: %f, Dyy_neg: %f, Dxy: %f, response: %f\n", x, y, ind, Dxx, Dyy, Dyy_large, Dyy_neg, Dxy, response[ind]);
             }
         }
