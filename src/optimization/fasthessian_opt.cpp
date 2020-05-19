@@ -49,6 +49,8 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
     int ind = 0;
 
     int x, y, k, k0;
+    int i = 0;
+    int j = 0;
 
     // 1. Case The filter is smaller than the image
     if (filter_size <= iheight) {
@@ -88,17 +90,20 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
             }
 
         } else {
-            // 2.2. D is always outside the image. Half the filter height is longer than the image.
+            // Case 2.2 D is always outside the image.
+            // Half the filter height is longer than the image.
             if (iwidth <= lobe) {
-                // 2.2.a the filter is longer and wider than the image. D is completely outside the image.
+                // Case 2.2a the filter is longer and wider than the image.
+
                 // D is right bottom corner or to the right (possibly below image)
                 // A, B, C = 0
                 D0 = data[(iheight-1) * iwidth + (iwidth-1)];
 
-                // For the negative part:
-                // here we have to differentiate 2 cases:
+                // Differentiate 2 cases
+                // for the negative part:
                 if (iheight <= lobe/2-1) {  // SADLY THIS CASE NEVER HAPPENS. CRY :(
                     // 1. TODO: fix this even if never happens
+                    // TODO remove if statement
                     // is negative / inner part of Dyy box filter completely too big
                     // i.e. is inner D on the right bottom corner or even bigger (to the right or below)
 
@@ -108,10 +113,9 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                     Dyy = D0 - 3 * D1;
                     Dyy *= inv_area;
 
-                    for (int i = 0; i < height; i += step) {
-                        ind = (i / step) * width;
+                    for (i = 0; i < height; i += step) {
 
-                        for (int j = 0; j < width; j += step) {
+                        for (j = 0; j < width; j += step) {
                             // Image coordinates
                             x = i;
                             y = j;
@@ -139,8 +143,9 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
 
                 } else {
                     // 2. Case
+                    // Only for - image_size: 32, filter_size: 99
                     // inner D is in last col but the inner part is not too big
-                    // col is egal, B und D haben immer den selben wert
+                    // col is irrelevant, B and D have always the same value
                     // i.e. inner loop is irrelevant for coords and values
 
                     // We divide it again in 3 parts.
@@ -149,9 +154,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                     // 3. B inside, D outside
 
                     // 1. Case: B outside, D inside
-                    for (int i = 0; i < width*step-lobe/2; i += step) {
-                        ind = (i / step) * width;
-
+                    for (i = 0; i < width*step-lobe/2; i += step) {
                         // set x
                         x = i;
 
@@ -165,7 +168,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                         Dyy = D0 - 3 * D1;
                         Dyy *= inv_area;
 
-                        for (int j = 0; j < width*step; j += step) {
+                        for (j = 0; j < width*step; j += step) {
                             // Image coordinates
                             y = j;
 
@@ -191,17 +194,13 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                     }
 
                     // 2. Case: B outside, D outside
-                    k = (width*step-lobe/2 + step - 1) / step * step;
-
                     Dyy = - 2 * D0;
                     Dyy *= inv_area;
 
-                    for (int i = k; i < lobe/2+1; i += step) {
-                        ind = (i / step) * width;
-
+                    for (; i < lobe/2+1; i += step) {
                         x = i;
 
-                        for (int j = 0; j < width*step; j += step) {
+                        for (j = 0; j < width*step; j += step) {
                             // Image coordinates
                             y = j;
 
@@ -227,10 +226,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                     }
 
                     // 3. Case: B inside, D outside
-                    k = (lobe/2 + 1 + step - 1) / step * step;
-
-                    for (int i = k; i < height * step; i += step) {
-                        ind = (i / step) * width;
+                    for (; i < height * step; i += step) {
                         x = i;
                         r10 = x - lobe / 2 - 1;
 
@@ -244,7 +240,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                         Dyy = 3*B - 2*D0;
                         Dyy *= inv_area;
 
-                        for (int j = 0; j < width*step; j += step) {
+                        for (j = 0; j < width*step; j += step) {
                             // Image coordinates
                             y = j;
 
@@ -270,79 +266,82 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                     }
                 }
 
-            }else{
-                    // 2.2.b Half the filter is longer than the image, but narrower.
-                    // D is outside the image, but the columns change. D = [height-1, some_column]
-                    // D is below image
-                    // A, B = 0
-                    // C = 0 or [height-1, some_column]
-                    // HERE: width > lobe and height <= border
+            } else {
+                /* 2.2.b Half the filter is longer than the image, but narrower.
+                // HERE: width > lobe and height <= border
+                // Here only the whole filter is optimized, not negative part
 
-                    // whole filter (only happens for filter: 75 and image: 32)
-                    // create array for Dyy that has width length (all rows have same Dyy values)
-                    float Dyy_arr[iwidth];  // stack is faster than heap
+                // Only happens for filter: 75 and image: 32
 
-                    // C = 0 and D = [height-1, some_column]
-                    // from y = 0 until D is (exclusive) in last column
-                    for (int i = 0; i < width*step-lobe; i += step) {  // 0 - 7
-                        // C = 0
-                        // D = [height-1, i+lobe-1]
-                        D = data[(iheight-1) * iwidth + (i+lobe-1)];
-                        Dyy_arr[i] = D;
+                // A, B = 0
+                // D is outside (i.e. below) the image, but the columns change.
+                // => D = [height-1, some_column]
+                // C = 0 or [height-1, some_column]
+                */
+
+                // Create array for Dyy that has image width length
+                // all rows (for big part) have same Dyy values
+                float Dyy_arr[iwidth];  // stack is faster than heap
+
+                // C = 0 and D = [height-1, some_column]
+                // from y = 0 until D is (exclusive) in last column
+                for (i = 0; i < width*step-lobe; i += step) {  // 0 - 7
+                    // C = 0
+                    // D = [height-1, i+lobe-1]
+                    D = data[(iheight-1) * iwidth + (i+lobe-1)];
+                    Dyy_arr[i] = D;
+                }
+
+                // only bottom left corner value needed
+                D = data[(iheight-1) * iwidth + (iwidth-1)];
+
+                // C = 0 and D = [height-1, width-1] (below or right of bottom corner)
+                // C is still outside and D now too
+                for (; i < lobe; i += step) {  // 7 - 25
+                    Dyy_arr[i] = D;
+                }
+
+                // if y = lobe, then C = [height-1, 0]
+                // C = [height-1, some_column] and D = [height-1, width-1] (below or right of bottom corner)
+                for (; i < width*step; i += step) {  // 25 - 32
+                    // C = [height-1, i-lobe]
+                    // D = [height-1, width-1]
+                    C = data[(iheight-1) * iwidth + (i-lobe)];
+                    Dyy_arr[i] = D - C;
+                }
+
+                // Use precomputation for faster compute
+                for (i = 0; i < height*step; i += step) {
+
+                    for (j = 0; j < width*step; j += step) {
+                        // Image coordinates
+                        x = i;
+                        y = j;
+
+                        // Calculate Dxx, Dyy, Dxy with Box Filter
+                        Dyy = Dyy_arr[j] - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
+                        Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                                - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+                        Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
+                                + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
+                                - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
+                                - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+
+                        // Normalize Responses with inverse area
+                        Dyy *= inv_area;
+                        Dxx *= inv_area;
+                        Dxy *= inv_area;
+
+                        // Calculate Determinant
+                        response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+                        // Calculate Laplacian
+                        laplacian[ind] = Dxx + Dyy >= 0;
+
+                        // Increment index
+                        ind += 1;
                     }
-
-                    // only D value needed
-                    D = data[(iheight-1) * iwidth + (iwidth-1)];
-
-                    // C = 0 and D = [height-1, width-1] (below or right of bottom corner)
-                    k = (width*step-lobe + step - 1) / step * step;  // initial value to next multiple of step
-
-                    for (int i = k; i < lobe; i += step) {  // 7 - 25
-                        // Ab wann ist D = [height-1, y => width-1]?
-                        Dyy_arr[i] = D;
-                    }
-
-                    // C = [height-1, some_column] and D = [height-1, width-1] (below or right of bottom corner)
-                    // y = lobe, then C = [height-1, 0]
-                    k = (lobe + step - 1) / step * step;  // initial value to next multiple of step
-
-                    for (int i = k; i < width*step; i += step) {  // 25 - 32
-                        // C = [height-1, i-lobe]
-                        // D = [height-1, width-1]
-                        C = data[(iheight-1) * iwidth + (i-lobe)];
-                        Dyy_arr[i] = D - C;
-                    }
-
-                    for (int i = 0; i < height*step; i += step) {
-                        ind = (i / step) * width;
-
-                        for (int j = 0; j < width*step; j += step) {
-                            // Image coordinates
-                            x = i;
-                            y = j;
-
-                            // Calculate Dxx, Dyy, Dxy with Box Filter
-                            Dyy = Dyy_arr[j] - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
-                            Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
-                                    - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
-                            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
-                                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
-                                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
-                                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
-
-                            // Normalize Responses with inverse area
-                            Dyy *= inv_area;
-                            Dxx *= inv_area;
-                            Dxy *= inv_area;
-
-                            // Calculate Determinant
-                            response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
-
-                            // Calculate Laplacian
-                            laplacian[ind] = Dxx + Dyy >= 0;
-                            ind += 1;
-                        }
-                    }
+                }
             }
         }
     }
