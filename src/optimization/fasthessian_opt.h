@@ -51,3 +51,11 @@ void compute_response_layer_unconditional(struct response_layer* layer, struct i
 void compute_response_layers_unconditional_strided(struct fasthessian* fh);
 
 void compute_response_layer_unconditional_strided(struct response_layer* layer, struct integral_image* iimage);
+
+void compute_response_layers_sonic_Dyy_unconditional(struct fasthessian *fh);
+
+void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer, struct integral_image *iimage);
+
+void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct response_layer* layer, struct integral_image* iimage);
+
+void compute_response_layers_Dyy_laplacian_localityloops_unconditional(struct fasthessian* fh);

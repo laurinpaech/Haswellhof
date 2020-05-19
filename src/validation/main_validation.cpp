@@ -101,7 +101,10 @@ int main(int argc, char const *argv[])
     {
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_response_layer_unconditional);
+        test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional);
+
         // test_functions.push_back(compute_response_layer_unconditional_strided); // is expected to fail on layers > 4
+
         bool valid = validate_compute_response_layer_with_padding(compute_response_layer, test_functions, image, width, height);
 
         if (valid) {
@@ -147,11 +150,11 @@ int main(int argc, char const *argv[])
         test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_unroll);
         test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_rounding);
         test_functions.push_back(get_msurf_descriptor_arrays);
-        
+
 
         // test_functions.push_back(get_msurf_descriptor_haar_unroll_4_1_False);
         // test_functions.push_back(get_msurf_descriptor_haar_unroll_1_4_True);
-        
+
 
         bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
         if (valid) {
