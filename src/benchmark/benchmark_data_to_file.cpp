@@ -6,7 +6,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
-#include <unistd.h>
+
+#ifndef _WIN32
+    #include <unistd.h>
+#else
+    #include <direct.h>
+#endif
 
 /**
  * Saves the data specified in all_benchmark_data to .csv files.
@@ -39,7 +44,11 @@ void create_folder(const char *folder_name) {
     // create the folder if it doesn't exist
     struct stat st = {0};
     if (stat(folder_name, &st) == -1) {
+#ifndef _WIN32
         mkdir(folder_name, 0700);
+#else
+        _mkdir(folder_name);
+#endif
     }
 }
 

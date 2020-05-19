@@ -1,10 +1,12 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifndef _WIN32
 
 // https://stackoverflow.com/questions/3437404/min-and-max-in-c
 #define MIN(a, b)               \
@@ -20,6 +22,19 @@
         __typeof__(b) _b = (b); \
         _a > _b ? _a : _b;      \
     })
+#else
+
+#define MIN(a, b)               \
+    (                           \
+        a < b ? a : b           \
+    )
+
+#define MAX(a, b)               \
+    (                           \
+        a > b ? a : b           \
+    ) 
+
+#endif
 
 #define EPSILON (1e-3)
 
