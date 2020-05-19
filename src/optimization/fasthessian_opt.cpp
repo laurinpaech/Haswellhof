@@ -1509,28 +1509,39 @@ void compute_response_layer_unconditional_strided(struct response_layer *layer, 
 
 
     // strided Dxy
-    int j_unroll = 2;
+    
+    int i_unroll = 12;
     // printf("\n");
     // printf("Dxy_stride %d step %d \n", Dxy_stride, step);
     // for (int i_offset=0; i_offset<Dxy_stride-i_unroll+1; i_offset+=i_unroll) {
-        int j_offset=0;
+        int i_offset=0;
         /**/
-        for (; j_offset<Dxy_stride-j_unroll+1; j_offset+=j_unroll) {
+        for (; i_offset<Dxy_stride; i_offset+=1) {
             // printf("j_offset: %d - %d ", j_offset, j_offset+j_unroll-1);
-            for (int i = 0; i < height; ++i) {
-                int j = j_offset;
-                int x = i*step;
-                for (; j < width-j_unroll+1; j+=Dxy_stride) {
-                    for (int jj = j; jj<j+j_unroll; jj++) {
+            int i = i_offset;
+            for (; i < height-(Dxy_stride*i_unroll)+1; i+=Dxy_stride*i_unroll) {
+   
+                for (int j = 0; j < width; j++) {
+                    int y = j*step;
+                    int x = i*step;
+                    float bottom_left = box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe);
+                    float bottom_right = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe);
+                    for (int ii = i; ii<i+(Dxy_stride*i_unroll); ii+=Dxy_stride) {
                         // Image coordinates
-                        
-                        int y = jj*step;
+                        int x = ii*step;
+
+                        float top_left = bottom_left;//box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe);
+                        float top_right = bottom_right;//box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe);
+
+                        bottom_left = box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe);
+                        bottom_right = box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
+
 
                         // Calculate Dxx, Dyy, Dxy with Box Filter
-                        float Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
-                                + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
-                                - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
-                                - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
+                        float Dxy = top_right //box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                                + bottom_left //box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                                - top_left //box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                                - bottom_right; //box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
                         
                         // printf("i:%d j:%d ii:%d jj:%d New Filter: %d %d | %d %d | %d %d | %d %d\n", i, j, ii, jj, x - lobe, y + 1, x + 1, y - lobe, x - lobe, y - lobe, x + 1, y + 1);
                         
@@ -1539,12 +1550,16 @@ void compute_response_layer_unconditional_strided(struct response_layer *layer, 
                         Dxy *= inv_area;
 
                         // Calculate Determinant
-                        response[i*width + jj] -= 0.81f * Dxy * Dxy;
-                    
+                        response[ii*width + j] -= 0.81f * Dxy * Dxy;
+                        // printf("ii:%d ",ii);
                     }
                 }
+            }
+            // printf("i:%d \n",i);
 
-                for (; j < width; j+=1) {
+            for (; i < height; i+=Dxy_stride) {
+                int x = i*step;
+                for (int j = 0; j < width; j++) {
                     // Image coordinates
                     int y = j*step;
 
@@ -1568,11 +1583,12 @@ void compute_response_layer_unconditional_strided(struct response_layer *layer, 
             }
         }
         /**/
-        for (; j_offset<Dxy_stride; j_offset+=1) {
+        /*
+        for (; i_offset<Dxy_stride; i_offset+=1) {
             // printf("j_offset: %d ", j_offset);
-            for (int i = 0; i < height; ++i) {
+            for (int i = i_offset; i < height; i+=Dxy_stride) {
                 int x = i*step;
-                for (int j = j_offset; j < width; j+=Dxy_stride) {
+                for (int j = 0; j < width; j+=1) {
                     // Image coordinates
                     int y = j*step;
 
@@ -1595,13 +1611,16 @@ void compute_response_layer_unconditional_strided(struct response_layer *layer, 
                     
             }
         }
-        
+        */
     // }
 }
 
 void compute_response_layers_unconditional_strided(struct fasthessian* fh){
 
-    for (int i = 0; i < fh->total_layers; ++i) {
+    for (int i = 0; i < 5; ++i) {
 		compute_response_layer_unconditional_strided(fh->response_map[i], fh->iimage);
+	}
+    for (int i = 5; i < fh->total_layers; ++i) {
+		compute_response_layer_unconditional(fh->response_map[i], fh->iimage);
 	} 
 }
