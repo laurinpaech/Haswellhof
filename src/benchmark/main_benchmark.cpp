@@ -13,6 +13,8 @@
 #include "fasthessian.h"
 #include "fasthessian_opt.h"
 #include "integral_image.h"
+#include "integral_image_opt.h"
+#include "integral_image_simd.h"
 #include "interest_point.h"
 #include "stb_image.h"
 
@@ -28,6 +30,9 @@ const char *images[] = {
 };
 #define n_images (sizeof(images) / sizeof(const char *))
 #define BENCHMARK_INTEGRAL_IMAGE
+#define BENCHMARK_INTEGRAL_IMAGE_PADDED
+#define BENCHMARK_INTEGRAL_IMAGE_INT
+#define BENCHMARK_INTEGRAL_IMAGE_INT_PADDED
 #define BENCHMARK_COMPUTE_RESPONSE_LAYERS
 // BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED only works with BENCHMARK_COMPUTE_RESPONSE_LAYERS enabled
 #define BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED
@@ -52,6 +57,20 @@ int main(int argc, char const *argv[]) {
             return -1;
         }
 
+#if defined(BENCHMARK_INTEGRAL_IMAGE_INT) || defined(BENCHMARK_INTEGRAL_IMAGE_INT_PADDED)
+        int width_int, height_int, channels_int;
+
+        // Load uint8_t version of image
+        stbi_ldr_to_hdr_gamma(1.0f);
+        uint8_t *image_int = stbi_load(image_name, &width_int, &height_int, &channels_int, STBI_grey);
+        if (!image_int) {
+            printf("Could not open or find int image\n");
+            return -1;
+        }
+
+        assert(width == width_int && height == height_int && channels == channels_int);
+#endif
+
         // Create integral image
         struct integral_image *iimage = create_integral_img(width, height);
         // Compute integral image
@@ -64,24 +83,109 @@ int main(int argc, char const *argv[]) {
             // Insert all compute_integral_img functions for benchmarking here
             std::vector<void (*)(float *, struct integral_image *)> functions;
             functions.push_back(compute_integral_img);
-            // functions.push_back(compute_integral_img_faster_alg);
+            functions.push_back(compute_integral_img_faster_alg);
 
             struct benchmark_data default_data(image_name, width, height, "compute_integral_img", -1,
                                                (width + 2 * (height - 1) * width));
+            struct benchmark_data data1(image_name, width, height, "compute_integral_img_faster_alg", -1,
+                                        get_flops_compute_integral_img_faster_alg(width, height, 2));
 
             // Insert all respective benchmarking info for compute_integral_img here
             std::vector<struct benchmark_data> data;
             data.push_back(default_data);
-            // data.emplace_back(image_name, width, height, "compute_integral_img_faster_alg", -1,
-            // get_flops_compute_integral_img_faster_alg(width, height, 2));
+            data.push_back(data1);
 
             // Benchmarking all compute_integral_img functions and storing timing results in respective entries in data
-            bench_compute_integral_img(functions, image, data);
+            bench_compute_integral_img(functions, image, data, false);
 
             // Appending this data to all benchmarking data
             all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
 
             printf("compute_integral_img end\n");
+        }
+#endif
+
+
+#ifdef BENCHMARK_INTEGRAL_IMAGE_PADDED
+        {
+            printf("compute_padded_integral_img start\n");
+
+            // Insert all compute_integral_img functions for benchmarking here
+            std::vector<void (*)(float *, struct integral_image *)> functions;
+            functions.push_back(compute_padded_integral_img);
+            //functions.push_back(compute_integral_img_faster_alg);
+
+            struct benchmark_data default_data(image_name, width, height, "compute_padded_integral_img", -1,
+                                               (width + 2 * (height - 1) * width));
+            
+            // Insert all respective benchmarking info for compute_integral_img here
+            std::vector<struct benchmark_data> data;
+            data.push_back(default_data);
+
+            // Benchmarking all compute_padded_integral_img functions and storing timing results in respective entries in data
+            bench_compute_integral_img(functions, image, data, true);
+
+            // Appending this data to all benchmarking data
+            all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
+
+            printf("compute_padded_integral_img end\n");
+        }
+#endif
+
+#ifdef BENCHMARK_INTEGRAL_IMAGE_INT
+        {
+            printf("compute_integral_img_int start\n");
+
+            // Insert all compute_integral_img_int functions for benchmarking here
+            std::vector<void (*)(uint8_t *, struct integral_image *)> functions;
+            functions.push_back(compute_integral_img_int);
+            functions.push_back(compute_integral_img_simd_int);
+            functions.push_back(compute_integral_img_simd_early_cast_int);
+
+            struct benchmark_data default_data(image_name, width, height, "compute_integral_img_int", -1, -1);
+            struct benchmark_data data1(image_name, width, height, "compute_integral_img_simd_int", -1, -1);
+            struct benchmark_data data2(image_name, width, height, "compute_integral_img_simd_early_cast_int", -1, -1);
+
+            // Insert all respective benchmarking info for compute_integral_img_int here
+            std::vector<struct benchmark_data> data;
+            data.push_back(default_data);
+            data.push_back(data1);
+            data.push_back(data2);
+            
+            // Benchmarking all compute_integral_img_int functions and storing timing results in respective entries in data
+            bench_compute_integral_img_int(functions, image_int, data, false);
+
+            // Appending this data to all benchmarking data
+            all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
+
+            printf("compute_integral_img_int end\n");
+        }
+#endif
+
+#ifdef BENCHMARK_INTEGRAL_IMAGE_INT_PADDED
+        {
+            printf("compute_padded_integral_img_int start\n");
+
+            // Insert all compute_integral_img_int functions for benchmarking here
+            std::vector<void (*)(uint8_t *, struct integral_image *)> functions;
+            functions.push_back(compute_padded_integral_img_int);
+            functions.push_back(compute_padded_integral_img_simd_early_cast_int);
+
+            struct benchmark_data default_data(image_name, width, height, "compute_padded_integral_img_int", -1, -1);
+            struct benchmark_data data1(image_name, width, height, "compute_padded_integral_img_simd_early_cast_int", -1, -1);
+
+            // Insert all respective benchmarking info for compute_padded_integral_img_int here
+            std::vector<struct benchmark_data> data;
+            data.push_back(default_data);
+            data.push_back(data1);
+            
+            // Benchmarking all compute_padded_integral_img_int functions and storing timing results in respective entries in data
+            bench_compute_integral_img_int(functions, image_int, data, true);
+
+            // Appending this data to all benchmarking data
+            all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
+
+            printf("compute_padded_integral_img_int end\n");
         }
 #endif
 
@@ -272,6 +376,9 @@ int main(int argc, char const *argv[]) {
         get_msurf_descriptors(iimage, &interest_points);
 
         // Free memory
+#if defined(BENCHMARK_INTEGRAL_IMAGE_INT) || defined(BENCHMARK_INTEGRAL_IMAGE_INT_PADDED)
+        stbi_image_free(image_int);
+#endif
         stbi_image_free(image);  // possibly move this to create_integral_img
 
         free(iimage->padded_data);
