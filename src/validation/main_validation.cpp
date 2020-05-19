@@ -81,7 +81,7 @@ int main(int argc, char const *argv[])
         test_functions.push_back(compute_response_layers_precompute);
         test_functions.push_back(compute_response_layers_blocking);
         test_functions.push_back(compute_response_layers_at_once);
-        test_functions.push_back(compute_response_map_sonic_Dyy);
+        test_functions.push_back(compute_response_layers_sonic_Dyy);
 
         // test_functions.push_back(compute_response_layers_blocking_3_3_False);
         // test_functions.push_back(compute_response_layers_blocking_3_7_False);

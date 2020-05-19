@@ -100,7 +100,7 @@ int main(int argc, char const *argv[]) {
             functions.push_back(compute_response_layers_precompute);
             functions.push_back(compute_response_layers_blocking);
             functions.push_back(compute_response_layers_at_once);
-            functions.push_back(compute_response_map_sonic_Dyy);
+            functions.push_back(compute_response_layers_sonic_Dyy);
 
             struct benchmark_data default_data(image_name, width, height, "compute_response_layer", -1,
                                                (1 + height * width * 13));
