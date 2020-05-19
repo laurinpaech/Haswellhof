@@ -1084,7 +1084,7 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
         r00 = x - border - 1;
         r01 = x + border;
         B = data[r00 * iwidth + iwidth - 1];
-        D = data[r01 * iwidth + iwidth - 1];
+        D = data[(iheight - 1) * iwidth + iwidth - 1];
         Dyy0 = D - B;
         // Store value for blue line.
         dyy_row_before_blue[counter] = Dyy0;
