@@ -547,7 +547,7 @@ void blue_lines_Dyy(struct response_layer *layer, struct integral_image *iimage)
     // Bottom
     for (; i < height * step; i += step) {
         int j = 0;
-        // Bottom left
+        // Bottom Left
         for (; j < lobe; j += step) {
             // Image coordinates
             x = i;
@@ -560,7 +560,7 @@ void blue_lines_Dyy(struct response_layer *layer, struct integral_image *iimage)
 
             // A, C outside A, C = 0
             // B inside
-            // D below D = laste element of column
+            // D below D = last element of column
             B = data[r00 * iwidth + c01];
             D = data[(iheight - 1) * iwidth + c01];
 
@@ -711,7 +711,7 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
     int border = (filter_size - 1) / 2;
     float inv_area = 1.f / (filter_size * filter_size);
 
-    int ind = 0;  
+    int ind = 0;
     float *data = (float *)iimage->data;  // brauch hier keinen cast weil es eig float sein sollte
     int iheight = iimage->height;
     int iwidth = iimage->width;
@@ -722,11 +722,10 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
      *   TOP
      *****************/
     int i = 0;
-    while (i < height * step - border - 1) {
-        // ind = (i / step) * width;
+    for (; i < height * step - border - 1; i += step) {
         int j = 0;
-        // Top Left Corner
-        for (j; j < width * step - lobe; j += step) {
+        // Top Left
+        for (; j < width * step - lobe; j += step) {
             x = i;
             y = j;
 
@@ -735,6 +734,8 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
             r01 = x + border;
             c01 = y + lobe - 1;
 
+            // A, B, C outside A, B, C = 0
+            // D inside
             Dyy0 = data[r01 * iwidth + c01];
 
             // neg part box filter
@@ -769,6 +770,8 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
         // whole filter
         r01 = x + border;
 
+        // A, B, C outside A, B, C = 0
+        // D outside, D = last element of row
         D = data[r01 * iwidth + iwidth - 1];
         Dyy0 = D;
 
@@ -795,7 +798,7 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
         j += step;
 
         // Top Right
-        for (j; j < width * step; j += step) {
+        for (; j < width * step; j += step) {
             // Image coordinates
             x = i;
             y = j;
@@ -804,6 +807,9 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
             r01 = x + border;
             c00 = y - lobe;
 
+            // A, B outside A, B = 0
+            // C inside
+            // D outside D = last element of row
             C = data[r01 * iwidth + c00];
             D = data[r01 * iwidth + iwidth - 1];
             Dyy0 = D - C;
@@ -830,23 +836,18 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
             laplacian[ind] = (Dxx + Dyy >= 0);
             ind += 1;
         }
-
-        i += step;
     }
 
     /*********************************
      *    LAST ROW BEFORE BLUE LINE
      *********************************/
-    // TODO: (carla) iheight or height*step?
     int idx_store_row = ((height * step - border - 1 + step - 1) / step) * step;
     i = idx_store_row;
     int counter = 0;
-    // TODO: (carla) Should only go through here once. Replace loop with just i?
-    // while (i < idx_store_row) {
-    // ind = (i / step) * width;
+
     int j = 0;
-    // Last row before blue line Left Corner
-    for (j; j < width * step - lobe; j += step) {
+    // Last Row Before Blue Line Left
+    for (; j < width * step - lobe; j += step) {
         x = i;
         y = j;
 
@@ -855,6 +856,8 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
         r01 = x + border;
         c01 = y + lobe - 1;
 
+        // A, B, C outside A, B, C = 0
+        // D below D = last value of column.
         Dyy0 = data[(iheight - 1) * iwidth + c01];
 
         // Store value for blue line.
@@ -882,7 +885,7 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
         counter += 1;
     }
 
-    // Last row before blue line Mid
+    // Last Row Refore Blue Line Mid
 
     // Image coordinates
     x = i;
@@ -891,6 +894,8 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
     // whole filter
     r01 = x + border;
 
+    // A, B, C outside A, B, C = 0
+    // D outside D = last element.
     D = data[(iheight - 1) * iwidth + iwidth - 1];
     Dyy0 = D;
     // Store value for blue line.
@@ -919,17 +924,18 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
     j += step;
     counter += 1;
 
-    // last row before blue line Right
-    // k0 = (width * step - lobe + 1 + step - 1) / step * step;
-    for (j; j < width * step; j += step) {
+    // Last Row Before Blue Line Right
+    for (; j < width * step; j += step) {
         // Image coordinates
         x = i;
         y = j;
 
         // whole filter
-        r01 = x + border;
         c00 = y - lobe;
 
+        // A, B outside A, B = 0
+        // C below C = last element of column
+        // D outside D = last element.
         C = data[(iheight - 1) * iwidth + c00];
         D = data[(iheight - 1) * iwidth + iwidth - 1];
         Dyy0 = D - C;
@@ -960,13 +966,12 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
         counter += 1;
     }
     i += step;
-    //}
 
     /*****************
      *    BLUE LINE
      *****************/
 
-    for (i; i < (border + 1); i += step) {
+    for (; i < (border + 1); i += step) {
         int counter = 0;
         for (int j = 0; j < width * step; j += step) {
             // Image coordinates
@@ -1005,20 +1010,22 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
      *****************/
 
     // Bottom
-    while (i < height * step) {
+    for(;i < height * step; i+=step) {
         int j = 0;
-        // Bottom left
-        for (j; j < width * step - lobe; j += step) {
+        // Bottom Left
+        for (; j < width * step - lobe; j += step) {
             // Image coordinates
             x = i;
             y = j;
 
             // Compute Dyy  
             // whole box filter
-            // A, C outside, B inside, D below
             r00 = x - border - 1;
             c01 = y + lobe - 1;
 
+            // A, C outside A, C = 0
+            // B inside
+            // D below D = last element of column
             B = data[r00 * iwidth + c01];
             D = data[(iheight - 1) * iwidth + c01];
 
@@ -1056,6 +1063,10 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
         // whole filter
         r00 = x - border - 1;
         r01 = x + border;
+
+        // A, C outside A, C = 0
+        // B outside B = last element of row
+        // D outside D = last element
         B = data[r00 * iwidth + iwidth - 1];
         D = data[(iheight - 1) * iwidth + iwidth - 1];
         Dyy0 = D - B;
@@ -1085,17 +1096,20 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
         j += step;
 
         // Bottom Right
-        for (j; j < width * step; j += step) {
+        for (; j < width * step; j += step) {
             // Image coordinates
             x = i;
             y = j;
 
             // Compute Dyy  
             // whole box filter
-            // B, C, D outside A inside
             r00 = x - border - 1;
             c00 = y - lobe;
 
+            // A inside
+            // B outside B = last element of row
+            // C below C = last element of column
+            // D outside D = last element
             A = data[r00 * iwidth + c00];
             B = data[r00 * iwidth + iwidth - 1];
             C = data[(iheight - 1) * iwidth + c00];
@@ -1125,8 +1139,6 @@ void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *
             laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
             ind += 1;
         }
-
-        i += step;
     }
 }
 
