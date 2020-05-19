@@ -78,5 +78,11 @@ int main(int argc, char const *argv[])
     }
     free(fh);
 
+    extern float* haarResponseX;
+    extern float* haarResponseY;
+
+    aligned_free(haarResponseX);
+    aligned_free(haarResponseY);
+
     return 0;
 }

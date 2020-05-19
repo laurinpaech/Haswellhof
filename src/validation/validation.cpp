@@ -119,8 +119,8 @@ bool validate_compute_response_layers(void (*original_function)(struct fasthessi
                         original_layer->width);
 #endif
 
-            if (!are_float_matrices_equal(original_layer->response, optimized_layer->response, original_layer->height,
-                                          original_layer->width) ||
+            if (!compare_arrays_close(original_layer->response, optimized_layer->response, 
+                                          (original_layer->height)*(original_layer->width), VALIDATION_PRECISION) ||
                 !are_bool_matrices_equal(original_layer->laplacian, optimized_layer->laplacian, original_layer->height,
                                          original_layer->width)) {
                 printf("compute_response_layer() test function %d does not match original function\n", j);
@@ -212,11 +212,11 @@ bool validate_compute_response_layer_with_padding(
                         original_layer->width);
 #endif
 
-            if (!are_float_matrices_equal(original_layer->response, optimized_layer->response, original_layer->height,
-                                          original_layer->width) ||
+            if (!compare_arrays_close(original_layer->response, optimized_layer->response, 
+                                    (original_layer->height)*(original_layer->width), VALIDATION_PRECISION) ||
                 !are_bool_matrices_equal(original_layer->laplacian, optimized_layer->laplacian, original_layer->height,
                                          original_layer->width)) {
-                printf("compute_response_layer() test function %d does not match original function\n", j);
+                printf("compute_response_layer() test function %d does not match original function on layer %d/%d\n", j, i,original_fh->total_layers);
                 all_valid = false;
             }
         }

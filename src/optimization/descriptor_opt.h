@@ -11,6 +11,29 @@
 #include "stdio.h"
 #include <vector>
 
+// Alignment only works for powers of two!
+#define ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
+#define __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
+
+// https://stackoverflow.com/questions/38088732/explanation-to-aligned-malloc-implementation
+// Alignment only works for powers of two!
+inline void *aligned_malloc(size_t required_bytes, size_t alignment) {
+    void *p1;  // original block
+    void **p2; // aligned block
+    int offset = alignment - 1 + sizeof(void *);
+    if ((p1 = (void *)malloc(required_bytes + offset)) == NULL) {
+       return NULL;
+    }
+    p2 = (void **)(((size_t)(p1) + offset) & ~(alignment - 1));
+    p2[-1] = p1;
+    return p2;
+}
+
+inline void aligned_free(void *p) {
+    free(((void **)p)[-1]);
+}
+
+
 // #define PATCH_SIZE 20
 
 // inline float* get_gaussian(float sigma) {
@@ -76,6 +99,21 @@ void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, st
 
 void get_msurf_descriptors_gauss_pecompute_haar(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
+void get_msurf_descriptor_gauss_pecompute_haar_rounding(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_pecompute_haar_rounding(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_arrays(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_arrays_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_arrays_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_gauss_pecompute_haar_unroll(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_gauss_pecompute_haar_unroll(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
 inline void haarXY(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
     
@@ -128,12 +166,19 @@ inline void haarXY(struct integral_image *iimage, int row, int col, int scale, f
         r2c2 = data[r2 * data_width + c2];
     }
 
+
+    // *haarX = (r0c1 - r0c2 - r2c1 + r2c2) - (r0c0 - r0c1 - r2c0 + r2c1);
+    // *haarY = (r1c0 - r1c2 - r2c0 + r2c2) - (r0c0 - r0c2 - r1c0 + r1c2);
+
     float r2c2_sub_r0c0 = r2c2 - r0c0;
-    float r0c2_sub_r2c0 = r0c2 - r2c0;
+    float r2c0_sub_r0c2 = r2c0 - r0c2;
 
-    *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
-    *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
+    *haarX = 2*(r0c1 - r2c1) + r2c2_sub_r0c0 + r2c0_sub_r0c2;
+    *haarY = 2*(r1c0 - r1c2) + r2c2_sub_r0c0 - r2c0_sub_r0c2;
 
+    // for FMA
+    // *haarX = (2*r0c1 + r2c0_sub_r0c2) - (2*r2c1 - r2c2_sub_r0c0);
+    // *haarY = (2*r1c0 - r2c0_sub_r0c2) - (2*r1c2 - r2c2_sub_r0c0);
 }
 
 inline void haarXY_precheck_boundaries(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
@@ -174,15 +219,22 @@ inline void haarXY_precheck_boundaries(struct integral_image *iimage, int row, i
     float r2c1 = data[r2 * data_width + c1];
     float r2c2 = data[r2 * data_width + c2];
 
-    float r2c2_sub_r0c0 = r2c2 - r0c0;
-    float r0c2_sub_r2c0 = r0c2 - r2c0;
+    // *haarX = (r0c1 - r0c2 - r2c1 + r2c2) - (r0c0 - r0c1 - r2c0 + r2c1);
+    // *haarY = (r1c0 - r1c2 - r2c0 + r2c2) - (r0c0 - r0c2 - r1c0 + r1c2);
 
-    *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
-    *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
+    float r2c2_sub_r0c0 = r2c2 - r0c0;
+    float r2c0_sub_r0c2 = r2c0 - r0c2;
+
+    *haarX = 2*(r0c1 - r2c1) + r2c2_sub_r0c0 + r2c0_sub_r0c2;
+    *haarY = 2*(r1c0 - r1c2) + r2c2_sub_r0c0 - r2c0_sub_r0c2;
+
+    // for FMA
+    // *haarX = (2*r0c1 + r2c0_sub_r0c2) - (2*r2c1 - r2c2_sub_r0c0);
+    // *haarY = (2*r1c0 - r2c0_sub_r0c2) - (2*r1c2 - r2c2_sub_r0c0);
 
 }
 
-inline void haarXY_nocheck_boundaries(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
+inline void haarXY_unconditional(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
     
     float *data = iimage->data;
     int data_width = iimage->data_width;
@@ -204,11 +256,18 @@ inline void haarXY_nocheck_boundaries(struct integral_image *iimage, int row, in
     float r2c1 = data[r2 * data_width + c1];
     float r2c2 = data[r2 * data_width + c2];
 
-    float r2c2_sub_r0c0 = r2c2 - r0c0;
-    float r0c2_sub_r2c0 = r0c2 - r2c0;
+    // *haarX = (r0c1 - r0c2 - r2c1 + r2c2) - (r0c0 - r0c1 - r2c0 + r2c1);
+    // *haarY = (r1c0 - r1c2 - r2c0 + r2c2) - (r0c0 - r0c2 - r1c0 + r1c2);
 
-    *haarX = r2c2_sub_r0c0 + 2*(r0c1 - r2c1) - r0c2_sub_r2c0;
-    *haarY = r2c2_sub_r0c0 + 2*(r1c0 - r1c2) + r0c2_sub_r2c0;
+    float r2c2_sub_r0c0 = r2c2 - r0c0;
+    float r2c0_sub_r0c2 = r2c0 - r0c2;
+
+    *haarX = 2*(r0c1 - r2c1) + r2c2_sub_r0c0 + r2c0_sub_r0c2;
+    *haarY = 2*(r1c0 - r1c2) + r2c2_sub_r0c0 - r2c0_sub_r0c2;
+
+    // for FMA
+    // *haarX = (2*r0c1 + r2c0_sub_r0c2) - (2*r2c1 - r2c2_sub_r0c0);
+    // *haarY = (2*r1c0 - r2c0_sub_r0c2) - (2*r1c2 - r2c2_sub_r0c0);
 
 }
 

@@ -10,6 +10,9 @@
 
 #include "integral_image_opt.h"
 #include "descriptor_opt.h"
+// #include "descriptor_opt_gen.h"
+#include "fasthessian_opt.h"
+// #include "fasthessian_opt_gen.h"
 
 #include "validation.h"
 
@@ -19,11 +22,11 @@
 
 #include <vector>
 
-// #define VALIDATE_INTEGRAL_IMAGE
+#define VALIDATE_INTEGRAL_IMAGE
 #define VALIDATE_COMPUTE_RESPONSE_LAYER
 #define VALIDATE_COMPUTE_RESPONSE_LAYER_PADDED
-// #define VALIDATE_GET_INTEREST_POINTS
-// #define VALIDATE_GET_MSURF_DESCRIPTORS
+#define VALIDATE_GET_INTEREST_POINTS
+#define VALIDATE_GET_MSURF_DESCRIPTORS
 
 
 int main(int argc, char const *argv[])
@@ -75,8 +78,15 @@ int main(int argc, char const *argv[])
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER
     {
         std::vector<void (*)(struct fasthessian *)> test_functions;
+        test_functions.push_back(compute_response_layers_precompute);
+        test_functions.push_back(compute_response_layers_blocking);
         test_functions.push_back(compute_response_layers_at_once);
-        test_functions.push_back(compute_response_map_sonic_Dyy);
+        test_functions.push_back(compute_response_layers_sonic_Dyy);
+
+        // test_functions.push_back(compute_response_layers_blocking_3_3_False);
+        // test_functions.push_back(compute_response_layers_blocking_3_7_False);
+        // test_functions.push_back(compute_response_layers_blocking_7_3_False);
+        // test_functions.push_back(compute_response_layers_blocking_7_7_False);
 
         bool valid = validate_compute_response_layers(compute_response_layers, test_functions, iimage);
         if (valid) {
@@ -91,8 +101,12 @@ int main(int argc, char const *argv[])
     {
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_response_layer_unconditional);
+        test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional);
+
+        // test_functions.push_back(compute_response_layer_unconditional_strided); // is expected to fail on layers > 4
 
         bool valid = validate_compute_response_layer_with_padding(compute_response_layer, test_functions, image, width, height);
+
         if (valid) {
             printf("COMPUTE RESPONSE LAYER PADDED VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
         } else {
@@ -133,6 +147,14 @@ int main(int argc, char const *argv[])
         test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
         test_functions.push_back(get_msurf_descriptor_gauss_compute_once_case);
         test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar);
+        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_unroll);
+        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_rounding);
+        test_functions.push_back(get_msurf_descriptor_arrays);
+
+
+        // test_functions.push_back(get_msurf_descriptor_haar_unroll_4_1_False);
+        // test_functions.push_back(get_msurf_descriptor_haar_unroll_1_4_True);
+
 
         bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
         if (valid) {
@@ -166,6 +188,12 @@ int main(int argc, char const *argv[])
 		free(fh->response_map[i]);
 	}
 	free(fh);
+
+    extern float* haarResponseX;
+    extern float* haarResponseY;
+
+    aligned_free(haarResponseX);
+    aligned_free(haarResponseY);
 
 	return 0;
 }

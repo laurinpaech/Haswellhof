@@ -27,13 +27,13 @@ const char *images[] = {
     //"../images/sunflower/sunflower_4096.jpg"
 };
 #define n_images (sizeof(images) / sizeof(const char *))
-// #define BENCHMARK_INTEGRAL_IMAGE
+#define BENCHMARK_INTEGRAL_IMAGE
 #define BENCHMARK_COMPUTE_RESPONSE_LAYERS
 // BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED only works with BENCHMARK_COMPUTE_RESPONSE_LAYERS enabled
 #define BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED
-// #define BENCHMARK_INTEREST_POINTS
-// #define BENCHMARK_INTERPOLATE_STEPS
-// #define BENCHMARK_GET_MSURF_DESCRIPTORS
+#define BENCHMARK_INTEREST_POINTS
+#define BENCHMARK_INTERPOLATE_STEPS
+#define BENCHMARK_GET_MSURF_DESCRIPTORS
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
@@ -97,20 +97,28 @@ int main(int argc, char const *argv[]) {
 
             std::vector<void (*)(struct fasthessian *)> functions;
             functions.push_back(compute_response_layers);
+            functions.push_back(compute_response_layers_precompute);
+            functions.push_back(compute_response_layers_blocking);
             functions.push_back(compute_response_layers_at_once);
-            functions.push_back(compute_response_map_sonic_Dyy);
+            functions.push_back(compute_response_layers_sonic_Dyy);
 
             struct benchmark_data default_data(image_name, width, height, "compute_response_layer", -1,
                                                (1 + height * width * 13));
-            struct benchmark_data data1(image_name, width, height, "compute_response_layers_at_once", -1,
+            struct benchmark_data data1(image_name, width, height, "compute_response_layers_precompute", -1,
                                         (1 + height * width * 13));
-            struct benchmark_data data2(image_name, width, height, "compute_response_map_sonic_Dyy", -1,
+            struct benchmark_data data2(image_name, width, height, "compute_response_layers_blocking", -1,
+                                        (1 + height * width * 13));
+            struct benchmark_data data3(image_name, width, height, "compute_response_layers_at_once", -1,
+                                        (1 + height * width * 13));
+            struct benchmark_data data4(image_name, width, height, "compute_response_map_sonic_Dyy", -1,
                                         (1 + height * width * 13));
 
             std::vector<struct benchmark_data> data;
             data.push_back(default_data);
             data.push_back(data1);
             data.push_back(data2);
+            data.push_back(data3);
+            data.push_back(data4);
 
             bench_compute_response_layer(functions, iimage, data);
 
@@ -125,11 +133,16 @@ int main(int argc, char const *argv[]) {
 
                 std::vector<void (*)(struct fasthessian *)> padded_functions;
                 padded_functions.push_back(compute_response_layers_unconditional);
+                padded_functions.push_back(compute_response_layers_unconditional_strided);
 
-                struct benchmark_data padded_data0(image_name, width, height, "compute_response_layers_unconditional", -1, (1 + height * width * 13));
+                struct benchmark_data padded_data1(image_name, width, height,
+                                                "compute_response_layers_unconditional", -1, (1 + height * width * 13));
+                struct benchmark_data padded_data2(image_name, width, height,
+                                                "compute_response_layers_unconditional_strided", -1, (1 + height * width * 13));
 
                 std::vector<struct benchmark_data> data_padded_functions;
-                data_padded_functions.push_back(padded_data0);
+                data_padded_functions.push_back(padded_data1);
+                data_padded_functions.push_back(padded_data2);
 
                 bench_compute_response_layer(padded_functions, padded_iimage, data_padded_functions);
                 all_benchmark_data.insert(all_benchmark_data.end(), data_padded_functions.begin(),
@@ -221,6 +234,9 @@ int main(int argc, char const *argv[]) {
             functions.push_back(get_msurf_descriptors_gauss_s2_precomputed);
             functions.push_back(get_msurf_descriptors_gauss_compute_once_case);
             functions.push_back(get_msurf_descriptors_gauss_pecompute_haar);
+            functions.push_back(get_msurf_descriptors_gauss_pecompute_haar_unroll);
+            functions.push_back(get_msurf_descriptors_gauss_pecompute_haar_rounding);
+            functions.push_back(get_msurf_descriptors_arrays);
 
             // TODO: (Sebastian) find FLOPS count for get_msurf_descriptor
             struct benchmark_data default_data(image_name, width, height, "get_msurf_descriptors",
@@ -246,6 +262,12 @@ int main(int argc, char const *argv[]) {
                                         interest_points.size(), -1);
             struct benchmark_data data9(image_name, width, height, "get_msurf_descriptors_gauss_pecompute_haar",
                                         interest_points.size(), -1);
+            struct benchmark_data data10(image_name, width, height, "get_msurf_descriptors_gauss_pecompute_haar_unroll",
+                                         interest_points.size(), -1);
+            struct benchmark_data data11(image_name, width, height, "get_msurf_descriptors_gauss_pecompute_haar_rounding",
+                                         interest_points.size(), -1);
+            struct benchmark_data data12(image_name, width, height, "get_msurf_descriptors_arrays",
+                                         interest_points.size(), -1);
 
             // Insert all respective benchmarking info for functions here
             std::vector<struct benchmark_data> data;
@@ -260,6 +282,9 @@ int main(int argc, char const *argv[]) {
             data.push_back(data7);
             data.push_back(data8);
             data.push_back(data9);
+            data.push_back(data10);
+            data.push_back(data11);
+            data.push_back(data12);
 
             // Benchmarking all get_msurf_descriptor functions and storing timing results in respective entries in data
             bench_get_msurf_descriptors(functions, iimage, &interest_points, data);
@@ -289,6 +314,13 @@ int main(int argc, char const *argv[]) {
 
         free(image_name);
     }
+
+    extern float* haarResponseX;
+    extern float* haarResponseY;
+
+    aligned_free(haarResponseX);
+    aligned_free(haarResponseY);
+
     save_benchmark_data(all_benchmark_data);
     // free memory benchmarkdata
     // https://stackoverflow.com/questions/10464992/c-delete-vector-objects-free-memory
