@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void super_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage) {
+void switch_Dyy(struct response_layer *layer, struct integral_image *iimage) {
     int height = layer->height;
     int width = layer->width;
     int iwidth = iimage->width;  // TODO: fix where needs to be fixed
@@ -33,9 +33,9 @@ void super_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage
             // Idea: Do compute_response_layer_Dyy_leftcorner
             // but everytime all corners are outside, we just use row values above
             if (iwidth > 2 * lobe - 1) {
-                blue_lines_Dyy(layer, iimage);
+                height_greater_border_width_greater_double_lobe_Dyy(layer, iimage);
             } else {
-                double_blue_lines_Dyy(layer, iimage);
+                height_greater_border_width_less_double_lobe_Dyy(layer, iimage);
             }
         }
     }
@@ -205,7 +205,7 @@ void super_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage
     }
     */
 
-void blue_lines_Dyy(struct response_layer *layer, struct integral_image *iimage) {
+void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *layer, struct integral_image *iimage) {
     // Filter_size > height
     // 2. Case The filter is somewhat larger than the image
     /*  (height > border && (iwidth > 2 * lobe - 1))
@@ -679,7 +679,7 @@ void blue_lines_Dyy(struct response_layer *layer, struct integral_image *iimage)
     }
 }
 
-void double_blue_lines_Dyy(struct response_layer *layer, struct integral_image *iimage) {
+void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *layer, struct integral_image *iimage) {
     // Filter_size > height
     // 2. Case The filter is somewhat larger than the image
     /*  (height > border && (iwidth < 2 * lobe))
