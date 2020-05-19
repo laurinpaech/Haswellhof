@@ -6565,6 +6565,8 @@ void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct res
     }
 }
 
+
+
 void compute_response_layer_precompute(struct response_layer* layer, struct integral_image* iimage) {
     /*
     optimizations:
