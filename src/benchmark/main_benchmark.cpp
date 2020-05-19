@@ -138,6 +138,30 @@ int main(int argc, char const *argv[]) {
         }
 #endif
 
+#ifdef BENCHMARK_COMPUTE_RESPONSE_LAYERS_FLAT
+        {
+            printf("compute_response_layer_flat start\n");
+
+            std::vector<void (*)(struct fasthessian_flat *)> functions;
+            functions.push_back(compute_response_layers_flat);
+            functions.push_back(compute_response_layers_at_once_flat);
+
+            struct benchmark_data default_data(image_name, width, height, "compute_response_layer_flat", -1,
+                                               (1 + height * width * 13));
+            struct benchmark_data data1(image_name, width, height, "compute_response_layers_at_once_flat", -1,
+                                        (1 + height * width * 13));
+
+            std::vector<struct benchmark_data> data;
+            data.push_back(default_data);
+            data.push_back(data1);
+
+            bench_compute_response_layer_flat(functions, iimage, data);
+
+            all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
+
+        }
+#endif
+
         // Compute responses for every layer
         compute_response_layers(fh);
 

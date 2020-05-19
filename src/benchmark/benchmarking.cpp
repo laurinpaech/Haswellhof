@@ -107,6 +107,22 @@ void bench_compute_response_layer(const std::vector<void (*)(struct fasthessian 
     free(fh);
 }
 
+void bench_compute_response_layer_flat(const std::vector<void (*)(struct fasthessian_flat *)> &functions,
+                                       struct integral_image *iimage, std::vector<struct benchmark_data> &data) {
+
+    struct fasthessian_flat fh_flat;
+    create_fast_hessian_flat_and_response_map(iimage, &fh_flat);
+
+    assert(functions.size() == data.size());
+
+    for (int j = 0; j < functions.size(); ++j) {
+        perf_compute_response_all_layers_flat(functions[j], &fh_flat, data[j]);
+    }
+    
+    aligned_free(fh_flat.response_map[0].response);
+}
+
+
 /* Todo: (valentin) can these be removed?
 // Times the function compute_response_layer from fasthessian.
 // Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data.
@@ -223,6 +239,62 @@ void perf_compute_response_all_layers(void (*function)(struct fasthessian *), st
     // TODO: (carla) do we have to divide by total_lyers here? the total_cycles have already been divided;
     data.flops_per_cycle = flops_per_cycle;
 }
+
+void perf_compute_response_all_layers_flat(void (*function)(struct fasthessian_flat *), struct fasthessian_flat *fh_flat,
+                                           struct benchmark_data &data) {
+    double cycles = 0.;
+    long num_runs = 5;
+    double multiplier = 1;
+    uint64_t start, end;
+
+#ifdef WARM_UP
+    // Warm-up phase: we determine a number of executions that allows
+    // the code to be executed for at least CYCLES_REQUIRED cycles.
+    // This helps excluding timing overhead when measuring small runtimes.
+    do {
+        num_runs = num_runs * multiplier;
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; i++) {
+            // TODO: (carla) should we do a warm up on more than one layer? feels like an overkill.
+            (*function)(fh_flat);
+        }
+        end = stop_tsc(start);
+
+        cycles = (double)end;
+        multiplier = (CYCLES_REQUIRED) / (cycles);
+
+    } while (multiplier > 2);
+#endif
+
+    std::vector<double> cycleslist;
+
+    // Actual performance measurements repeated REP times.
+    // We simply store all results and compute medians during post-processing.
+    double total_cycles = 0;
+    for (size_t j = 0; j < REP; j++) {
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; ++i) {
+            (*function)(fh_flat);
+        }
+        end = stop_tsc(start);
+
+        cycles = ((double)end) / num_runs;
+        total_cycles += cycles;
+
+        cycleslist.push_back(cycles);
+    }
+    total_cycles /= REP;
+    // total_cycles /= MAX(1, fh->total_layers);
+    cycles = total_cycles;  // cyclesList.front();
+    double flops_per_cycle = round((100.0 * data.num_flops) / cycles) / 100.0;
+    std::sort(cycleslist.begin(), cycleslist.end());
+    data.avg_cycles = (uint64_t)cycles;
+    data.min_cycles = (uint64_t)cycleslist.front();  // / MAX(1, fh->total_layers);
+    data.max_cycles = (uint64_t)cycleslist.back();   // / MAX(1, fh->total_layers);
+    // TODO: (carla) do we have to divide by total_lyers here? the total_cycles have already been divided;
+    data.flops_per_cycle = flops_per_cycle;
+}
+
 
 void bench_get_interest_points(
     const std::vector<void (*)(struct fasthessian *, std::vector<struct interest_point> *)> &functions,

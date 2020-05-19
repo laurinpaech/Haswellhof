@@ -9,6 +9,8 @@
 
 #include "descriptor.h"
 #include "fasthessian.h"
+#include "fasthessian_opt_flat.h"
+
 #include "helper.h"
 #include "integral_image.h"
 
@@ -113,6 +115,13 @@ void perf_compute_response_all_layers(void (*function)(struct fasthessian *), st
 
 void bench_compute_response_layer(const std::vector<void (*)(struct fasthessian *)> &functions,
                                   struct integral_image *iimage, std::vector<struct benchmark_data> &data);
+
+void perf_compute_response_all_layers_flat(void (*function)(struct fasthessian_flat *), struct fasthessian_flat *fh_flat,
+                                           struct benchmark_data &data);
+
+void bench_compute_response_layer_flat(const std::vector<void (*)(struct fasthessian_flat *)> &functions,
+                                       struct integral_image *iimage, std::vector<struct benchmark_data> &data);
+
 
 void bench_get_interest_points(
     const std::vector<void (*)(struct fasthessian *, std::vector<struct interest_point> *)> &functions,

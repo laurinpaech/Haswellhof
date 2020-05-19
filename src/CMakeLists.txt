@@ -55,6 +55,8 @@ add_executable(benchmark
     optimization/integral_image_opt.cpp
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
+    optimization/fasthessian_opt_flat.h
+    optimization/fasthessian_opt_flat.cpp
     optimization/descriptor_opt.h
     optimization/descriptor_opt.cpp
     optimization/descriptors_wrapper.h
