@@ -17,21 +17,12 @@
 #include "stb_image.h"
 
 const char *images[] = {
-<<<<<<< HEAD
-    // "../images/sunflower/sunflower_32.jpg", 
-    // "../images/sunflower/sunflower_64.jpg",
-    //"../images/sunflower/sunflower_128.jpg",
-    //"../images/sunflower/sunflower_256.jpg",
-    "../images/sunflower/sunflower_512.jpg",
-    //"../images/sunflower/sunflower_1024.jpg",
-=======
     "../images/sunflower/sunflower_32.jpg",
     "../images/sunflower/sunflower_64.jpg",
     "../images/sunflower/sunflower_128.jpg",
     "../images/sunflower/sunflower_256.jpg",
     "../images/sunflower/sunflower_512.jpg",
     "../images/sunflower/sunflower_1024.jpg"
->>>>>>> master
     //"../images/sunflower/sunflower_2048.jpg"
     //"../images/sunflower/sunflower_4096.jpg"
 };
@@ -47,11 +38,7 @@ const char *images[] = {
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
     for (int i = 0; i < n_images; i++) {
-<<<<<<< HEAD
-        char *image_name = (char *)malloc(512 * sizeof(char));
-=======
         char *image_name = (char *)malloc(1024 * sizeof(char));
->>>>>>> master
         strcpy(image_name, images[i]);
 
         int width, height, channels;
@@ -130,10 +117,7 @@ int main(int argc, char const *argv[]) {
             data.push_back(default_data);
             data.push_back(data1);
             data.push_back(data2);
-<<<<<<< HEAD
             data.push_back(data3);
-=======
->>>>>>> master
 
             bench_compute_response_layer(functions, iimage, data);
 
@@ -150,7 +134,6 @@ int main(int argc, char const *argv[]) {
                 padded_functions.push_back(compute_response_layers_unconditional);
                 padded_functions.push_back(compute_response_layers_unconditional_strided);
 
-<<<<<<< HEAD
                 struct benchmark_data padded_data1(image_name, width, height,
                                                 "compute_response_layers_unconditional", -1, (1 + height * width * 13));
                 struct benchmark_data padded_data2(image_name, width, height,
@@ -159,12 +142,6 @@ int main(int argc, char const *argv[]) {
                 std::vector<struct benchmark_data> data_padded_functions;
                 data_padded_functions.push_back(padded_data1);
                 data_padded_functions.push_back(padded_data2);
-=======
-                struct benchmark_data padded_data0(image_name, width, height, "compute_response_layers_unconditional", -1, (1 + height * width * 13));
-
-                std::vector<struct benchmark_data> data_padded_functions;
-                data_padded_functions.push_back(padded_data0);
->>>>>>> master
 
                 bench_compute_response_layer(padded_functions, padded_iimage, data_padded_functions);
                 all_benchmark_data.insert(all_benchmark_data.end(), data_padded_functions.begin(),
