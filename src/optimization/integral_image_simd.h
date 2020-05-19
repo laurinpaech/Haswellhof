@@ -27,6 +27,8 @@ inline __m256 _my_mm256_cvtepu32_ps(const __m256i v)
 
 void compute_padded_integral_img_new(float *gray_image, struct integral_image *iimage);
 
+void compute_padded_integral_img_faster_alg(float *gray_image, struct integral_image * iimage);
+
 // Computes the integral image given an integer image as input and returning the float integral image
 void compute_integral_img_int(uint8_t *gray_image, struct integral_image *iimage);
 

@@ -8,6 +8,7 @@
 #include "descriptor.h"
 
 #include "integral_image_opt.h"
+#include "integral_image_simd.h"
 #include "descriptor_opt.h"
 
 #include "validation.h"
@@ -83,6 +84,7 @@ int main(int argc, char const *argv[])
     {
         std::vector<void (*)(float *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_padded_integral_img_new);
+        test_functions.push_back(compute_padded_integral_img_faster_alg);
 
         bool valid = validate_integral_image(compute_padded_integral_img, test_functions, width, height, image, true);
         if (valid) {

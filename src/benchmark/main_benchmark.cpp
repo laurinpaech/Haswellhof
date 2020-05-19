@@ -113,14 +113,19 @@ int main(int argc, char const *argv[]) {
             // Insert all compute_integral_img functions for benchmarking here
             std::vector<void (*)(float *, struct integral_image *)> functions;
             functions.push_back(compute_padded_integral_img);
-            //functions.push_back(compute_integral_img_faster_alg);
+            functions.push_back(compute_padded_integral_img_new);
+            functions.push_back(compute_padded_integral_img_faster_alg);
 
             struct benchmark_data default_data(image_name, width, height, "compute_padded_integral_img", -1,
                                                (width + 2 * (height - 1) * width));
-            
+            struct benchmark_data data1(image_name, width, height, "compute_padded_integral_img_new", -1, -1);
+            struct benchmark_data data2(image_name, width, height, "compute_padded_integral_img_faster_alg", -1, -1);
+
             // Insert all respective benchmarking info for compute_integral_img here
             std::vector<struct benchmark_data> data;
             data.push_back(default_data);
+            data.push_back(data1);
+            data.push_back(data2);
 
             // Benchmarking all compute_padded_integral_img functions and storing timing results in respective entries in data
             bench_compute_integral_img(functions, image, data, true);

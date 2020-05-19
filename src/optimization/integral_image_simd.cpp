@@ -85,6 +85,187 @@ void compute_padded_integral_img_new(float *gray_image, struct integral_image *i
 
 }
 
+void compute_padded_integral_img_faster_alg(float *gray_image, struct integral_image * iimage) {
+    
+    float *iimage_padded_data = iimage->padded_data;
+
+    int data_width = iimage->data_width;
+    int data_height = iimage->data_height;
+    int width = iimage->width;
+    int height = iimage->height;
+
+    int border = (data_width - width) / 2; 
+    //int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
+
+    // Block layout of padded integral image:
+    // AAA
+    // BIC
+    // BDE
+
+    __m256 zeros_float = _mm256_setzero_ps();
+
+    // BLOCK A
+    for (int j = 0; j < border; ++j) {
+        int i = 0;
+        for (; i < data_width - 7; i+=8) {
+            _mm256_storeu_ps(iimage_padded_data + j * data_width + i, zeros_float);
+        }
+        for (; i < data_width; ++i) {
+            iimage_padded_data[j * data_width + i] = 0.0f;
+        }
+    }
+
+    // BLOCK B
+    for (int j = border; j < data_height; ++j) {
+        int i = 0;
+        for (; i < border - 7; i+=8) {
+            _mm256_storeu_ps(iimage_padded_data + j * data_width + i, zeros_float);
+        }
+        for (; i < border; ++i) {
+            iimage_padded_data[j * data_width + i] = 0.0f;
+        }
+    }
+
+    // BLOCK I
+    {
+        float sum = 0.0f;
+        float sum1 = 0.0f;
+        
+        int data_width = iimage->data_width;
+        int width = iimage->width;
+        int width_limit = width - 2;
+        int height_limit = iimage->height - 2;
+        float *iimage_data = iimage->data;
+
+        int i = 0;
+        // first row extra, since we don't have 0 padding
+        for (i = 0; i < width_limit; i += 2) {
+            sum += gray_image[i];
+            iimage_data[i] = sum;
+            sum += gray_image[i + 1];
+            iimage_data[i + 1] = sum;
+
+            sum1 += gray_image[width + i];
+            iimage_data[data_width + i] = iimage_data[i] + sum1;
+            sum1 += gray_image[width + i + 1];
+            iimage_data[data_width + i + 1] = iimage_data[i + 1] + sum1;
+        }
+
+        // Handle last element of an image with odd width extra.
+        // If previous stride = 2, then there should only be one element covered in this loop.
+        // This might change if we increase the stride.
+        for (; i < width; ++i) {
+            sum += gray_image[i];
+            iimage_data[i] = sum;
+            // printf("row 0, col %i sum: %f\n", i, sum);
+            sum1 += gray_image[width + i];
+            // printf("row 1, col %i sum: %f\n", i, sum1);
+            iimage_data[data_width + i] = iimage_data[i] + sum1;
+        }
+
+        // Handle all elements after the first row.
+        i = 2;
+        for (; i < height_limit; i += 2) {
+            sum = 0.0f;
+            sum1 = 0.0f;
+            int j = 0;
+            for (; j < width_limit; j += 2) {
+                sum += gray_image[i * width + j];
+                iimage_data[i * data_width + j] = iimage_data[(i - 1) * data_width + j] + sum;
+                sum += gray_image[i * width + j + 1];
+                iimage_data[i * data_width + j + 1] = iimage_data[(i - 1) * data_width + j + 1] + sum;
+
+                sum1 += gray_image[(i + 1) * width + j];
+                iimage_data[(i + 1) * data_width + j] = iimage_data[i * data_width + j] + sum1;
+                sum1 += gray_image[(i + 1) * width + j + 1];
+                iimage_data[(i + 1) * data_width + j + 1] = iimage_data[i * data_width + j + 1] + sum1;
+            }
+            // printf("j: %i\n", j);
+
+            // Handle last element of an image with odd width extra.
+            // If previous stride = 2, then there should only be one element covered in this loop.
+            // This might change if we increase the stride.
+            for (; j < width; ++j) {
+                // printf("j: %i; sum1: %f\n", j, sum1);
+                sum += gray_image[i * width + j];
+                iimage_data[i * data_width + j] = iimage_data[(i - 1) * data_width + j] + sum;
+
+                sum1 += gray_image[(i + 1) * width + j];
+                // printf("sum1: %f\n", sum1);
+                iimage_data[(i + 1) * data_width + j] = iimage_data[i * data_width + j] + sum1;
+            }
+        }
+
+        // Handle last element of an image with odd height extra.
+        // If previous stride = 2, then there should only be one row covered in this loop.
+        // This might change if we increase the stride.
+        for (; i < iimage->height ; ++i) {
+            sum = 0.0f;
+            int j = 0;
+            for (; j < width_limit; j += 2) {
+                // printf("j: %i; sum1: %f\n", j, sum);
+
+                sum += gray_image[i * width + j];
+                // printf("j: %i; sum1: %f\n", j, sum);
+                iimage_data[i * data_width + j] = iimage_data[(i - 1) * data_width + j] + sum;
+                sum += gray_image[i * width + j + 1];
+                // printf("j: %i; sum1: %f\n", j, sum);
+
+                iimage_data[i * data_width + j + 1] = iimage_data[(i - 1) * data_width + j + 1] + sum;
+            }
+            // printf("j: %i\n", j);
+
+            for (; j < width; ++j) {
+                sum += gray_image[i * width + j];
+                // printf("j: %i; sum1: %f\n", j, sum);
+
+                iimage_data[i * data_width + j] = iimage_data[(i - 1) * data_width + j] + sum;
+            }
+        }
+    }
+
+    // BLOCK C
+    for (int j = border; j < border + height; ++j) {
+        float last_element_in_row_float = iimage_padded_data[j * data_width + border + width - 1];
+        __m256 last_element_in_row_vec = _mm256_set1_ps(last_element_in_row_float);
+        int i = width + border;
+        for (; i < data_width - 7; i+=8) {
+            _mm256_storeu_ps(iimage_padded_data + j * data_width + i, last_element_in_row_vec);
+        }
+        for (; i < data_width; ++i) {
+            iimage_padded_data[j * data_width + i] = last_element_in_row_float;
+        }
+    }
+
+    // BLOCK D   
+    for (int j = border + height; j < data_height; ++j) {
+        int i = border;
+        for (; i < width + border - 7; i+=8) {
+            __m256 prev_elements_in_row = _mm256_loadu_ps(iimage_padded_data + (j-1) * data_width + i);
+            _mm256_storeu_ps(iimage_padded_data + j * data_width + i, prev_elements_in_row);
+        }
+        for (; i < width + border; ++i) {
+            iimage_padded_data[j * data_width + i] = iimage_padded_data[(j-1) * data_width + i];
+        }
+    }
+
+    // BLOCK E
+    int index_last_element = (border + height - 1) * data_width + border + width - 1;
+    float max_value_float = iimage_padded_data[index_last_element];
+    __m256 max_value_vec = _mm256_set1_ps(max_value_float);
+    for (int j = border + height; j < data_height; ++j) {
+        int i = border + width;
+        for (; i < data_width - 7; i+=8) {
+            _mm256_storeu_ps(iimage_padded_data + j * data_width + i, max_value_vec);
+        }
+        for (; i < data_width; ++i) {
+            iimage_padded_data[j * data_width + i] = max_value_float;
+        }
+    }
+    
+}
+
+
 void compute_integral_img_int(uint8_t *gray_image, struct integral_image *iimage) {
 
     uint32_t *iimage_idata = (uint32_t *) iimage->data;
