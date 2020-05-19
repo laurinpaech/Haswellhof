@@ -12,7 +12,7 @@ struct fasthessian* create_fast_hessian(struct integral_image *iimage) {
     // malloc fast hessian struct
     struct fasthessian* fh = (struct fasthessian*) malloc(sizeof(struct fasthessian));
 
-    // Interest Image
+    // Integral Image
     fh->iimage = iimage;
 
     // Set Variables
@@ -88,6 +88,7 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
     int lobe = filter_size/3;
     int border = (filter_size-1)/2;
     float inv_area = 1.f/(filter_size*filter_size);
+
     for (int i = 0, ind = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j, ind++) {
             // Image coordinates
@@ -111,13 +112,13 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
 
             // Calculate Determinant
             response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
             // Calculate Laplacian
             laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
         }
     }
 
 }
-
 
 void get_interest_points(struct fasthessian *fh, std::vector<struct interest_point> *interest_points) {
 

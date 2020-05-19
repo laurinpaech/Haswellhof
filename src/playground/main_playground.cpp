@@ -1,10 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-#include <vector>
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
+
+#define USE_MSURF 1
 
 #include "stb_image.h"
 #include "integral_image.h"
@@ -16,7 +13,11 @@
 
 #include "playground.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
+#include <vector>
 
 int main(int argc, char const *argv[])
 {
@@ -40,10 +41,6 @@ int main(int argc, char const *argv[])
 	// Compute integral image
 	compute_integral_img(image, iimage);
 
-	playground_function3(image, width, height);
-	//playground_function2();
-	//playground_function1(image, width, height);
-	/*
 	// Fast-Hessian
 	struct fasthessian* fh = create_fast_hessian(iimage);
 
@@ -61,6 +58,7 @@ int main(int argc, char const *argv[])
 	get_msurf_descriptors(iimage, &interest_points);
 
 
+
 	// Write results to file
     FILE * fp = fopen(argv[2],"w");
     printf("%d %d %d\n", iimage->width, iimage->height, channels);
@@ -72,19 +70,17 @@ int main(int argc, char const *argv[])
         fprintf(fp, "\n");
     }
     fclose(fp);
-*/
+
 	// Free memory
 	stbi_image_free(image); // possibly move this to create_integral_img
-	free(iimage->padded_data);
+	free(iimage->data);
 	free(iimage);
-	/*
 	for (int i = 0; i < NUM_LAYERS; ++i) {
 		free(fh->response_map[i]->response);
 		free(fh->response_map[i]->laplacian);
 		free(fh->response_map[i]);
 	}
 	free(fh);
-	*/
 
 	return 0;
 }

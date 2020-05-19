@@ -168,6 +168,11 @@ void bench_get_msurf_descriptors(
     struct integral_image *iimage, std::vector<struct interest_point> *interest_points,
     std::vector<struct benchmark_data> &data);
 
+
+
+// Times the function get_msurf_descriptors from descriptor. 
+// Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data. 
+// The number of flops for get_msurf_descriptor must be set in benchmark_data.
 void perf_get_msurf_descriptors(void (*function)(struct integral_image *, std::vector<struct interest_point> *),
                                 struct integral_image *iimage, std::vector<struct interest_point> *ipoints,
                                 struct benchmark_data &data);

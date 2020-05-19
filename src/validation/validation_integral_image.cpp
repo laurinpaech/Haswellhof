@@ -6,7 +6,7 @@
 
 
 // Easier for debugging.
-// Creates an integral image based on a custom array, the base function and a list of other functions. 
+// Creates an integral image based on a custom array, the base function and a list of other functions.
 // The results of the integral images are being compared.
 // If one of the results difers from the base implementation false is being returned.
 // Messages clarifying the equality of the results are being printed.

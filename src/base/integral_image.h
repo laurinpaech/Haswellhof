@@ -13,7 +13,7 @@
     })
 
 struct integral_image {
-    
+
     // Width and height of (original) image
     int width;
     int height;
@@ -21,7 +21,7 @@ struct integral_image {
     // Pointer to upper left corner (origin) of integral image
     float *data;
 
-    // Width and height of (potentially) padded image (use this for indexing with data) 
+    // Width and height of (potentially) padded image (use this for indexing with data)
     int data_width;
     int data_height;
 
@@ -41,6 +41,7 @@ inline float box_integral(struct integral_image *iimage, int row, int col, int r
     int data_width = iimage->data_width;
     int width = iimage->width;
     int height = iimage->height;
+    float res, temp0, temp1;
 
     // subtracting by one for row/col because row/col is inclusive.
     int r0 = MIN(row, height) - 1;         // r - 3
@@ -71,5 +72,14 @@ inline float box_integral(struct integral_image *iimage, int row, int col, int r
     if (r1 >= 0 && c1 >= 0) {
         D = data[r1 * data_width + c1];
     }
-    return fmax(0.0f, A - B - C + D);
+
+    // there was a floating point arithmetic bug in the original implementation
+    // this fixes it and now fmaxf is not needed
+    temp0 = A - C;
+    temp1 = D - B;
+    res = temp0 + temp1;
+
+    // fmaxf instead of fmax (faster?)
+    // return fmaxf(0.0f, A - B - C + D);
+    return res;
 }

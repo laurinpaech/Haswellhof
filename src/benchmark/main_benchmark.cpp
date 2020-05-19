@@ -17,12 +17,21 @@
 #include "stb_image.h"
 
 const char *images[] = {
+<<<<<<< HEAD
     // "../images/sunflower/sunflower_32.jpg", 
     // "../images/sunflower/sunflower_64.jpg",
     //"../images/sunflower/sunflower_128.jpg",
     //"../images/sunflower/sunflower_256.jpg",
     "../images/sunflower/sunflower_512.jpg",
     //"../images/sunflower/sunflower_1024.jpg",
+=======
+    "../images/sunflower/sunflower_32.jpg",
+    "../images/sunflower/sunflower_64.jpg",
+    "../images/sunflower/sunflower_128.jpg",
+    "../images/sunflower/sunflower_256.jpg",
+    "../images/sunflower/sunflower_512.jpg",
+    "../images/sunflower/sunflower_1024.jpg"
+>>>>>>> master
     //"../images/sunflower/sunflower_2048.jpg"
     //"../images/sunflower/sunflower_4096.jpg"
 };
@@ -38,7 +47,11 @@ const char *images[] = {
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
     for (int i = 0; i < n_images; i++) {
+<<<<<<< HEAD
         char *image_name = (char *)malloc(512 * sizeof(char));
+=======
+        char *image_name = (char *)malloc(1024 * sizeof(char));
+>>>>>>> master
         strcpy(image_name, images[i]);
 
         int width, height, channels;
@@ -100,6 +113,7 @@ int main(int argc, char const *argv[]) {
             functions.push_back(compute_response_layers_precompute);
             functions.push_back(compute_response_layers_blocking);
             functions.push_back(compute_response_layers_at_once);
+            functions.push_back(compute_response_map_sonic_Dyy);
 
             struct benchmark_data default_data(image_name, width, height, "compute_response_layer", -1,
                                                (1 + height * width * 13));
@@ -109,12 +123,17 @@ int main(int argc, char const *argv[]) {
                                         (1 + height * width * 13));
             struct benchmark_data data3(image_name, width, height, "compute_response_layers_at_once", -1,
                                         (1 + height * width * 13));
+            struct benchmark_data data2(image_name, width, height, "compute_response_map_sonic_Dyy", -1,
+                                        (1 + height * width * 13));
 
             std::vector<struct benchmark_data> data;
             data.push_back(default_data);
             data.push_back(data1);
             data.push_back(data2);
+<<<<<<< HEAD
             data.push_back(data3);
+=======
+>>>>>>> master
 
             bench_compute_response_layer(functions, iimage, data);
 
@@ -131,6 +150,7 @@ int main(int argc, char const *argv[]) {
                 padded_functions.push_back(compute_response_layers_unconditional);
                 padded_functions.push_back(compute_response_layers_unconditional_strided);
 
+<<<<<<< HEAD
                 struct benchmark_data padded_data1(image_name, width, height,
                                                 "compute_response_layers_unconditional", -1, (1 + height * width * 13));
                 struct benchmark_data padded_data2(image_name, width, height,
@@ -139,11 +159,17 @@ int main(int argc, char const *argv[]) {
                 std::vector<struct benchmark_data> data_padded_functions;
                 data_padded_functions.push_back(padded_data1);
                 data_padded_functions.push_back(padded_data2);
+=======
+                struct benchmark_data padded_data0(image_name, width, height, "compute_response_layers_unconditional", -1, (1 + height * width * 13));
+
+                std::vector<struct benchmark_data> data_padded_functions;
+                data_padded_functions.push_back(padded_data0);
+>>>>>>> master
 
                 bench_compute_response_layer(padded_functions, padded_iimage, data_padded_functions);
                 all_benchmark_data.insert(all_benchmark_data.end(), data_padded_functions.begin(),
                                         data_padded_functions.end());
-                                        
+
                 free(padded_iimage->padded_data);
                 free(padded_iimage);
             }
@@ -192,9 +218,7 @@ int main(int argc, char const *argv[]) {
             printf("interpolate_step start\n");
 
             // Insert all interpolate_step functions for benchmarking here
-            std::vector<void (*)(int, int, struct response_layer *, struct response_layer *, struct response_layer *,
-                                 float[3])>
-                functions;
+            std::vector<void (*)(int, int, struct response_layer *, struct response_layer *, struct response_layer *, float[3])> functions;
             functions.push_back(interpolate_step);
 
             struct benchmark_data default_data(image_name, width, height, "interpolate_step", interest_points.size(),
