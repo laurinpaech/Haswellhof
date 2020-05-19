@@ -27,6 +27,7 @@ inline float box_integral(struct integral_image *iimage, int row, int col, int r
     float *data = (float *)iimage->data;
     int width = iimage->width;
     int height = iimage->height;
+    float res, temp0, temp1;
 
     // subtracting by one for row/col because row/col is inclusive.
     int r0 = MIN(row, height) - 1;         // r - 3
@@ -58,5 +59,13 @@ inline float box_integral(struct integral_image *iimage, int row, int col, int r
         D = data[r1 * width + c1];
     }
 
-    return fmax(0.0f, A - B - C + D);
+    // there was a floating point arithmetic bug in the original implementation
+    // this fixes it and now fmaxf is not needed
+    temp0 = A - C;
+    temp1 = D - B;
+    res = temp0 + temp1;
+
+    // fmaxf instead of fmax (faster?)
+    // return fmaxf(0.0f, A - B - C + D);
+    return res;
 }

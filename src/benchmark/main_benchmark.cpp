@@ -18,13 +18,13 @@
 //#include "descriptor_opt.h"
 
 const char *images[] = {
-    //"../images/sunflower/sunflower_32.jpg",  
-    //"../images/sunflower/sunflower_64.jpg",
-    "../images/sunflower/sunflower_128.jpg", 
+    // "../images/sunflower/sunflower_32.jpg",
+    // "../images/sunflower/sunflower_64.jpg",
+    "../images/sunflower/sunflower_128.jpg",
     "../images/sunflower/sunflower_256.jpg",
-    "../images/sunflower/sunflower_512.jpg"
-    // "../images/sunflower/sunflower_1024.jpg",
-    // "../images/sunflower/sunflower_2048.jpg",
+    "../images/sunflower/sunflower_512.jpg",
+    "../images/sunflower/sunflower_1024.jpg",
+    "../images/sunflower/sunflower_2048.jpg",
     // "../images/sunflower/sunflower_4096.jpg",
 };
 
@@ -37,8 +37,9 @@ const char *images[] = {
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
+
     for (int i = 0; i < n_images; i++) {
-        char *image_name = (char *)malloc(32 * sizeof(char));
+        char *image_name = (char *)malloc(1024 * sizeof(char));
         strcpy(image_name, images[i]);
 
         int width, height, channels;
@@ -77,7 +78,7 @@ int main(int argc, char const *argv[]) {
 
             // Benchmarking all compute_integral_img functions and storing timing results in respective entries in data
             bench_compute_integral_img(functions, image, data);
-            
+
             // Appending this data to all benchmarking data
             all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
 
@@ -90,19 +91,20 @@ int main(int argc, char const *argv[]) {
 
         // Create octaves with response layers
         create_response_map(fh);
-        
+
 #ifdef BENCHMARK_COMPUTE_RESPONSE_LAYERS
         {
             printf("compute_response_map start\n");
 
             std::vector<void (*)(struct fasthessian *)> functions;
             functions.push_back(compute_response_map);
-            //functions.push_back(compute_response_layers_at_once);
-            functions.push_back(compute_response_map_Dyy);
+            // functions.push_back(compute_response_layers_at_once);
+            // functions.push_back(compute_response_map_sonic_Dyy); TODO BENCH THIS TOO
+            functions.push_back(compute_response_map_Dyy_laplacian_localityloops);
 
             struct benchmark_data default_data(image_name, width, height, "compute_response_map", -1, (1 + height * width * 13));
-            struct benchmark_data data1(image_name, width, height, "compute_response_map_Dyy", -1, (1 + height * width * 13));
-            
+            struct benchmark_data data1(image_name, width, height, "compute_response_map_Dyy_laplacian_localityloops", -1, (1 + height * width * 13));
+
             std::vector<struct benchmark_data> data;
             data.push_back(default_data);
             data.push_back(data1);
@@ -113,7 +115,7 @@ int main(int argc, char const *argv[]) {
             printf("compute_response_map end\n");
         }
 #endif
-        
+
         // Compute responses for every layer
 	    compute_response_map(fh);
 
@@ -124,11 +126,11 @@ int main(int argc, char const *argv[]) {
 #ifdef BENCHMARK_INTEREST_POINTS
         // {
         //     printf("get_interest_points start\n");
-            
+
         //     // Insert all get_interest_points functions for benchmarking here
         //     std::vector<void (*)(struct fasthessian *, std::vector<struct interest_point> *)> functions;
         //     functions.push_back(get_interest_points);
-            
+
         //     long flops = 109 * interest_points.size();
         //     struct benchmark_data default_data(image_name, width, height, "get_interest_points", interest_points.size(), flops);
 
@@ -138,7 +140,7 @@ int main(int argc, char const *argv[]) {
 
         //     // Benchmarking all get_interest_point functions and storing timing results in respective entries in data
         //     bench_get_interest_points(functions, fh, data);
-            
+
         //     // Appending this data to all benchmarking data
         //     all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
         //     printf("get_interest_points end\n");
@@ -148,13 +150,13 @@ int main(int argc, char const *argv[]) {
 #ifdef BENCHMARK_INTERPOLATE_STEPS
         {
             printf("interpolate_step start\n");
-            
+
             // Insert all interpolate_step functions for benchmarking here
             std::vector<void (*)(int, int, struct response_layer *, struct response_layer *, struct response_layer *, float[3])> functions;
             functions.push_back(interpolate_step);
 
             struct benchmark_data default_data(image_name, width, height, "interpolate_step", interest_points.size(), 109);
-            
+
             // Insert all respective benchmarking info for functions here
             std::vector<struct benchmark_data> data;
             data.push_back(default_data);
@@ -173,7 +175,7 @@ int main(int argc, char const *argv[]) {
 #ifdef BENCHMARK_GET_MSURF_DESCRIPTORS
         {
             printf("get_msurf_descriptor start\n");
-            
+
             // Insert all interpolate_step functions for benchmarking here
             std::vector<void (*)(struct integral_image *, std::vector<struct interest_point> *)> functions;
             functions.push_back(get_msurf_descriptors);
@@ -188,14 +190,14 @@ int main(int argc, char const *argv[]) {
             functions.push_back(get_msurf_descriptors_gauss_s2_precomputed);
             functions.push_back(get_msurf_descriptors_gauss_compute_once_case);
             functions.push_back(get_msurf_descriptors_gauss_pecompute_haar);
-            
+
             // TODO: (Sebastian) find FLOPS count for get_msurf_descriptor
             struct benchmark_data default_data(image_name, width, height, "get_msurf_descriptors", interest_points.size(), -1);
-            struct benchmark_data data1(image_name, width, height, "get_msurf_descriptors_improved", interest_points.size(), -1);   
+            struct benchmark_data data1(image_name, width, height, "get_msurf_descriptors_improved", interest_points.size(), -1);
             struct benchmark_data data2(image_name, width, height, "get_msurf_descriptors_improved_flip", interest_points.size(), -1);
-            struct benchmark_data data22(image_name, width, height, "get_msurf_descriptors_improved_flip_flip", interest_points.size(), -1);   
+            struct benchmark_data data22(image_name, width, height, "get_msurf_descriptors_improved_flip_flip", interest_points.size(), -1);
             struct benchmark_data data3(image_name, width, height, "get_msurf_descriptors_inlined", interest_points.size(), -1);
-            struct benchmark_data data4(image_name, width, height, "get_msurf_descriptors_inlinedHaarWavelets", interest_points.size(), -1);   
+            struct benchmark_data data4(image_name, width, height, "get_msurf_descriptors_inlinedHaarWavelets", interest_points.size(), -1);
             struct benchmark_data data5(image_name, width, height, "get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries", interest_points.size(), -1);
             struct benchmark_data data6(image_name, width, height, "get_msurf_descriptors_gauss_s1_separable_test", interest_points.size(), -1);
             struct benchmark_data data7(image_name, width, height, "get_msurf_descriptors_gauss_s2_precomputed", interest_points.size(), -1);
@@ -241,7 +243,7 @@ int main(int argc, char const *argv[]) {
             free(fh->response_map[i]);
         }
         free(fh);
-        
+
         free(image_name);
     }
     save_benchmark_data(all_benchmark_data);
