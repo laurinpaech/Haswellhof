@@ -14,3 +14,5 @@ void compute_response_layers_at_once(struct fasthessian* fh);
 void compute_response_layers_unconditional(struct fasthessian* fh);
 
 void compute_response_layer_unconditional(struct response_layer* layer, struct integral_image* iimage);
+
+void get_interest_points_block(struct fasthessian *fh, std::vector<struct interest_point> *interest_points);

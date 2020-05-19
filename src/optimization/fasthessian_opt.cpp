@@ -1155,3 +1155,60 @@ void compute_response_layer_unconditional(struct response_layer *layer, struct i
     }
 
 }
+
+void get_interest_points_block(struct fasthessian *fh, std::vector<struct interest_point> *interest_points) {
+
+    const int block_size = 16;
+
+    assert(fh != NULL);
+    assert(interest_points != NULL);
+
+    // filter index map
+    const int filter_map[NUM_OCTAVES][NUM_LAYERS] = {
+        {0, 1, 2, 3},
+        {1, 3, 4, 5},
+        {3, 5, 6, 7},
+        //{5, 7, 8, 9},
+        //{7, 9, 10, 11}
+    };
+
+    // getting response layers
+    struct response_layer *bottom;
+    struct response_layer *middle;
+    struct response_layer *top;
+
+    // iterating through all octaves and each layer of octave in window of three (top, middle, bottom)
+    for (int o = 0; o < fh->octaves; ++o) {
+
+        // TODO: (Sebastian) allow for fh->layers != 4 as well (note that fh->layers>=3 has to hold)
+        for (int i = 0; i <= 1; ++i) {
+
+            // assigning respective bottom, middle and top response layer
+            bottom = fh->response_map[filter_map[o][i]];
+            middle = fh->response_map[filter_map[o][i+1]];
+            top = fh->response_map[filter_map[o][i+2]];
+
+            // iterating over middle response layer at density of the most sparse layer (always top),
+            // to find maxima accreoss scale and space
+            for (int r = 0; r < top->height; r+=block_size) {
+                for (int c = 0; c < top->width; c+=block_size) {
+                    int br_max = MIN(r + block_size, top->height);
+                    for (int br = r; br < br_max; ++br) {
+                        int bc_max = MIN(c + block_size, top->width);
+                        for (int bc = c; bc < bc_max; ++bc) {
+                            // checking if current pixel position is local maximum in 3x3x3 maximum and above threshold
+                            if (is_extremum(br, bc, top, middle, bottom, fh->thresh)) {
+
+                                // sub-pixel interpolating local maxium and adding to resulting interest point vector
+                                interpolate_extremum(br, bc, top, middle, bottom, interest_points);
+
+                            }
+                        } 
+                    }
+                }
+            }
+
+        }
+    }
+}
+
