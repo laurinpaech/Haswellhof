@@ -34,6 +34,7 @@ const char *images[] = {
 #define BENCHMARK_INTEREST_POINTS
 #define BENCHMARK_INTERPOLATE_STEPS
 #define BENCHMARK_GET_MSURF_DESCRIPTORS
+#define BENCHMARK_COMPUTE_RESPONSE_LAYERS_FLAT
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
