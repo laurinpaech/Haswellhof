@@ -77,9 +77,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_integral_image(compute_integral_img, test_functions, width, height, image, false);
         if (valid) {
-            printf("INTEGRAL IMAGE VALIDATION:    \033[0;32mSUCCESS!\033[0m\n");
+            printf("INTEGRAL IMAGE VALIDATION:                 \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("INTEGRAL IMAGE VALIDATION:    \033[1;31mFAILED!\033[0m\n");
+            printf("INTEGRAL IMAGE VALIDATION:                 \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
@@ -92,9 +92,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_integral_image(compute_padded_integral_img, test_functions, width, height, image, true);
         if (valid) {
-            printf("INTEGRAL IMAGE PADDED VALIDATION:   \033[0;32mSUCCESS!\033[0m\n");
+            printf("INTEGRAL IMAGE PADDED VALIDATION:          \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("INTEGRAL IMAGE PADDED VALIDATION:   \033[1;31mFAILED!\033[0m\n");
+            printf("INTEGRAL IMAGE PADDED VALIDATION:          \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
@@ -108,9 +108,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_integral_image_int(compute_integral_img_int, test_functions, width, height, image_int, false);
         if (valid) {
-            printf("INTEGRAL IMAGE INT VALIDATION:      \033[0;32mSUCCESS!\033[0m\n");
+            printf("INTEGRAL IMAGE INT VALIDATION:             \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("INTEGRAL IMAGE INT VALIDATION:      \033[1;31mFAILED!\033[0m\n");
+            printf("INTEGRAL IMAGE INT VALIDATION:             \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
@@ -124,9 +124,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_integral_image_int(compute_padded_integral_img_int, test_functions, width, height, image_int, true);
         if (valid) {
-            printf("INTEGRAL IMAGE INT PADDED VALIDATION: \033[0;32mSUCCESS!\033[0m\n");
+            printf("INTEGRAL IMAGE INT PADDED VALIDATION:      \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("INTEGRAL IMAGE INT PADDED VALIDATION: \033[1;31mFAILED!\033[0m\n");
+            printf("INTEGRAL IMAGE INT PADDED VALIDATION:      \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
@@ -158,9 +158,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_compute_response_layers(compute_response_layers, test_functions, iimage);
         if (valid) {
-            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
+            printf("COMPUTE RESPONSE LAYER VALIDATION:         \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[1;31mFAILED!\033[0m!\n");
+            printf("COMPUTE RESPONSE LAYER VALIDATION:         \033[1;31mFAILED!\033[0m!\n");
         }
     }
 #endif
@@ -196,9 +196,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_get_interest_points(get_interest_points, test_functions, fh);
         if (valid) {
-            printf("GET INTEREST POINTS VALIDATION:     \033[0;32mSUCCESS!\033[0m\n");
+            printf("GET INTEREST POINTS VALIDATION:            \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("GET INTEREST POINTS VALIDATION:     \033[1;31mFAILED!\033[0m\n");
+            printf("GET INTEREST POINTS VALIDATION:            \033[1;31mFAILED!\033[0m\n");
         }
     }
 
@@ -228,9 +228,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
         if (valid) {
-            printf("MSURF DESCRIPTOR VALIDATION:        \033[0;32mSUCCESS!\033[0m\n");
+            printf("MSURF DESCRIPTOR VALIDATION:               \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("MSURF DESCRIPTOR VALIDATION:        \033[1;31mFAILED!\033[0m\n");
+            printf("MSURF DESCRIPTOR VALIDATION:               \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
