@@ -3,10 +3,9 @@
 #include "fasthessian.h"
 #include "integral_image_opt.h"
 
+void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *layer, struct integral_image *iimage);
 
-// void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *layer, struct integral_image *iimage);
-
-// void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *layer, struct integral_image *iimage);
+void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *layer, struct integral_image *iimage);
 
 void get_interest_points_layers(struct fasthessian *fh, std::vector<struct interest_point> *interest_points);
 
@@ -72,7 +71,7 @@ void compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops_invsqr(stru
 
 void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct response_layer* layer, struct integral_image* iimage);
 
-inline void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *layer, struct integral_image *iimage) {
+inline void height_greater_border_width_greater_double_lobe_Dyy_inlined(struct response_layer *layer, struct integral_image *iimage) {
     // Filter_size > height
     // 2. Case The filter is somewhat larger than the image
     /*  (height > border && (iwidth > 2 * lobe - 1))
@@ -547,7 +546,7 @@ inline void height_greater_border_width_greater_double_lobe_Dyy(struct response_
     }
 }
 
-inline void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *layer, struct integral_image *iimage) {
+inline void height_greater_border_width_less_double_lobe_Dyy_inlined(struct response_layer *layer, struct integral_image *iimage) {
     // Filter_size > height
     // 2. Case The filter is somewhat larger than the image
     /*  (height > border && (iwidth < 2 * lobe))
