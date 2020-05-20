@@ -294,7 +294,6 @@ inline void haarXY_unconditional_vectorized(struct integral_image *iimage, __m25
 
     float *data = iimage->data;
 
-    printf("data width: %d%", iimage->data_width);
 
     __m256 twos = _mm256_set1_ps(2.0f);
     __m256i ones = _mm256_set1_epi32(1);
@@ -308,9 +307,9 @@ inline void haarXY_unconditional_vectorized(struct integral_image *iimage, __m25
     __m256i r2 = _mm256_add_epi32(r1, scale);
     __m256i c2 = _mm256_add_epi32(c1, scale);
 
-    __m256i r0w = _mm256_mul_epi32(r0, data_width);
-    __m256i r1w = _mm256_mul_epi32(r1, data_width);
-    __m256i r2w = _mm256_mul_epi32(r2, data_width);
+    __m256i r0w = _mm256_mullo_epi32(r0, data_width);
+    __m256i r1w = _mm256_mullo_epi32(r1, data_width);
+    __m256i r2w = _mm256_mullo_epi32(r2, data_width);
     
     // subtracting by one for row/col because row/col is inclusive.wenn
     // int r0 = row - 1;         
@@ -358,7 +357,7 @@ inline void haarXY_unconditional_vectorized(struct integral_image *iimage, __m25
     __m256 haarX_val = _mm256_add_ps(r0c1_sub_r2c1_2, _mm256_add_ps(r2c2_sub_r0c0, r2c0_sub_r0c2));
     __m256 haarY_val = _mm256_add_ps(r1c0_sub_r1c2_2, _mm256_sub_ps(r2c2_sub_r0c0, r2c0_sub_r0c2));
 
-    _mm256_storeu_ps(haarX, r2c2);
-    _mm256_storeu_ps(haarY, r2c2);
+    _mm256_storeu_ps(haarX, haarX_val);
+    _mm256_storeu_ps(haarY, haarY_val);
 
 }

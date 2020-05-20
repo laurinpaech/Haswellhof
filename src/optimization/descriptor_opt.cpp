@@ -3732,13 +3732,13 @@ void get_msurf_descriptor_arrays_simd(struct integral_image* iimage, struct inte
                 int k7 = k + 7;
 
                 int k_count0 = k_count + 0;
-                int k_count1 = k_count + 1;
-                int k_count2 = k_count + 2;
-                int k_count3 = k_count + 3;
-                int k_count4 = k_count + 4;
-                int k_count5 = k_count + 5;
-                int k_count6 = k_count + 6;
-                int k_count7 = k_count + 7;
+                // int k_count1 = k_count + 1;
+                // int k_count2 = k_count + 2;
+                // int k_count3 = k_count + 3;
+                // int k_count4 = k_count + 4;
+                // int k_count5 = k_count + 5;
+                // int k_count6 = k_count + 6;
+                // int k_count7 = k_count + 7;
 
                 //Get x coords of sample point
                 int sample_x_sub_int_scale0 = (int)(ipoint_x_sub_int_scale_add_05 + k0 * scale);
@@ -3762,51 +3762,6 @@ void get_msurf_descriptor_arrays_simd(struct integral_image* iimage, struct inte
                 haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec, sample_x_sub_int_scale_vec, int_scale_vec, 
                                           &haarResponseX[l_count*24+k_count0], &haarResponseY[l_count*24+k_count0]);
                 
-
-
-                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale0,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count0],haarResponseY[l_count*24+k_count0]);
-                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale1,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count1],haarResponseY[l_count*24+k_count1]);
-                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale2,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count2],haarResponseY[l_count*24+k_count2]);
-                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale3,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count3],haarResponseY[l_count*24+k_count3]);
-                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale4,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count4],haarResponseY[l_count*24+k_count4]);
-                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale5,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count5],haarResponseY[l_count*24+k_count5]);
-                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale6,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count6],haarResponseY[l_count*24+k_count6]);
-                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale7,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count7],haarResponseY[l_count*24+k_count7]);
-
-                printf("Vec: %f %f %f %f %f %f %f %f\n", haarResponseY[l_count*24+k_count0],
-                                                      haarResponseY[l_count*24+k_count1],
-                                                      haarResponseY[l_count*24+k_count2],
-                                                      haarResponseY[l_count*24+k_count3],
-                                                      haarResponseY[l_count*24+k_count4],
-                                                      haarResponseY[l_count*24+k_count5],
-                                                      haarResponseY[l_count*24+k_count6],
-                                                      haarResponseY[l_count*24+k_count7]);
-
-                
-                
-                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale0, int_scale, &haarResponseX[l_count*24+k_count0], &haarResponseY[l_count*24+k_count0]);
-                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale1, int_scale, &haarResponseX[l_count*24+k_count1], &haarResponseY[l_count*24+k_count1]);
-                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale2, int_scale, &haarResponseX[l_count*24+k_count2], &haarResponseY[l_count*24+k_count2]);
-                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale3, int_scale, &haarResponseX[l_count*24+k_count3], &haarResponseY[l_count*24+k_count3]);
-                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale4, int_scale, &haarResponseX[l_count*24+k_count4], &haarResponseY[l_count*24+k_count4]);
-                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale5, int_scale, &haarResponseX[l_count*24+k_count5], &haarResponseY[l_count*24+k_count5]);
-                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale6, int_scale, &haarResponseX[l_count*24+k_count6], &haarResponseY[l_count*24+k_count6]);
-                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale7, int_scale, &haarResponseX[l_count*24+k_count7], &haarResponseY[l_count*24+k_count7]);
-
-                // printf("real: %f %f\n", haarResponseX[l_count*24+k_count0], haarResponseX[l_count*24+k_count1]);
-                printf("Real: %f %f %f %f %f %f %f %f\n", haarResponseY[l_count*24+k_count0],
-                                                      haarResponseY[l_count*24+k_count1],
-                                                      haarResponseY[l_count*24+k_count2],
-                                                      haarResponseY[l_count*24+k_count3],
-                                                      haarResponseY[l_count*24+k_count4],
-                                                      haarResponseY[l_count*24+k_count5],
-                                                      haarResponseY[l_count*24+k_count6],
-                                                      haarResponseY[l_count*24+k_count7]);
-                
-                // printf("real0: %i %i\n", sample_y_sub_int_scale, sample_x_sub_int_scale0);
-                // printf("real1: %i %i\n", sample_y_sub_int_scale, sample_x_sub_int_scale1);
-                // printf("real2: %i %i\n", sample_y_sub_int_scale, sample_x_sub_int_scale2);
-                // printf("real4: %i %i\n", sample_y_sub_int_scale, sample_x_sub_int_scale4);
             }
 
         }
