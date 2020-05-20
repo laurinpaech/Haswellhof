@@ -65,3 +65,4 @@ cmake-build-*
 *.ipynb_checkpoints
 
 benchmarking_files/
+build_old/

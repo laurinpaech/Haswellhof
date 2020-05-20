@@ -1,6 +1,7 @@
-#define WIN32
+#define _WIN64
+#include <stdint.h>
 /* ==================== GNU C and possibly other UNIX compilers ===================== */
-#if !defined(WIN32) || defined(__GNUC__)
+#if !(defined(WIN32) || defined(_WIN64)) || defined(__GNUC__)
 
 	#if defined(__GNUC__) || defined(__linux__)
 		#define VOLATILE __volatile__
@@ -18,8 +19,16 @@
 /* ======================== WIN32 ======================= */
 #else
 
-	#define myInt64 signed __int64
-	#define INT32 unsigned __int32
+	#include <bitset>
+	#include <array>
+
+	#include <intrin.h>
+	#pragma intrinsic(__rdtsc, __cpuid)
+	//#pragma intrinsic(__cpuid)
+
+
+	#define myInt64 uint64_t
+	#define INT32 uint32_t
 
 #endif
 
@@ -40,7 +49,7 @@
 	(COUNTER(a)-COUNTER(b))
 
 /* ==================== GNU C and possibly other UNIX compilers ===================== */
-#if !defined(WIN32) || defined(__GNUC__)
+#if !(defined(WIN32) || defined(_WIN64)) || defined(__GNUC__)
 
 	typedef union
 	{       myInt64 int64;
@@ -53,6 +62,28 @@
 		ASM VOLATILE ("cpuid" : : "a" (0) : "bx", "cx", "dx" )
 
 /* ======================== WIN32 ======================= */
+
+#elif defined(_WIN64)
+
+	typedef union
+	{
+	myInt64 int64;
+	struct { INT32 lo, hi; } int32;
+	} tsc_counter;
+
+#define RDTSC(cpu_c) \
+	(cpu_c).int64 = __rdtsc()
+#if 0
+#define CPUID(void)               \
+	{                          \ 
+		int cpu_test[4];\
+		int* cpu_ptr = cpu_test;\
+		__cpuid(cpu_ptr, 0);   \
+		//__cpuid(cpui_info.data(), 0);  \
+	}
+#endif
+
+
 #else
 
 	typedef union
@@ -61,9 +92,9 @@
 	} tsc_counter;
 
 	#define RDTSC(cpu_c)   \
-	{       __asm rdtsc    \
-			__asm mov (cpu_c).int32.lo,eax  \
-			__asm mov (cpu_c).int32.hi,edx  \
+	{       __asm{rdtsc}    \
+			__asm{mov (cpu_c).int32.lo,eax}  \
+			__asm{mov (cpu_c).int32.hi,edx}  \
 	}
 
 	#define CPUID() \
@@ -79,16 +110,24 @@ void init_tsc() {
 	; // no need to initialize anything for x86
 }
 
-myInt64 start_tsc(void) {
+inline myInt64 start_tsc(void) {
     tsc_counter start;
-    CPUID();
+	{                          
+		int cpu_test[4];
+		__cpuid(cpu_test, 0); 
+		
+	} 
     RDTSC(start);
     return COUNTER_VAL(start);
 }
 
-myInt64 stop_tsc(myInt64 start) {
+inline myInt64 stop_tsc(myInt64 start) {
 	tsc_counter end;
 	RDTSC(end);
-	CPUID();
+	{
+		int cpu_test[4];
+		__cpuid(cpu_test, 0);
+
+	}
 	return COUNTER_VAL(end) - start;
 }
