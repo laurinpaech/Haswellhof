@@ -218,7 +218,7 @@ target_include_directories(playground
 # Adding libraries to be linked with executable playground
 target_link_libraries(playground)
 
-
+#[[
 # Adding executable autotune
 add_executable(autotune 
     base/stb_image.h
@@ -247,14 +247,14 @@ add_executable(autotune
     optimization/integral_image_opt.h
     optimization/integral_image_opt.cpp
     # Add autotune header and source files here
-    #autotune/descriptor_opt_gen.h
-    #autotune/descriptor_opt_gen.cpp
+    autotune/descriptor_opt_gen.h
+    autotune/descriptor_opt_gen.cpp
     #autotune/fasthessian_opt_gen.h
     #autotune/fasthessian_opt_gen.cpp
     autotune/main_autotune.cpp
 )
 
-# Adding include directories for executable playground
+# Adding include directories for executable autotune
 target_include_directories(autotune 
     PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/base 
@@ -264,6 +264,7 @@ target_include_directories(autotune
     ${CMAKE_CURRENT_SOURCE_DIR}/autotune
 )
 
-# Adding libraries to be linked with executable playground
+# Adding libraries to be linked with executable autotune
 target_link_libraries(autotune)
 
+]]
