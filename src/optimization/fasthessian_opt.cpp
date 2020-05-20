@@ -3,18 +3,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy(struct fasthessian *fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
-        compute_response_layer_Dyy_top_mid(fh->response_map[i], fh->iimage);
+        compute_response_layer_Dyy(fh->response_map[i], fh->iimage);
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy_laplacian(struct fasthessian *fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
         compute_response_layer_Dyy_laplacian(fh->response_map[i], fh->iimage);
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy_laplacian_localityloops(struct fasthessian *fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
         compute_response_layer_Dyy_laplacian_localityloops(fh->response_map[i], fh->iimage);
@@ -1614,6 +1617,7 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct integral_image *iimage) {
     float Dxx, Dyy, Dxy;
     int x, y;
@@ -1816,6 +1820,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_top(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y, k, k0;
@@ -2203,6 +2208,7 @@ void compute_response_layer_Dyy_top(struct response_layer* layer, struct integra
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_top_mid(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y, k, k0;
@@ -2831,6 +2837,7 @@ void compute_response_layer_Dyy_top_mid(struct response_layer* layer, struct int
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y, k, k0, k1;
@@ -3800,7 +3807,7 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
     }
 }
 
-// TODO: fix data_width
+// Only for images >= 128x128
 void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct integral_image* iimage) {
     /*
         simple laplacian fix
@@ -3813,6 +3820,7 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
     float* response = layer->response;
     bool* laplacian = layer->laplacian;
 
+    int data_width = iimage->data_width;
     int step = layer->step;
     int filter_size = layer->filter_size;
     int height = layer->height;
@@ -3846,14 +3854,14 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r01 = x + border;
             c01 = y + lobe - 1;
 
-            Dyy0 = data[r01 * iwidth + c01];
+            Dyy0 = data[r01 * data_width + c01];
 
             // neg part box filter
             r10 = x - lobe / 2 - 1;
             r11 = r10 + lobe;  // -1 is already part of r10
             c11 = y + lobe - 1;
 
-            D = data[r11 * iwidth + c11];
+            D = data[r11 * data_width + c11];
             Dyy1 = D;
 
             Dyy = Dyy0 - 3 * Dyy1;
@@ -3896,15 +3904,15 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r01 = x + border;
             c01 = y + lobe - 1;
 
-            Dyy0 = data[r01 * iwidth + c01];
+            Dyy0 = data[r01 * data_width + c01];
 
             // neg part box filter
             r10 = x - lobe / 2 - 1;
             r11 = r10 + lobe;   // -1 is already part of r10
             c11 = y + lobe - 1;
 
-            B = data[r10 * iwidth + c11];
-            D = data[r11 * iwidth + c11];
+            B = data[r10 * data_width + c11];
+            D = data[r11 * data_width + c11];
             Dyy1 = D - B;
 
             Dyy = Dyy0 - 3 * Dyy1;
@@ -3948,8 +3956,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             c00 = y - lobe;
             c01 = y + lobe - 1;
 
-            C = data[r01 * iwidth + c00];
-            D = data[r01 * iwidth + c01];
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + c01];
             Dyy0 = D - C;
 
             // neg part box filter
@@ -3959,8 +3967,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             c10 = y - lobe;
             c11 = y + lobe - 1;
 
-            C = data[r11 * iwidth + c10];
-            D = data[r11 * iwidth + c11];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + c11];
 
             Dyy1 = D - C;
 
@@ -4004,8 +4012,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             c00 = y - lobe;
             c01 = y + lobe - 1;
 
-            C = data[r01 * iwidth + c00];
-            D = data[r01 * iwidth + c01];
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + c01];
             Dyy0 = D - C;
 
             // neg part box filter
@@ -4014,10 +4022,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             c10 = y - lobe;
             c11 = y + lobe - 1;
 
-            A = data[r10 * iwidth + c10];
-            B = data[r10 * iwidth + c11];
-            C = data[r11 * iwidth + c10];
-            D = data[r11 * iwidth + c11];
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + c11];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + c11];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4062,8 +4070,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r01 = x + border;
             c00 = y - lobe;
 
-            C = data[r01 * iwidth + c00];
-            D = data[r01 * iwidth + iwidth-1];
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + iwidth-1];
             Dyy0 = D - C;
 
             // neg part box filter
@@ -4071,8 +4079,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r11 = r10 + lobe;
             c10 = y - lobe;
 
-            C = data[r11 * iwidth + c10];
-            D = data[r11 * iwidth + iwidth-1];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + iwidth-1];
 
             Dyy1 = D - C;
 
@@ -4115,8 +4123,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r01 = x + border;
             c00 = y - lobe;
 
-            C = data[r01 * iwidth + c00];
-            D = data[r01 * iwidth + iwidth-1];
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + iwidth-1];
             Dyy0 = D - C;
 
             // neg part box filter
@@ -4124,10 +4132,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r11 = r10 + lobe;
             c10 = y - lobe;
 
-            A = data[r10 * iwidth + c10];
-            B = data[r10 * iwidth + iwidth-1];
-            C = data[r11 * iwidth + c10];
-            D = data[r11 * iwidth + iwidth-1];
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + iwidth-1];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + iwidth-1];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4179,8 +4187,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r01 = x + border;
             c01 = y + lobe - 1;
 
-            B = data[r00 * iwidth + c01];
-            D = data[r01 * iwidth + c01];
+            B = data[r00 * data_width + c01];
+            D = data[r01 * data_width + c01];
             Dyy0 = D - B;
 
             // neg part box filter
@@ -4189,8 +4197,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r11 = r10 + lobe;
             c11 = y + lobe - 1;
 
-            B = data[r10 * iwidth + c11];
-            D = data[r11 * iwidth + c11];
+            B = data[r10 * data_width + c11];
+            D = data[r11 * data_width + c11];
 
             Dyy1 = D - B;
 
@@ -4239,10 +4247,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             c00 = y - lobe;
             c01 = y + lobe - 1;
 
-            A = data[r00 * iwidth + c00];
-            B = data[r00 * iwidth + c01];
-            C = data[r01 * iwidth + c00];
-            D = data[r01 * iwidth + c01];
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + c01];
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + c01];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4279,10 +4287,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             c10 = y - lobe;
             c11 = y + lobe - 1;
 
-            A = data[r10 * iwidth + c10];
-            B = data[r10 * iwidth + c11];
-            C = data[r11 * iwidth + c10];
-            D = data[r11 * iwidth + c11];
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + c11];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + c11];
 
             // There is a very weird floating point arithmetic bug here
             // The original implementation is wrong too, we just try to do it
@@ -4343,10 +4351,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r01 = x + border;
             c00 = y - lobe;
 
-            A = data[r00 * iwidth + c00];
-            B = data[r00 * iwidth + iwidth-1];
-            C = data[r01 * iwidth + c00];
-            D = data[r01 * iwidth + iwidth-1];
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + iwidth-1];
+            C = data[r01 * data_width + c00];
+            D = data[r01 * data_width + iwidth-1];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4358,10 +4366,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r11 = r10 + lobe;
             c10 = y - lobe;
 
-            A = data[r10 * iwidth + c10];
-            B = data[r10 * iwidth + iwidth-1];
-            C = data[r11 * iwidth + c10];
-            D = data[r11 * iwidth + iwidth-1];
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + iwidth-1];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + iwidth-1];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4411,8 +4419,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r00 = x - border - 1;
             c01 = y + lobe - 1;
 
-            B = data[r00 * iwidth + c01];
-            D = data[(iheight-1) * iwidth + c01];
+            B = data[r00 * data_width + c01];
+            D = data[(iheight-1) * data_width + c01];
 
             Dyy0 = D - B;
 
@@ -4422,8 +4430,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r11 = r10 + lobe;
             c11 = y + lobe - 1;
 
-            B = data[r10 * iwidth + c11];
-            D = data[r11 * iwidth + c11];
+            B = data[r10 * data_width + c11];
+            D = data[r11 * data_width + c11];
 
             Dyy1 = D - B;
 
@@ -4467,8 +4475,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r00 = x - border - 1;
             c01 = y + lobe - 1;
 
-            B = data[r00 * iwidth + c01];
-            D = data[(iheight-1) * iwidth + c01];
+            B = data[r00 * data_width + c01];
+            D = data[(iheight-1) * data_width + c01];
 
             Dyy0 = D - B;
 
@@ -4477,8 +4485,8 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r10 = x - lobe / 2 - 1;
             c11 = y + lobe - 1;
 
-            B = data[r10 * iwidth + c11];
-            D = data[(iheight - 1) * iwidth + c11];
+            B = data[r10 * data_width + c11];
+            D = data[(iheight - 1) * data_width + c11];
 
             Dyy1 = D - B;
 
@@ -4525,10 +4533,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             c00 = y - lobe;
             c01 = y + lobe - 1;
 
-            A = data[r00 * iwidth + c00];
-            B = data[r00 * iwidth + c01];
-            C = data[(iheight-1) * iwidth + c00];
-            D = data[(iheight-1) * iwidth + c01];
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + c01];
+            C = data[(iheight-1) * data_width + c00];
+            D = data[(iheight-1) * data_width + c01];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4541,10 +4549,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             c10 = y - lobe;
             c11 = y + lobe - 1;
 
-            A = data[r10 * iwidth + c10];
-            B = data[r10 * iwidth + c11];
-            C = data[r11 * iwidth + c10];
-            D = data[r11 * iwidth + c11];
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + c11];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + c11];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4591,10 +4599,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             c00 = y - lobe;
             c01 = y + lobe - 1;
 
-            A = data[r00 * iwidth + c00];
-            B = data[r00 * iwidth + c01];
-            C = data[(iheight-1) * iwidth + c00];
-            D = data[(iheight-1) * iwidth + c01];
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + c01];
+            C = data[(iheight-1) * data_width + c00];
+            D = data[(iheight-1) * data_width + c01];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4606,10 +4614,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             c10 = y - lobe;
             c11 = y + lobe - 1;
 
-            A = data[r10 * iwidth + c10];
-            B = data[r10 * iwidth + c11];
-            C = data[(iheight-1) * iwidth + c10];
-            D = data[(iheight-1) * iwidth + c11];
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + c11];
+            C = data[(iheight-1) * data_width + c10];
+            D = data[(iheight-1) * data_width + c11];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4656,10 +4664,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r00 = x - border - 1;
             c00 = y - lobe;
 
-            A = data[r00 * iwidth + c00];
-            B = data[r00 * iwidth + iwidth-1];
-            C = data[(iheight-1) * iwidth + c00];
-            D = data[(iheight-1) * iwidth + iwidth-1];
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + iwidth-1];
+            C = data[(iheight-1) * data_width + c00];
+            D = data[(iheight-1) * data_width + iwidth-1];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4671,10 +4679,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r11 = r10 + lobe;
             c10 = y - lobe;
 
-            A = data[r10 * iwidth + c10];
-            B = data[r10 * iwidth + iwidth-1];
-            C = data[r11 * iwidth + c10];
-            D = data[r11 * iwidth + iwidth-1];
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + iwidth-1];
+            C = data[r11 * data_width + c10];
+            D = data[r11 * data_width + iwidth-1];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4723,10 +4731,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             c00 = y - lobe;
             c01 = y + lobe - 1;
 
-            A = data[r00 * iwidth + c00];
-            B = data[r00 * iwidth + iwidth-1];
-            C = data[(iheight-1) * iwidth + c00];
-            D = data[(iheight-1) * iwidth + iwidth-1];
+            A = data[r00 * data_width + c00];
+            B = data[r00 * data_width + iwidth-1];
+            C = data[(iheight-1) * data_width + c00];
+            D = data[(iheight-1) * data_width + iwidth-1];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4737,10 +4745,10 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             r10 = x - lobe / 2 - 1;
             c10 = y - lobe;
 
-            A = data[r10 * iwidth + c10];
-            B = data[r10 * iwidth + iwidth-1];
-            C = data[(iheight-1) * iwidth + c10];
-            D = data[(iheight-1) * iwidth + iwidth-1];
+            A = data[r10 * data_width + c10];
+            B = data[r10 * data_width + iwidth-1];
+            C = data[(iheight-1) * data_width + c10];
+            D = data[(iheight-1) * data_width + iwidth-1];
 
             temp0 = A - C;
             temp1 = D - B;
@@ -4770,6 +4778,7 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y, k, k0, k1;
