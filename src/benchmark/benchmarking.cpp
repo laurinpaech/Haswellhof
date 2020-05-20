@@ -1,3 +1,4 @@
+#include "fasthessian_opt.h"
 #include "benchmarking.h"
 
 #include "integral_image_opt.h"
@@ -16,13 +17,16 @@
 // Determines whether the warm up for the timing functions will be conducted.
 #define WARM_UP
 
+
 void bench_compute_integral_img(const std::vector<void (*)(float *, struct integral_image *)> &functions,
                                 float *gray_image, std::vector<struct benchmark_data> &data, bool is_padded) {
+
     assert(functions.size() == data.size());
 
     for (int j = 0; j < functions.size(); ++j) {
         perf_compute_integral_img(functions[j], gray_image, data[j], is_padded);
     }
+
 }
 
 // Times the function compute_integral_img.
@@ -313,8 +317,11 @@ void bench_get_interest_points(
     assert(functions.size() == data.size());
 
     for (int j = 0; j < functions.size(); ++j) {
+
         perf_get_interest_points(functions[j], fh, data[j]);
+
     }
+
 }
 
 // Times the function get_interest_points from fasthessian.
@@ -385,15 +392,17 @@ void perf_get_interest_points(void (*function)(struct fasthessian *, std::vector
 }
 
 // Calls the timing function for interpolate_step. The number of times the timing should be conducted can be
-// specified in this function.
+// specified in this function. 
 // The number of flops for interpolate_step must be set in benchmark_data.
-void bench_interpolate_step(const std::vector<void (*)(int, int, struct response_layer *, struct response_layer *,
-                                                       struct response_layer *, float[3])> &functions,
-                            struct fasthessian *fh, std::vector<struct benchmark_data> &data) {
+void bench_interpolate_step(const std::vector<void (*)(int, int, struct response_layer *, struct response_layer *, struct response_layer *, float[3])> &functions, 
+                            struct fasthessian *fh, 
+                            std::vector<struct benchmark_data> &data) {
+    
     assert(functions.size() == data.size());
 
     // Iterating through all functions that should be benchmarked
     for (int j = 0; j < functions.size(); ++j) {
+
         int counter = 1;
         // Specifies how many times the benchmarikng for interpolate_step is called.
         // The average of the outcome will be taken
@@ -403,7 +412,9 @@ void bench_interpolate_step(const std::vector<void (*)(int, int, struct response
 
         // filter index map
         const int filter_map[NUM_OCTAVES][NUM_LAYERS] = {
-            {0, 1, 2, 3}, {1, 3, 4, 5}, {3, 5, 6, 7},
+            {0, 1, 2, 3}, 
+            {1, 3, 4, 5}, 
+            {3, 5, 6, 7},
             //{5, 7, 8, 9},
             //{7, 9, 10, 11}
         };
@@ -446,14 +457,15 @@ void bench_interpolate_step(const std::vector<void (*)(int, int, struct response
         data[j].max_cycles /= counter;
         data[j].min_cycles /= counter;
         data[j].flops_per_cycle /= counter;
+
     }
+
 }
 
-// Times the function interpolate_step from fasthessian.
-// Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data.
+// Times the function interpolate_step from fasthessian. 
+// Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data. 
 // The number of flops for interpolate_step must be set in benchmark_data.
-void perf_interpolate_step(void (*function)(int, int, struct response_layer *, struct response_layer *,
-                                            struct response_layer *, float[3]),
+void perf_interpolate_step(void (*function)(int, int, struct response_layer *, struct response_layer *, struct response_layer *, float[3]),
                            int row, int col, struct response_layer *top, struct response_layer *middle,
                            struct response_layer *bottom, struct benchmark_data &data) {
     double cycles = 0.;

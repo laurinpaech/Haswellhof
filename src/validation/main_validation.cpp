@@ -1,6 +1,7 @@
 // has to be defined before stb includes
 #define STB_IMAGE_IMPLEMENTATION
 
+
 #include "stb_image.h"
 #include "integral_image.h"
 #include "fasthessian.h"
@@ -10,6 +11,9 @@
 #include "integral_image_opt.h"
 #include "integral_image_simd.h"
 #include "descriptor_opt.h"
+// #include "descriptor_opt_gen.h"
+#include "fasthessian_opt.h"
+// #include "fasthessian_opt_gen.h"
 
 #include "validation.h"
 
@@ -73,9 +77,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_integral_image(compute_integral_img, test_functions, width, height, image, false);
         if (valid) {
-            printf("INTEGRAL IMAGE VALIDATION:          \033[0;32mSUCCESS!\033[0m\n");
+            printf("INTEGRAL IMAGE VALIDATION:    \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("INTEGRAL IMAGE VALIDATION:          \033[1;31mFAILED!\033[0m\n");
+            printf("INTEGRAL IMAGE VALIDATION:    \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
@@ -142,13 +146,21 @@ int main(int argc, char const *argv[])
 #ifdef VALIDATE_COMPUTE_RESPONSE_LAYER
     {
         std::vector<void (*)(struct fasthessian *)> test_functions;
+        test_functions.push_back(compute_response_layers_precompute);
+        test_functions.push_back(compute_response_layers_blocking);
         test_functions.push_back(compute_response_layers_at_once);
+        test_functions.push_back(compute_response_layers_sonic_Dyy);
+
+        // test_functions.push_back(compute_response_layers_blocking_3_3_False);
+        // test_functions.push_back(compute_response_layers_blocking_3_7_False);
+        // test_functions.push_back(compute_response_layers_blocking_7_3_False);
+        // test_functions.push_back(compute_response_layers_blocking_7_7_False);
 
         bool valid = validate_compute_response_layers(compute_response_layers, test_functions, iimage);
         if (valid) {
             printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[1;31mFAILED!\033[0m\n");
+            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[1;31mFAILED!\033[0m!\n");
         }
     }
 #endif
@@ -157,8 +169,13 @@ int main(int argc, char const *argv[])
     {
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_response_layer_unconditional);
-        bool valid =
-            validate_compute_response_layer_with_padding(compute_response_layer, test_functions, image, width, height);
+        test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional);
+
+        // test_functions.push_back(compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr); // is expected to fail for images < 128
+        // test_functions.push_back(compute_response_layer_unconditional_strided); // is expected to fail on layers > 4
+
+        bool valid = validate_compute_response_layer_with_padding(compute_response_layer, test_functions, image, width, height);
+
         if (valid) {
             printf("COMPUTE RESPONSE LAYER PADDED VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
         } else {
@@ -170,7 +187,7 @@ int main(int argc, char const *argv[])
 // Getting interest points with non-maximum supression
     std::vector<struct interest_point> interest_points;
     get_interest_points(fh, &interest_points);
-    
+
 #ifdef VALIDATE_GET_INTEREST_POINTS
     {
         std::vector<void (*)(struct fasthessian *, std::vector<struct interest_point> *)> test_functions;
@@ -186,11 +203,11 @@ int main(int argc, char const *argv[])
     }
 
 #endif
-    
+
     // Getting M-SURF descriptors for each interest point
 	get_msurf_descriptors(iimage, &interest_points);
 
-#ifdef VALIDATE_GET_MSURF_DESCRIPTORS	
+#ifdef VALIDATE_GET_MSURF_DESCRIPTORS
     {
         std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
         // test_functions.push_back(get_msurf_descriptor);
@@ -199,6 +216,15 @@ int main(int argc, char const *argv[])
         test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
         test_functions.push_back(get_msurf_descriptor_gauss_compute_once_case);
         test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar);
+        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_unroll);
+        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_rounding);
+        test_functions.push_back(get_msurf_descriptor_arrays);
+        test_functions.push_back(get_msurf_descriptor_haar_unroll_2_24_True_winner);
+
+
+        // test_functions.push_back(get_msurf_descriptor_haar_unroll_4_1_False);
+        // test_functions.push_back(get_msurf_descriptor_haar_unroll_1_4_True);
+
 
         bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
         if (valid) {
@@ -208,6 +234,7 @@ int main(int argc, char const *argv[])
         }
     }
 #endif
+
 
 	// Write results to file
     FILE * fp = fopen(argv[2],"w");
@@ -234,6 +261,12 @@ int main(int argc, char const *argv[])
 		free(fh->response_map[i]);
 	}
 	free(fh);
+
+    extern float* haarResponseX;
+    extern float* haarResponseY;
+
+    aligned_free(haarResponseX);
+    aligned_free(haarResponseY);
 
 	return 0;
 }
