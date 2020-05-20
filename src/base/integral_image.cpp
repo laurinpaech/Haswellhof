@@ -30,27 +30,27 @@ struct integral_image *create_integral_img(int width, int height) {
 // Computes the integral image
 void compute_integral_img(float *gray_image, struct integral_image *iimage) {
     
-    float row_sum = 0.0f;
-
     float *iimage_data = iimage->data;
     int data_width = iimage->data_width;
     int width = iimage->width;
     int height = iimage->height;
 
+    float row_sum = 0.0f;
+
     /* sum up the first row */
-    for (int i = 0; i < width; i++) {
+    for (int i = 0; i < width; ++i) {
         /* previous rows are 0 */
         row_sum += gray_image[i];
         iimage_data[i] = row_sum;
     }
 
     /* sum all remaining rows*/
-    for (int i = 1; i < height; ++i) {
+    for (int j = 1; j < height; ++j) {
         row_sum = 0.0f;
-        for (int j = 0; j < width; ++j) {
-            row_sum += gray_image[i * width + j];
+        for (int i = 0; i < width; ++i) {
+            row_sum += gray_image[j * width + i];
             /*add sum of current row until current idx to sum of all previous rows until current index */
-            iimage_data[i * data_width + j] = row_sum + iimage_data[(i - 1) * data_width + j];
+            iimage_data[j * data_width + i] = row_sum + iimage_data[(j - 1) * data_width + i];
         }
     }
 }

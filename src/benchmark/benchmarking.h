@@ -68,33 +68,20 @@ struct benchmark_data {
     double flops_per_cycle;
 };
 
-/*
-inline void set_benchmark_data(char *image_name, int width, int height, char *function_name, int num_interest_points,
-long num_flops, struct benchmark_data &data) {
-
-    // Setting all values for benchmark data structure
-    strcpy(data.image_name, image_name);
-    data.width = width;
-    data.height = height;
-    strcpy(data.function_name, function_name);
-    data.num_interest_points = num_interest_points;
-    data.num_flops = num_flops;
-    data.avg_cycles = 0;
-    data.min_cycles = 0;
-    data.max_cycles = 0;
-    data.flops_per_cycle = 0.0;
-
-}
-*/
-
 void bench_compute_integral_img(const std::vector<void (*)(float *, struct integral_image *)> &functions,
-                                float *gray_image, std::vector<struct benchmark_data> &data);
+                                float *gray_image, std::vector<struct benchmark_data> &data, bool is_padded = false);
 
 // Times the function compute_integral_img from integral_image. Stores the average, minimum and maximum number of cycles
 // and the flops per cycle in benchmark_data. The number of flops for compute_integral_img must be set benchmark_data.
 // The height and width of the image must be set in benchmark_data.
 void perf_compute_integral_img(void (*function)(float *, struct integral_image *), float *gray_image,
-                               struct benchmark_data &data);
+                               struct benchmark_data &data, bool is_padded = false);
+
+void bench_compute_integral_img_int(const std::vector<void (*)(uint8_t *, struct integral_image *)> &functions,
+                                    uint8_t *gray_image, std::vector<struct benchmark_data> &data, bool is_padded = false);
+
+void perf_compute_integral_img_int(void (*function)(uint8_t *, struct integral_image *), uint8_t *gray_image,
+                                   struct benchmark_data &data, bool is_padded = false);
 
 /*
 void bench_compute_response_layer(const std::vector<void (*)(struct response_layer *, struct integral_image *)>

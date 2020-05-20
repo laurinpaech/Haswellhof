@@ -43,9 +43,17 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
 
 void compute_response_layers_at_once(struct fasthessian* fh);
 
+void compute_response_layers_Dyy_top_mid(struct fasthessian *fh);
+
+void compute_response_layers_Dyy_top(struct fasthessian *fh);
+
+void compute_response_layers_Dyy_leftcorner(struct fasthessian *fh);
+
 void compute_response_layers_unconditional(struct fasthessian* fh);
 
 void compute_response_layer_unconditional(struct response_layer* layer, struct integral_image* iimage);
+
+void get_interest_points_block(struct fasthessian *fh, std::vector<struct interest_point> *interest_points);
 
 void compute_response_layers_unconditional_strided(struct fasthessian* fh);
 
@@ -70,6 +78,14 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(struct respo
 void compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct fasthessian* fh);
 
 void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct response_layer* layer, struct integral_image* iimage);
+
+void compute_response_layers_sonic_Dyy_unconditional_opt(struct fasthessian *fh);
+
+void compute_response_layer_sonic_Dyy_unconditional_opt(struct response_layer *layer, struct integral_image *iimage);
+
+void compute_response_layers_sonic_Dyy_unconditional_opt_naive(struct fasthessian *fh);
+
+void compute_response_layer_sonic_Dyy_unconditional_opt_naive(struct response_layer *layer, struct integral_image *iimage);
 
 inline void height_greater_border_width_greater_double_lobe_Dyy_inlined(struct response_layer *layer, struct integral_image *iimage) {
     // Filter_size > height

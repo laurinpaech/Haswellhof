@@ -9,6 +9,7 @@
 #include "descriptor.h"
 
 #include "integral_image_opt.h"
+#include "integral_image_simd.h"
 #include "descriptor_opt.h"
 // #include "descriptor_opt_gen.h"
 #include "fasthessian_opt.h"
@@ -23,6 +24,9 @@
 #include <vector>
 
 #define VALIDATE_INTEGRAL_IMAGE
+#define VALIDATE_INTEGRAL_IMAGE_PADDED
+#define VALIDATE_INTEGRAL_IMAGE_INT
+#define VALIDATE_INTEGRAL_IMAGE_INT_PADDED
 #define VALIDATE_COMPUTE_RESPONSE_LAYER
 #define VALIDATE_COMPUTE_RESPONSE_LAYER_PADDED
 #define VALIDATE_GET_INTEREST_POINTS
@@ -46,19 +50,89 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
+#if defined(VALIDATE_INTEGRAL_IMAGE_INT) || defined(VALIDATE_INTEGRAL_IMAGE_INT_PADDED)
+    int width_int, height_int, channels_int;
+
+    // Load uint8_t version of image
+    stbi_ldr_to_hdr_gamma(1.0f);
+    uint8_t *image_int = stbi_load(argv[1], &width_int, &height_int, &channels_int, STBI_grey);
+
+    if (!image_int) {
+        printf("Could not open or find int image\n");
+        return -1;
+    }
+
+    assert(width == width_int && height == height_int && channels == channels_int);
+#endif
+
 	// Create integral image
 	struct integral_image* iimage = create_integral_img(width, height);
 
 #ifdef VALIDATE_INTEGRAL_IMAGE
     {
         std::vector<void (*)(float *, struct integral_image *)> test_functions;
-        //test_functions.push_back(compute_integral_img_faster_alg);
+        test_functions.push_back(compute_integral_img_faster_alg);
+        //test_functions.push_back(compute_padded_integral_img_new);
+        //test_functions.push_back(compute_padded_integral_img);
 
-        bool valid = validate_integral_image(compute_integral_img, test_functions, width, height, image);
+        bool valid = validate_integral_image(compute_integral_img, test_functions, width, height, image, false);
         if (valid) {
-            printf("INTEGRAL IMAGE VALIDATION:    \033[0;32mSUCCESS!\033[0m\n");
+            printf("INTEGRAL IMAGE VALIDATION:                 \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("INTEGRAL IMAGE VALIDATION:    \033[1;31mFAILED!\033[0m\n");
+            printf("INTEGRAL IMAGE VALIDATION:                 \033[1;31mFAILED!\033[0m\n");
+        }
+    }
+#endif
+
+#ifdef VALIDATE_INTEGRAL_IMAGE_PADDED
+    {
+        std::vector<void (*)(float *, struct integral_image *)> test_functions;
+        test_functions.push_back(compute_padded_integral_img_new);
+        test_functions.push_back(compute_padded_integral_img_faster_alg);
+
+        bool valid = validate_integral_image(compute_padded_integral_img, test_functions, width, height, image, true);
+        if (valid) {
+            printf("INTEGRAL IMAGE PADDED VALIDATION:          \033[0;32mSUCCESS!\033[0m\n");
+        } else {
+            printf("INTEGRAL IMAGE PADDED VALIDATION:          \033[1;31mFAILED!\033[0m\n");
+        }
+    }
+#endif
+
+#ifdef VALIDATE_INTEGRAL_IMAGE_INT
+    {
+        //if (width < 2895) {
+        if (width <= 2048) {
+            std::vector<void (*)(uint8_t *, struct integral_image *)> test_functions;
+            test_functions.push_back(compute_integral_img_simd_int);
+            test_functions.push_back(compute_integral_img_simd_early_cast_int);
+            //test_functions.push_back(compute_integral_img_simd_original);
+
+            bool valid = validate_integral_image_int(compute_integral_img_int, test_functions, width, height, image_int, false);
+            if (valid) {
+                printf("INTEGRAL IMAGE INT VALIDATION:             \033[0;32mSUCCESS!\033[0m\n");
+            } else {
+                printf("INTEGRAL IMAGE INT VALIDATION:             \033[1;31mFAILED!\033[0m\n");
+            }
+        }
+    }
+#endif
+
+#ifdef VALIDATE_INTEGRAL_IMAGE_INT_PADDED
+    {
+        //if (width + 2 * PADDING_SIZE < 2895) {
+        if (width + 2 * PADDING_SIZE <= 2048 + 2 * PADDING_SIZE) {
+            std::vector<void (*)(uint8_t *, struct integral_image *)> test_functions;
+            //test_functions.push_back(compute_padded_integral_img_int);
+            test_functions.push_back(compute_padded_integral_img_simd_early_cast_int);
+            //test_functions.push_back(compute_integral_img_simd_original);
+
+            bool valid = validate_integral_image_int(compute_padded_integral_img_int, test_functions, width, height, image_int, true);
+            if (valid) {
+                printf("INTEGRAL IMAGE INT PADDED VALIDATION:      \033[0;32mSUCCESS!\033[0m\n");
+            } else {
+                printf("INTEGRAL IMAGE INT PADDED VALIDATION:      \033[1;31mFAILED!\033[0m\n");
+            }
         }
     }
 #endif
@@ -90,9 +164,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_compute_response_layers(compute_response_layers, test_functions, iimage);
         if (valid) {
-            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[0;32mSUCCESS!\033[0m\n");
+            printf("COMPUTE RESPONSE LAYER VALIDATION:         \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("COMPUTE RESPONSE LAYER VALIDATION:  \033[1;31mFAILED!\033[0m!\n");
+            printf("COMPUTE RESPONSE LAYER VALIDATION:         \033[1;31mFAILED!\033[0m!\n");
         }
     }
 #endif
@@ -102,6 +176,7 @@ int main(int argc, char const *argv[])
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_response_layer_unconditional);
         test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional);
+        test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional_opt);
 
         // test_functions.push_back(compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr); // is expected to fail for images < 128
         // test_functions.push_back(compute_response_layer_unconditional_strided); // is expected to fail on layers > 4
@@ -128,9 +203,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_get_interest_points(get_interest_points, test_functions, fh);
         if (valid) {
-            printf("GET INTEREST POINTS VALIDATION:     \033[0;32mSUCCESS!\033[0m\n");
+            printf("GET INTEREST POINTS VALIDATION:            \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("GET INTEREST POINTS VALIDATION:     \033[1;31mFAILED!\033[0m\n");
+            printf("GET INTEREST POINTS VALIDATION:            \033[1;31mFAILED!\033[0m\n");
         }
     }
 
@@ -160,9 +235,9 @@ int main(int argc, char const *argv[])
 
         bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, iimage, &interest_points);
         if (valid) {
-            printf("MSURF DESCRIPTOR VALIDATION:        \033[0;32mSUCCESS!\033[0m\n");
+            printf("MSURF DESCRIPTOR VALIDATION:               \033[0;32mSUCCESS!\033[0m\n");
         } else {
-            printf("MSURF DESCRIPTOR VALIDATION:        \033[1;31mFAILED!\033[0m\n");
+            printf("MSURF DESCRIPTOR VALIDATION:               \033[1;31mFAILED!\033[0m\n");
         }
     }
 #endif
@@ -181,6 +256,9 @@ int main(int argc, char const *argv[])
     fclose(fp);
 
 	// Free memory
+#if defined(VALIDATE_INTEGRAL_IMAGE_INT) || defined(VALIDATE_INTEGRAL_IMAGE_INT_PADDED)
+    stbi_image_free(image_int);
+#endif
 	stbi_image_free(image); // possibly move this to create_integral_img
 	free(iimage->padded_data);
 	free(iimage);

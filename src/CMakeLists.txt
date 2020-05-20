@@ -53,6 +53,8 @@ add_executable(benchmark
     # Add optimization header and source files here
     optimization/integral_image_opt.h
     optimization/integral_image_opt.cpp
+    optimization/integral_image_simd.h
+    optimization/integral_image_simd.cpp
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
     optimization/descriptor_opt.h
@@ -134,6 +136,8 @@ add_executable(validation
     # Add optimization header and source files here
     optimization/integral_image_opt.h
     optimization/integral_image_opt.cpp
+    optimization/integral_image_simd.h
+    optimization/integral_image_simd.cpp
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
     optimization/descriptor_opt.h
@@ -186,6 +190,8 @@ add_executable(playground
     # Add optimization header and source files here
     optimization/integral_image_opt.h
     optimization/integral_image_opt.cpp
+    optimization/integral_image_simd.h
+    optimization/integral_image_simd.cpp
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
     optimization/descriptor_opt.h
