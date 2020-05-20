@@ -110,7 +110,7 @@ inline void height_greater_border_width_greater_double_lobe_Dyy_inlined(struct r
     int iheight = iimage->height;
     int iwidth = iimage->width;
 
-    float dyy_row_before_blue[width];
+    float dyy_row_before_blue[32];
 
     /****************
      *   TOP
@@ -584,7 +584,7 @@ inline void height_greater_border_width_less_double_lobe_Dyy_inlined(struct resp
     int iheight = iimage->height;
     int iwidth = iimage->width;
 
-    float dyy_row_before_blue[width];
+    float dyy_row_before_blue[32];
 
     /****************
      *   TOP

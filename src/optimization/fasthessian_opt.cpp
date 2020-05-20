@@ -8413,7 +8413,8 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
     // float inv_area = 1.f/(filter_size*filter_size);
 
     // TODO: write as 1/(filter_size*filter_size*filter_size*filter_size)
-    float inv_area_squared = 1.f/(filter_size*filter_size) * 1.f/(filter_size*filter_size);
+    float inv_area_squared = 1.f/(filter_size*filter_size*filter_size*filter_size);
+    float inv_area_squared_Dxy = inv_area_squared * 0.81f;
 
     int ind = 0;  // oder alternativ (i+1)*j
 
@@ -8479,7 +8480,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8528,7 +8529,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8572,7 +8573,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8631,7 +8632,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8682,7 +8683,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8730,7 +8731,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8799,7 +8800,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8853,7 +8854,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8905,7 +8906,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8974,7 +8975,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -9032,7 +9033,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -9088,7 +9089,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -9151,7 +9152,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -9209,7 +9210,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -9266,7 +9267,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * (Dxx * Dyy - 0.81f * Dxy * Dxy);
+            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
