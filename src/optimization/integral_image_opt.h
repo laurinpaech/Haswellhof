@@ -39,6 +39,11 @@ inline float box_integral_unconditional(struct integral_image *iimage, int row, 
     int r1 = row + rows - 1;
     int c1 = col + cols - 1;
 
+    // r0 = x - lobe/2 -1
+    // c0 = y - lobe
+    // r1 = x + lobe/2 -1
+    // c1 = y + lobe - 1
+
     float A = data[r0 * data_width + c0];
     float B = data[r0 * data_width + c1];
     float C = data[r1 * data_width + c0];
