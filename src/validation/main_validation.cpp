@@ -103,6 +103,7 @@ int main(int argc, char const *argv[])
         test_functions.push_back(compute_response_layer_unconditional);
         test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional);
 
+        // test_functions.push_back(compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr); // is expected to fail for images < 128
         // test_functions.push_back(compute_response_layer_unconditional_strided); // is expected to fail on layers > 4
 
         bool valid = validate_compute_response_layer_with_padding(compute_response_layer, test_functions, image, width, height);
@@ -150,6 +151,7 @@ int main(int argc, char const *argv[])
         test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_unroll);
         test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_rounding);
         test_functions.push_back(get_msurf_descriptor_arrays);
+        test_functions.push_back(get_msurf_descriptor_haar_unroll_2_24_True_winner);
 
 
         // test_functions.push_back(get_msurf_descriptor_haar_unroll_4_1_False);

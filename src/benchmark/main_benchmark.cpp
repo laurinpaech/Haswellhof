@@ -17,23 +17,23 @@
 #include "stb_image.h"
 
 const char *images[] = {
-    "../images/sunflower/sunflower_32.jpg",
-    "../images/sunflower/sunflower_64.jpg",
-    //"../images/sunflower/sunflower_128.jpg",
-    //"../images/sunflower/sunflower_256.jpg",
-    //"../images/sunflower/sunflower_512.jpg",
+    //"../images/sunflower/sunflower_32.jpg",
+    //"../images/sunflower/sunflower_64.jpg",
+    "../images/sunflower/sunflower_128.jpg",
+    "../images/sunflower/sunflower_256.jpg",
+    "../images/sunflower/sunflower_512.jpg",
     //"../images/sunflower/sunflower_1024.jpg"
     //"../images/sunflower/sunflower_2048.jpg"
     //"../images/sunflower/sunflower_4096.jpg"
 };
 #define n_images (sizeof(images) / sizeof(const char *))
-#define BENCHMARK_INTEGRAL_IMAGE
+//#define BENCHMARK_INTEGRAL_IMAGE
 #define BENCHMARK_COMPUTE_RESPONSE_LAYERS
 // BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED only works with BENCHMARK_COMPUTE_RESPONSE_LAYERS enabled
 #define BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED
-#define BENCHMARK_INTEREST_POINTS
-#define BENCHMARK_INTERPOLATE_STEPS
-#define BENCHMARK_GET_MSURF_DESCRIPTORS
+//#define BENCHMARK_INTEREST_POINTS
+//#define BENCHMARK_INTERPOLATE_STEPS
+//#define BENCHMARK_GET_MSURF_DESCRIPTORS
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
@@ -110,7 +110,7 @@ int main(int argc, char const *argv[]) {
                                         (1 + height * width * 13));
             struct benchmark_data data3(image_name, width, height, "compute_response_layers_at_once", -1,
                                         (1 + height * width * 13));
-            struct benchmark_data data4(image_name, width, height, "compute_response_map_sonic_Dyy", -1,
+            struct benchmark_data data4(image_name, width, height, "compute_response_layers_sonic_Dyy", -1,
                                         (1 + height * width * 13));
 
             std::vector<struct benchmark_data> data;
@@ -134,19 +134,38 @@ int main(int argc, char const *argv[]) {
                 std::vector<void (*)(struct fasthessian *)> padded_functions;
                 padded_functions.push_back(compute_response_layers_unconditional);
                 padded_functions.push_back(compute_response_layers_unconditional_strided);
+                padded_functions.push_back(compute_response_layers_sonic_Dyy_unconditional);
 
                 struct benchmark_data padded_data1(image_name, width, height,
                                                 "compute_response_layers_unconditional", -1, (1 + height * width * 13));
                 struct benchmark_data padded_data2(image_name, width, height,
                                                 "compute_response_layers_unconditional_strided", -1, (1 + height * width * 13));
+                struct benchmark_data padded_data3(image_name, width, height,
+                                                "compute_response_layers_sonic_Dyy_unconditional", -1, (1 + height * width * 13));
 
                 std::vector<struct benchmark_data> data_padded_functions;
                 data_padded_functions.push_back(padded_data1);
                 data_padded_functions.push_back(padded_data2);
+                data_padded_functions.push_back(padded_data3);
+
+                if (width > 64) {
+                    padded_functions.push_back(compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops);
+                    padded_functions.push_back(compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops_invsqr);
+
+                    struct benchmark_data padded_data4(image_name, width, height,
+                        "compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops", -1, (1 + height * width * 13));
+                    struct benchmark_data padded_data5(image_name, width, height,
+                        "compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops_invsqr", 50, (1 + height * width * 13));   
+
+                    data_padded_functions.push_back(padded_data4);
+                    data_padded_functions.push_back(padded_data5);
+
+                }
 
                 bench_compute_response_layer(padded_functions, padded_iimage, data_padded_functions);
                 all_benchmark_data.insert(all_benchmark_data.end(), data_padded_functions.begin(),
-                                        data_padded_functions.end());
+                    data_padded_functions.end());
+
 
                 free(padded_iimage->padded_data);
                 free(padded_iimage);

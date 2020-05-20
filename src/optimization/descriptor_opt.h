@@ -115,6 +115,16 @@ void get_msurf_descriptor_gauss_pecompute_haar_unroll(struct integral_image* iim
 
 void get_msurf_descriptors_gauss_pecompute_haar_unroll(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
+void get_msurf_descriptor_haar_unroll_2_24_True_winner(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptor2_haar_unroll_2_24_True_winner(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+void get_msurf_descriptor_haar_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptor2_haar_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+
+
 inline void haarXY(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
     
     // TODO: (Sebastian) fix for iimage with padding
