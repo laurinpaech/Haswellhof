@@ -237,14 +237,14 @@ void interpolate_extremum(int row, int col,
     if (fabs(dx) < 0.5f && fabs(dy) < 0.5f && fabs(ds) < 0.5f) {
 
         // initializing interest point
-        struct interest_point ip = {
-            .x = (float) ((col + dx) * top->step),
-            .y = (float) ((row + dy) * top->step),
-            .scale = (float) ((0.1333f) * (middle->filter_size + ds * filter_step)),
-            .orientation = 0.0f,
-            .upright = true,
-            .laplacian = get_laplacian_relative(middle, row, col, top),
-            .descriptor = {0}
+        struct interest_point ip  {
+             (float) ((col + dx) * top->step),
+             (float) ((row + dy) * top->step),
+             (float) ((0.1333f) * (middle->filter_size + ds * filter_step)),
+             0.0f,
+             true,
+             get_laplacian_relative(middle, row, col, top),
+             {0}
         };
 
         // Add interest point to vector

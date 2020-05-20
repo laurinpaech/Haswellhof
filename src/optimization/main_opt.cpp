@@ -53,7 +53,7 @@ int main(int argc, char const *argv[])
     
 
     // skipping this part as it adds nise for profiler
-    /*
+    
     // Write results to file
     FILE * fp = fopen(argv[2],"w");
     printf("%d %d %d\n", iimage->width, iimage->height, channels);
@@ -65,7 +65,7 @@ int main(int argc, char const *argv[])
         fprintf(fp, "\n");
     }
     fclose(fp);
-    */
+    
 
     // Free memory
     stbi_image_free(image); // possibly move this to create_integral_img

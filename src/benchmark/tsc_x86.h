@@ -1,3 +1,4 @@
+#define WIN32
 /* ==================== GNU C and possibly other UNIX compilers ===================== */
 #if !defined(WIN32) || defined(__GNUC__)
 

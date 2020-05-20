@@ -303,7 +303,8 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
 
                 // Create array for Dyy that has image width length
                 // all rows (for big part) have same Dyy values
-                float Dyy_arr[iwidth];  // stack is faster than heap
+                // float Dyy_arr[iwidth];  // stack is faster than heap
+                float Dyy_arr[32];  // stack is faster than heap
 
                 // C = 0 and D = [height-1, some_column]
                 // from y = 0 until D is (exclusive) in last column
@@ -608,7 +609,8 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
 
                 // Create array for Dyy that has image width length
                 // all rows (for big part) have same Dyy values
-                float Dyy_arr[iwidth];  // stack is faster than heap
+                // float Dyy_arr[iwidth];  // stack is faster than heap
+                float Dyy_arr[32];  // stack is faster than heap
 
                 // C = 0 and D = [height-1, some_column]
                 // from y = 0 until D is (exclusive) in last column
@@ -687,6 +689,9 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
           Blue Lines: Use previously stored values
           Bottom: Left - Middle (just one case) - Bottom
 
+          Only happens for image_size = 32 and filter_size = 39 
+          and image_size = 64 and filter_size = 75
+
           */
 
     float Dxx, Dyy, Dxy;
@@ -713,7 +718,8 @@ void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *
     int iheight = iimage->height;
     int iwidth = iimage->width;
 
-    float dyy_row_before_blue[width];
+    // float dyy_row_before_blue[width];
+    float dyy_row_before_blue[32];
 
     /****************
      *   TOP
@@ -1162,6 +1168,9 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
           Blue Lines: Use previously stored values
           Bottom: Left - Middle (just one case) - Bottom
 
+          Only happens for image_size = 32 and filter_size = 51
+          and image_size = 64 and filter_size = 99
+
           */
 
     float Dxx, Dyy, Dxy;
@@ -1187,7 +1196,7 @@ void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *lay
     int iheight = iimage->height;
     int iwidth = iimage->width;
 
-    float dyy_row_before_blue[width];
+    float dyy_row_before_blue[32];
 
     /****************
      *   TOP
