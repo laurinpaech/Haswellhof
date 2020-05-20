@@ -110,7 +110,7 @@ int main(int argc, char const *argv[]) {
                                         (1 + height * width * 13));
             struct benchmark_data data3(image_name, width, height, "compute_response_layers_at_once", -1,
                                         (1 + height * width * 13));
-            struct benchmark_data data4(image_name, width, height, "compute_response_map_sonic_Dyy", -1,
+            struct benchmark_data data4(image_name, width, height, "compute_response_layers_sonic_Dyy", -1,
                                         (1 + height * width * 13));
 
             std::vector<struct benchmark_data> data;
@@ -141,7 +141,7 @@ int main(int argc, char const *argv[]) {
                 struct benchmark_data padded_data2(image_name, width, height,
                                                 "compute_response_layers_unconditional_strided", -1, (1 + height * width * 13));
                 struct benchmark_data padded_data3(image_name, width, height,
-                                                "compute_response_layer_sonic_Dyy_unconditional", -1, (1 + height * width * 13));
+                                                "compute_response_layers_sonic_Dyy_unconditional", -1, (1 + height * width * 13));
 
                 std::vector<struct benchmark_data> data_padded_functions;
                 data_padded_functions.push_back(padded_data1);

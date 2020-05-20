@@ -99,7 +99,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
     // 1. Case The filter is smaller than the image
     if (filter_size <= iheight) {
         // Split the image into 9 cases - corners, borders and middle part.
-        compute_response_layer_Dyy_laplacian_localityloops(layer, iimage);
+        compute_response_layer_Dyy_laplacian_localityloops_inlined(layer, iimage);
 
     } else {
         // 2. Case The filter is somewhat larger than the image
@@ -109,9 +109,9 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
             // Idea: Do compute_response_layer_Dyy_leftcorner
             // but everytime all corners are outside, we just use row values above
             if (iwidth > 2 * lobe - 1) {
-                height_greater_border_width_greater_double_lobe_Dyy(layer, iimage);
+                height_greater_border_width_greater_double_lobe_Dyy_inlined(layer, iimage);
             } else {
-                height_greater_border_width_less_double_lobe_Dyy(layer, iimage);
+                height_greater_border_width_less_double_lobe_Dyy_inlined(layer, iimage);
             }
 
         } else {
@@ -379,7 +379,7 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
 
     int data_width = iimage->data_width;
 
-    int iwidth = iimage->width;  // TODO: fix where needs to be fixed
+    int iwidth = iimage->width;
     int iheight = iimage->height;
 
     float *data = (float *) iimage->data;
@@ -404,7 +404,7 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
     // 1. Case The filter is smaller than the image
     if (filter_size <= iheight) {
         // Split the image into 9 cases - corners, borders and middle part.
-        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(layer, iimage);
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
 
     } else {
         // 2. Case The filter is somewhat larger than the image
@@ -414,9 +414,9 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
             // Idea: Do compute_response_layer_Dyy_leftcorner
             // but everytime all corners are outside, we just use row values above
             if (iwidth > 2 * lobe - 1) {
-                height_greater_border_width_greater_double_lobe_Dyy(layer, iimage);
+                height_greater_border_width_greater_double_lobe_Dyy_inlined(layer, iimage);
             } else {
-                height_greater_border_width_less_double_lobe_Dyy(layer, iimage);
+                height_greater_border_width_less_double_lobe_Dyy_inlined(layer, iimage);
             }
 
         } else {
@@ -7456,7 +7456,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(struct respo
         // Box integral precompute
         t0 = x - lobe;
         t1 = x + lobe - 1;
-        t2 = lobe/2 + 1;
+        t2 = lobe/2 + 1;  // TODO: get out of for loop
         t3 = x - 1;
         t5 = x - lobe - 1;
         t7 = x + lobe;
@@ -7473,7 +7473,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(struct respo
 
             // Compute Dyy  
             // whole box filter
-            c01 = y + lobe - 1;
+            c01 = y + lobe - 1;  // TODO: compute only once get lobe-1 out of loop
 
             Dyy0 = data[r01_T1 * data_width + c01];
 
@@ -8402,6 +8402,8 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
     int lobe = filter_size/3;
     int border = (filter_size-1)/2;
     // float inv_area = 1.f/(filter_size*filter_size);
+
+    // TODO: write as 1/(filter_size*filter_size*filter_size*filter_size)
     float inv_area_squared = 1.f/(filter_size*filter_size) * 1.f/(filter_size*filter_size);
 
     int ind = 0;  // oder alternativ (i+1)*j
