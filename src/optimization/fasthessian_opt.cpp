@@ -8416,6 +8416,11 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
     float inv_area_squared = 1.f/(filter_size*filter_size*filter_size*filter_size);
     float inv_area_squared_Dxy = inv_area_squared * 0.81f;
 
+
+    float inv_area = 1.f / (filter_size * filter_size);
+    float inv_area_three = 3 * inv_area_squared;
+
+
     int ind = 0;  // oder alternativ (i+1)*j
 
     float *data = iimage->data;
@@ -8464,7 +8469,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             D = data[r11_T1 * data_width + c11];
             Dyy1 = D;
 
-            Dyy = Dyy0 - 3 * Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three * Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -8472,15 +8477,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8513,7 +8518,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
 
             Dyy1 = D - C;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three*Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -8521,15 +8526,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area* box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8557,7 +8562,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
 
             Dyy1 = D - C;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three*Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -8565,15 +8570,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8616,7 +8621,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             D = data[r11_T2 * data_width + c11];
             Dyy1 = D - B;
 
-            Dyy = Dyy0 - 3 * Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three * Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -8624,15 +8629,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8667,7 +8672,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             temp1 = D - B;
             Dyy1 = temp0 + temp1;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three *Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -8675,15 +8680,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8715,7 +8720,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             temp1 = D - B;
             Dyy1 = temp0 + temp1;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three * Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -8723,15 +8728,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8784,7 +8789,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
 
             Dyy1 = D - B;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three *Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -8792,15 +8797,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8838,7 +8843,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             temp1 = D - B;
             Dyy1 = temp0 + temp1;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three * Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -8846,15 +8851,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8890,7 +8895,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             temp1 = D - B;
             Dyy1 = temp0 + temp1;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three * Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -8898,15 +8903,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -8959,7 +8964,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
 
             Dyy1 = D - B;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three * Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -8967,15 +8972,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area *  box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -9017,7 +9022,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             temp1 = D - B;
             Dyy1 = temp0 + temp1;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three * Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -9025,15 +9030,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -9073,7 +9078,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             temp1 = D - B;
             Dyy1 = temp0 + temp1;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three *Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -9081,15 +9086,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -9136,7 +9141,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
 
             Dyy1 = D - B;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three * Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -9144,15 +9149,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -9194,7 +9199,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             temp1 = D - B;
             Dyy1 = temp0 + temp1;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three *Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -9202,15 +9207,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
@@ -9251,7 +9256,7 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             temp1 = D - B;
             Dyy1 = temp0 + temp1;
 
-            Dyy = Dyy0 - 3*Dyy1;
+            Dyy = inv_area * Dyy0 - inv_area_three * Dyy1;
 
             // box_integral_unconditional precompute
             t4 = y - 1;
@@ -9259,15 +9264,15 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
             t8 = y + lobe;
 
             // Compute Dxx, Dxy
-            Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
-                - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+            Dxx = inv_area * box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                - inv_area_three * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
             Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
                     + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
                     - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
                     - box_integral_unconditional_opt(iimage, x, y, t7, t8);
 
             // Calculate Determinant
-            response[ind] = inv_area_squared * Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
+            response[ind] = Dxx * Dyy - inv_area_squared_Dxy * Dxy * Dxy;
 
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
