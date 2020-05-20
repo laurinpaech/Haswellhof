@@ -139,58 +139,64 @@ int main(int argc, char const *argv[]) {
 
 #ifdef BENCHMARK_INTEGRAL_IMAGE_INT
         {
-            printf("compute_integral_img_int start\n");
+            //if (width < 2895) {
+            if (width <= 2048) {
+                printf("compute_integral_img_int start\n");
 
-            // Insert all compute_integral_img_int functions for benchmarking here
-            std::vector<void (*)(uint8_t *, struct integral_image *)> functions;
-            functions.push_back(compute_integral_img_int);
-            functions.push_back(compute_integral_img_simd_int);
-            functions.push_back(compute_integral_img_simd_early_cast_int);
+                // Insert all compute_integral_img_int functions for benchmarking here
+                std::vector<void (*)(uint8_t *, struct integral_image *)> functions;
+                functions.push_back(compute_integral_img_int);
+                functions.push_back(compute_integral_img_simd_int);
+                functions.push_back(compute_integral_img_simd_early_cast_int);
 
-            struct benchmark_data default_data(image_name, width, height, "compute_integral_img_int", -1, -1);
-            struct benchmark_data data1(image_name, width, height, "compute_integral_img_simd_int", -1, -1);
-            struct benchmark_data data2(image_name, width, height, "compute_integral_img_simd_early_cast_int", -1, -1);
+                struct benchmark_data default_data(image_name, width, height, "compute_integral_img_int", -1, -1);
+                struct benchmark_data data1(image_name, width, height, "compute_integral_img_simd_int", -1, -1);
+                struct benchmark_data data2(image_name, width, height, "compute_integral_img_simd_early_cast_int", -1, -1);
 
-            // Insert all respective benchmarking info for compute_integral_img_int here
-            std::vector<struct benchmark_data> data;
-            data.push_back(default_data);
-            data.push_back(data1);
-            data.push_back(data2);
-            
-            // Benchmarking all compute_integral_img_int functions and storing timing results in respective entries in data
-            bench_compute_integral_img_int(functions, image_int, data, false);
+                // Insert all respective benchmarking info for compute_integral_img_int here
+                std::vector<struct benchmark_data> data;
+                data.push_back(default_data);
+                data.push_back(data1);
+                data.push_back(data2);
+                
+                // Benchmarking all compute_integral_img_int functions and storing timing results in respective entries in data
+                bench_compute_integral_img_int(functions, image_int, data, false);
 
-            // Appending this data to all benchmarking data
-            all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
+                // Appending this data to all benchmarking data
+                all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
 
-            printf("compute_integral_img_int end\n");
+                printf("compute_integral_img_int end\n");
+            }
         }
 #endif
 
 #ifdef BENCHMARK_INTEGRAL_IMAGE_INT_PADDED
         {
-            printf("compute_padded_integral_img_int start\n");
+            //if (width + 2 * PADDING_SIZE < 2895) {
+            if (width + 2 * PADDING_SIZE <= 2048 + 2 * PADDING_SIZE) {
+                printf("compute_padded_integral_img_int start\n");
 
-            // Insert all compute_integral_img_int functions for benchmarking here
-            std::vector<void (*)(uint8_t *, struct integral_image *)> functions;
-            functions.push_back(compute_padded_integral_img_int);
-            functions.push_back(compute_padded_integral_img_simd_early_cast_int);
+                // Insert all compute_integral_img_int functions for benchmarking here
+                std::vector<void (*)(uint8_t *, struct integral_image *)> functions;
+                functions.push_back(compute_padded_integral_img_int);
+                functions.push_back(compute_padded_integral_img_simd_early_cast_int);
 
-            struct benchmark_data default_data(image_name, width, height, "compute_padded_integral_img_int", -1, -1);
-            struct benchmark_data data1(image_name, width, height, "compute_padded_integral_img_simd_early_cast_int", -1, -1);
+                struct benchmark_data default_data(image_name, width, height, "compute_padded_integral_img_int", -1, -1);
+                struct benchmark_data data1(image_name, width, height, "compute_padded_integral_img_simd_early_cast_int", -1, -1);
 
-            // Insert all respective benchmarking info for compute_padded_integral_img_int here
-            std::vector<struct benchmark_data> data;
-            data.push_back(default_data);
-            data.push_back(data1);
-            
-            // Benchmarking all compute_padded_integral_img_int functions and storing timing results in respective entries in data
-            bench_compute_integral_img_int(functions, image_int, data, true);
+                // Insert all respective benchmarking info for compute_padded_integral_img_int here
+                std::vector<struct benchmark_data> data;
+                data.push_back(default_data);
+                data.push_back(data1);
+                
+                // Benchmarking all compute_padded_integral_img_int functions and storing timing results in respective entries in data
+                bench_compute_integral_img_int(functions, image_int, data, true);
 
-            // Appending this data to all benchmarking data
-            all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
+                // Appending this data to all benchmarking data
+                all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
 
-            printf("compute_padded_integral_img_int end\n");
+                printf("compute_padded_integral_img_int end\n");
+            }
         }
 #endif
 
