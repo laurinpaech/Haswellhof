@@ -32,7 +32,7 @@
 #define MAX(a, b)               \
     (                           \
         a > b ? a : b           \
-    ) 
+    )
 
 #endif
 
@@ -82,6 +82,7 @@ inline bool are_bool_matrices_equal(bool *matrix1, bool *matrix2, int width, int
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (matrix1[i * width + j] != matrix2[i * width + j]) {
+                printf("DIFFERENCE LAPLACIAN: (%i, %i)\n", i, j);
                 return false;
             }
         }

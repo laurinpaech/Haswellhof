@@ -110,7 +110,7 @@ int main(int argc, char const *argv[]) {
                                         (1 + height * width * 13));
             struct benchmark_data data3(image_name, width, height, "compute_response_layers_at_once", -1,
                                         (1 + height * width * 13));
-            struct benchmark_data data4(image_name, width, height, "compute_response_map_sonic_Dyy", -1,
+            struct benchmark_data data4(image_name, width, height, "compute_response_layers_sonic_Dyy", -1,
                                         (1 + height * width * 13));
 
             std::vector<struct benchmark_data> data;
@@ -134,15 +134,19 @@ int main(int argc, char const *argv[]) {
                 std::vector<void (*)(struct fasthessian *)> padded_functions;
                 padded_functions.push_back(compute_response_layers_unconditional);
                 padded_functions.push_back(compute_response_layers_unconditional_strided);
+                padded_functions.push_back(compute_response_layers_sonic_Dyy_unconditional);
 
                 struct benchmark_data padded_data1(image_name, width, height,
                                                 "compute_response_layers_unconditional", -1, (1 + height * width * 13));
                 struct benchmark_data padded_data2(image_name, width, height,
                                                 "compute_response_layers_unconditional_strided", -1, (1 + height * width * 13));
+                struct benchmark_data padded_data3(image_name, width, height,
+                                                "compute_response_layers_sonic_Dyy_unconditional", -1, (1 + height * width * 13));
 
                 std::vector<struct benchmark_data> data_padded_functions;
                 data_padded_functions.push_back(padded_data1);
                 data_padded_functions.push_back(padded_data2);
+                data_padded_functions.push_back(padded_data3);
 
                 bench_compute_response_layer(padded_functions, padded_iimage, data_padded_functions);
                 all_benchmark_data.insert(all_benchmark_data.end(), data_padded_functions.begin(),
