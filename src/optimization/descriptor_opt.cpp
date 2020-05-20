@@ -3655,15 +3655,19 @@ void get_msurf_descriptors_haar_unroll_2_24_True_winner_unconditional(struct int
     }
 }
 
+const __m256 kk0_inner_arrays_simd = _mm256_setr_ps(-12.0f, -11.0f, -10.0f,  -9.0f,  -8.0f,  -7.0f,  -6.0f,  -5.0f);
+const __m256 kk1_inner_arrays_simd = _mm256_setr_ps( -4.0f,  -3.0f,  -2.0f,  -1.0f,   0.0f,   1.0f,   2.0f,   3.0f);
+const __m256 kk2_inner_arrays_simd = _mm256_setr_ps(  4.0f,   5.0f,   6.0f,   7.0f,   8.0f,   9.0f,  10.0f,  11.0f);
+
        
 void get_msurf_descriptor_arrays_simd(struct integral_image* iimage, struct interest_point* ipoint) {
-
 
     float scale = ipoint->scale;
     // float scale_mul_25f = 2.5f*scale;
     int int_scale = (int) roundf(scale);
 
     __m256i int_scale_vec = _mm256_set1_epi32(int_scale);
+    __m256 scale_vec = _mm256_set1_ps(scale);
 
     // int int_scale_mul_2 =  2 * int_scale;
     float scale_squared = scale*scale;
@@ -3721,48 +3725,25 @@ void get_msurf_descriptor_arrays_simd(struct integral_image* iimage, struct inte
 
             __m256i sample_y_sub_int_scale_vec = _mm256_set1_epi32(sample_y_sub_int_scale);
 
-            for (int k=-12, k_count=0; k<12-7; k+=8, k_count+=8) {
-                int k0 = k + 0;
-                int k1 = k + 1;
-                int k2 = k + 2;
-                int k3 = k + 3;
-                int k4 = k + 4;
-                int k5 = k + 5;
-                int k6 = k + 6;
-                int k7 = k + 7;
+            __m256 kks0 = _mm256_mul_ps(kk0_inner_arrays_simd, scale_vec);
+            __m256 kks1 = _mm256_mul_ps(kk1_inner_arrays_simd, scale_vec);
+            __m256 kks2 = _mm256_mul_ps(kk2_inner_arrays_simd, scale_vec);
 
-                int k_count0 = k_count + 0;
-                // int k_count1 = k_count + 1;
-                // int k_count2 = k_count + 2;
-                // int k_count3 = k_count + 3;
-                // int k_count4 = k_count + 4;
-                // int k_count5 = k_count + 5;
-                // int k_count6 = k_count + 6;
-                // int k_count7 = k_count + 7;
+            __m256 ipoint_x_sub_int_scale_add_05_vec = _mm256_set1_ps(ipoint_x_sub_int_scale_add_05);
 
-                //Get x coords of sample point
-                int sample_x_sub_int_scale0 = (int)(ipoint_x_sub_int_scale_add_05 + k0 * scale);
-                int sample_x_sub_int_scale1 = (int)(ipoint_x_sub_int_scale_add_05 + k1 * scale);
-                int sample_x_sub_int_scale2 = (int)(ipoint_x_sub_int_scale_add_05 + k2 * scale);
-                int sample_x_sub_int_scale3 = (int)(ipoint_x_sub_int_scale_add_05 + k3 * scale);
-                int sample_x_sub_int_scale4 = (int)(ipoint_x_sub_int_scale_add_05 + k4 * scale);
-                int sample_x_sub_int_scale5 = (int)(ipoint_x_sub_int_scale_add_05 + k5 * scale);
-                int sample_x_sub_int_scale6 = (int)(ipoint_x_sub_int_scale_add_05 + k6 * scale);
-                int sample_x_sub_int_scale7 = (int)(ipoint_x_sub_int_scale_add_05 + k7 * scale);
-
-                __m256i sample_x_sub_int_scale_vec = _mm256_setr_epi32(sample_x_sub_int_scale0,
-                                                                      sample_x_sub_int_scale1,
-                                                                      sample_x_sub_int_scale2,
-                                                                      sample_x_sub_int_scale3,
-                                                                      sample_x_sub_int_scale4,
-                                                                      sample_x_sub_int_scale5,
-                                                                      sample_x_sub_int_scale6,
-                                                                      sample_x_sub_int_scale7);
-
-                haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec, sample_x_sub_int_scale_vec, int_scale_vec, 
-                                          &haarResponseX[l_count*24+k_count0], &haarResponseY[l_count*24+k_count0]);
-                
-            }
+            // USE CVTTPS_EPI32 FOR TRUNCATION!!!
+            __m256i sample_col0 = _mm256_cvttps_epi32(_mm256_add_ps(ipoint_x_sub_int_scale_add_05_vec, kks0));
+            __m256i sample_col1 = _mm256_cvttps_epi32(_mm256_add_ps(ipoint_x_sub_int_scale_add_05_vec, kks1));
+            __m256i sample_col2 = _mm256_cvttps_epi32(_mm256_add_ps(ipoint_x_sub_int_scale_add_05_vec, kks2));
+            
+            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec, sample_col0, int_scale_vec, 
+                                            &haarResponseX[l_count*24+0], &haarResponseY[l_count*24+0]);
+            
+            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec, sample_col1, int_scale_vec, 
+                                            &haarResponseX[l_count*24+8], &haarResponseY[l_count*24+8]);
+            
+            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec, sample_col2, int_scale_vec, 
+                                            &haarResponseX[l_count*24+16], &haarResponseY[l_count*24+16]);
 
         }
         
