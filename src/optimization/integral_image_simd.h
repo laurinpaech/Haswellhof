@@ -66,10 +66,10 @@ inline __m256 box_integral_unconditional_simd(struct integral_image *iimage, __m
     __m256i C_idx = _mm256_add_epi32(r1w, c0);
     __m256i D_idx = _mm256_add_epi32(r1w, c1);
 
-    __m256 A = _mm256_i32gather_ps(data, A_idx, 1);
-    __m256 B = _mm256_i32gather_ps(data, B_idx, 1);
-    __m256 C = _mm256_i32gather_ps(data, C_idx, 1);
-    __m256 D = _mm256_i32gather_ps(data, D_idx, 1);
+    __m256 A = _mm256_i32gather_ps(data, A_idx, sizeof(float));
+    __m256 B = _mm256_i32gather_ps(data, B_idx, sizeof(float));
+    __m256 C = _mm256_i32gather_ps(data, C_idx, sizeof(float));
+    __m256 D = _mm256_i32gather_ps(data, D_idx, sizeof(float));
 
     __m256 res = _mm256_sub_ps(_mm256_sub_ps(A, B), _mm256_add_ps(C, D));
 
