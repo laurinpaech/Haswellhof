@@ -58,8 +58,8 @@ inline __m256 box_integral_unconditional_simd(struct integral_image *iimage, __m
     __m256i c0 = _mm256_sub_epi32(c, box_ones_vec);
     __m256i c1 = _mm256_add_epi32(c0, cs);
 
-    __m256i r0w = _mm256_mul_epi32(r0, data_width);
-    __m256i r1w = _mm256_mul_epi32(r1, data_width);
+    __m256i r0w = _mm256_mullo_epi32(r0, data_width);
+    __m256i r1w = _mm256_mullo_epi32(r1, data_width);
 
     __m256i A_idx = _mm256_add_epi32(r0w, c0);
     __m256i B_idx = _mm256_add_epi32(r0w, c1);
