@@ -2636,9 +2636,6 @@ void compute_response_layer_Dyy_top_mid(struct response_layer* layer, struct int
             x = i;
             y = j;
 
-            int debug_x = i/step;
-            int debug_y = j/step;
-
             // Compute Dyy  
             // whole box filter
             // All inside
@@ -2655,30 +2652,6 @@ void compute_response_layer_Dyy_top_mid(struct response_layer* layer, struct int
             temp0 = A - C;
             temp1 = D - B;
             Dyy0 = temp0 + temp1;
-
-            /* Dyy coords
-            // whole box filter
-            r00 = x - border;
-            r01 = x + border;  // -> x-border+filtersize-1 = x-border+(border+border+1)-1
-            c00 = y - lobe;
-            c01 = y + lobe - 1; // -> y-lobe+1 + 2*lobe -1 -1
-
-            A =
-            B =
-            C =
-            D =
-
-            // neg part box filter
-            r10 = x - lobe / 2 - 1;
-            r11 = r10 + lobe;
-            c10 = y - lobe;
-            c11 = y + lobe - 1;
-
-            A = (r10, c10)
-            B = (r10, c11) = (x - lobe / 2 - 1, y + lobe - 1)
-            C = (r11, c10)
-            D = (r11, c11)
-            */
 
             // neg part box filter
             // All inside
@@ -2700,15 +2673,6 @@ void compute_response_layer_Dyy_top_mid(struct response_layer* layer, struct int
             temp0 = A - C;
             temp1 = D - B;
             Dyy1 = temp0 + temp1;
-
-            // Dyy1 = A - B - C + D;
-
-            // float Dyy1_orig = box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
-            //
-            // if (debug_x == 1080 &&  debug_y == 651) {
-            //     printf("Checking ABCD:\n\nA: %f, B: %f, C: %f, D: %f\n", A, B, C, D);
-            //     printf("MONSTER BUGGO\n\nDyy1: %f\nDyy1_orig: %f\n", Dyy1, Dyy1_orig);
-            // }
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -3265,9 +3229,6 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             x = i;
             y = j;
 
-            int debug_x = i/step;
-            int debug_y = j/step;
-
             // Compute Dyy  
             // whole box filter
             // All inside
@@ -3331,13 +3292,6 @@ void compute_response_layer_Dyy(struct response_layer* layer, struct integral_im
             Dyy1 = temp0 + temp1;
 
             // Dyy1 = A - B - C + D;
-
-            // float Dyy1_orig = box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
-            //
-            // if (debug_x == 1080 &&  debug_y == 651) {
-            //     printf("Checking ABCD:\n\nA: %f, B: %f, C: %f, D: %f\n", A, B, C, D);
-            //     printf("MONSTER BUGGO\n\nDyy1: %f\nDyy1_orig: %f\n", Dyy1, Dyy1_orig);
-            // }
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -4236,9 +4190,6 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             x = i;
             y = j;
 
-            int debug_x = i/step;
-            int debug_y = j/step;
-
             // Compute Dyy  
             // whole box filter
             // All inside
@@ -4255,30 +4206,6 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             temp0 = A - C;
             temp1 = D - B;
             Dyy0 = temp0 + temp1;
-
-            /* Dyy coords
-            // whole box filter
-            r00 = x - border;
-            r01 = x + border;  // -> x-border+filtersize-1 = x-border+(border+border+1)-1
-            c00 = y - lobe;
-            c01 = y + lobe - 1; // -> y-lobe+1 + 2*lobe -1 -1
-
-            A =
-            B =
-            C =
-            D =
-
-            // neg part box filter
-            r10 = x - lobe / 2 - 1;
-            r11 = r10 + lobe;
-            c10 = y - lobe;
-            c11 = y + lobe - 1;
-
-            A = (r10, c10)
-            B = (r10, c11) = (x - lobe / 2 - 1, y + lobe - 1)
-            C = (r11, c10)
-            D = (r11, c11)
-            */
 
             // neg part box filter
             // All inside
@@ -4302,13 +4229,6 @@ void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct i
             Dyy1 = temp0 + temp1;
 
             // Dyy1 = A - B - C + D;
-
-            // float Dyy1_orig = box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
-            //
-            // if (debug_x == 1080 &&  debug_y == 651) {
-            //     printf("Checking ABCD:\n\nA: %f, B: %f, C: %f, D: %f\n", A, B, C, D);
-            //     printf("MONSTER BUGGO\n\nDyy1: %f\nDyy1_orig: %f\n", Dyy1, Dyy1_orig);
-            // }
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -5169,13 +5089,6 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
 
         // Mid Mid
         for (; y < width * step - lobe + 1; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
-            // int debug_x = i/step;
-            // int debug_y = j/step;
-
             // Compute Dyy  
             // whole box filter
             // All inside
@@ -5192,30 +5105,6 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             temp0 = A - C;
             temp1 = D - B;
             Dyy0 = temp0 + temp1;
-
-            /* Dyy coords
-            // whole box filter
-            r00 = x - border;
-            r01 = x + border;  // -> x-border+filtersize-1 = x-border+(border+border+1)-1
-            c00 = y - lobe;
-            c01 = y + lobe - 1; // -> y-lobe+1 + 2*lobe -1 -1
-
-            A =
-            B =
-            C =
-            D =
-
-            // neg part box filter
-            r10 = x - lobe / 2 - 1;
-            r11 = r10 + lobe;
-            c10 = y - lobe;
-            c11 = y + lobe - 1;
-
-            A = (r10, c10)
-            B = (r10, c11) = (x - lobe / 2 - 1, y + lobe - 1)
-            C = (r11, c10)
-            D = (r11, c11)
-            */
 
             // neg part box filter
             // All inside
@@ -5239,13 +5128,6 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             Dyy1 = temp0 + temp1;
 
             // Dyy1 = A - B - C + D;
-
-            // float Dyy1_orig = box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
-            //
-            // if (debug_x == 1080 &&  debug_y == 651) {
-            //     printf("Checking ABCD:\n\nA: %f, B: %f, C: %f, D: %f\n", A, B, C, D);
-            //     printf("MONSTER BUGGO\n\nDyy1: %f\nDyy1_orig: %f\n", Dyy1, Dyy1_orig);
-            // }
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -6120,13 +6002,6 @@ void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct res
 
         // Mid Mid
         for (; y < width * step - lobe + 1; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
-            // int debug_x = i/step;
-            // int debug_y = j/step;
-
             // Compute Dyy  
             // whole box filter
             // All inside
@@ -6143,30 +6018,6 @@ void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct res
             temp0 = A - C;
             temp1 = D - B;
             Dyy0 = temp0 + temp1;
-
-            /* Dyy coords
-            // whole box filter
-            r00 = x - border;
-            r01 = x + border;  // -> x-border+filtersize-1 = x-border+(border+border+1)-1
-            c00 = y - lobe;
-            c01 = y + lobe - 1; // -> y-lobe+1 + 2*lobe -1 -1
-
-            A =
-            B =
-            C =
-            D =
-
-            // neg part box filter
-            r10 = x - lobe / 2 - 1;
-            r11 = r10 + lobe;
-            c10 = y - lobe;
-            c11 = y + lobe - 1;
-
-            A = (r10, c10)
-            B = (r10, c11) = (x - lobe / 2 - 1, y + lobe - 1)
-            C = (r11, c10)
-            D = (r11, c11)
-            */
 
             // neg part box filter
             // All inside
@@ -6190,13 +6041,6 @@ void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct res
             Dyy1 = temp0 + temp1;
 
             // Dyy1 = A - B - C + D;
-
-            // float Dyy1_orig = box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
-            //
-            // if (debug_x == 1080 &&  debug_y == 651) {
-            //     printf("Checking ABCD:\n\nA: %f, B: %f, C: %f, D: %f\n", A, B, C, D);
-            //     printf("MONSTER BUGGO\n\nDyy1: %f\nDyy1_orig: %f\n", Dyy1, Dyy1_orig);
-            // }
 
             Dyy = Dyy0 - 3*Dyy1;
 
@@ -8021,13 +7865,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(struct respo
 
         // Mid Mid
         for (; y < width * step - lobe + 1; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
-            // int debug_x = i/step;
-            // int debug_y = j/step;
-
             // Compute Dyy  
             // whole box filter
             // All inside
@@ -8960,13 +8797,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
 
         // Mid Mid
         for (; y < width * step - lobe + 1; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
-            // int debug_x = i/step;
-            // int debug_y = j/step;
-
             // Compute Dyy  
             // whole box filter
             // All inside
@@ -9021,10 +8851,6 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struc
 
         // Mid Right
         for (; y < width * step; y += step) {
-            // Image coordinates
-            // x = i;
-            // y = j;
-
             // Compute Dyy  
             // whole box filter
             // B, D outside, A, C inside
