@@ -352,13 +352,14 @@ int main(int argc, char const *argv[]) {
             functions.push_back(get_msurf_descriptors_inlinedHaarWavelets);
             functions.push_back(get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries);
 
-            functions.push_back(get_msurf_descriptors_gauss_s1_separable_test);
-            functions.push_back(get_msurf_descriptors_gauss_s2_precomputed);
+            // functions.push_back(get_msurf_descriptors_gauss_s1_separable_test);
+            // functions.push_back(get_msurf_descriptors_gauss_s2_precomputed);
             functions.push_back(get_msurf_descriptors_gauss_compute_once_case);
             functions.push_back(get_msurf_descriptors_gauss_pecompute_haar);
-            functions.push_back(get_msurf_descriptors_gauss_pecompute_haar_unroll);
+            // functions.push_back(get_msurf_descriptors_gauss_pecompute_haar_unroll);
             functions.push_back(get_msurf_descriptors_gauss_pecompute_haar_rounding);
             functions.push_back(get_msurf_descriptors_arrays);
+            functions.push_back(get_msurf_descriptors_haar_unroll_2_24_True_winner);
 
             // TODO: (Sebastian) find FLOPS count for get_msurf_descriptor
             struct benchmark_data default_data(image_name, width, height, "get_msurf_descriptors",
@@ -376,19 +377,21 @@ int main(int argc, char const *argv[]) {
             struct benchmark_data data5(image_name, width, height,
                                         "get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries",
                                         interest_points.size(), -1);
-            struct benchmark_data data6(image_name, width, height, "get_msurf_descriptors_gauss_s1_separable_test",
-                                        interest_points.size(), -1);
-            struct benchmark_data data7(image_name, width, height, "get_msurf_descriptors_gauss_s2_precomputed",
-                                        interest_points.size(), -1);
+            // struct benchmark_data data6(image_name, width, height, "get_msurf_descriptors_gauss_s1_separable_test",
+            //                             interest_points.size(), -1);
+            // struct benchmark_data data7(image_name, width, height, "get_msurf_descriptors_gauss_s2_precomputed",
+            //                             interest_points.size(), -1);
             struct benchmark_data data8(image_name, width, height, "get_msurf_descriptors_gauss_compute_once_case",
                                         interest_points.size(), -1);
             struct benchmark_data data9(image_name, width, height, "get_msurf_descriptors_gauss_pecompute_haar",
                                         interest_points.size(), -1);
-            struct benchmark_data data10(image_name, width, height, "get_msurf_descriptors_gauss_pecompute_haar_unroll",
-                                         interest_points.size(), -1);
+            // struct benchmark_data data10(image_name, width, height, "get_msurf_descriptors_gauss_pecompute_haar_unroll",
+                                        //  interest_points.size(), -1);
             struct benchmark_data data11(image_name, width, height, "get_msurf_descriptors_gauss_pecompute_haar_rounding",
                                          interest_points.size(), -1);
             struct benchmark_data data12(image_name, width, height, "get_msurf_descriptors_arrays",
+                                         interest_points.size(), -1);
+            struct benchmark_data data13(image_name, width, height, "get_msurf_descriptors_haar_unroll_2_24_True_winner",
                                          interest_points.size(), -1);
 
             // Insert all respective benchmarking info for functions here
@@ -400,13 +403,14 @@ int main(int argc, char const *argv[]) {
             data.push_back(data3);
             data.push_back(data4);
             data.push_back(data5);
-            data.push_back(data6);
-            data.push_back(data7);
+            // data.push_back(data6);
+            // data.push_back(data7);
             data.push_back(data8);
             data.push_back(data9);
-            data.push_back(data10);
+            // data.push_back(data10);
             data.push_back(data11);
             data.push_back(data12);
+            data.push_back(data13);
 
             // Benchmarking all get_msurf_descriptor functions and storing timing results in respective entries in data
             bench_get_msurf_descriptors(functions, iimage, &interest_points, data);
