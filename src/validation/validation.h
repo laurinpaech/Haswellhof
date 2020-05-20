@@ -7,6 +7,7 @@
 #include "descriptor_opt.h"
 #include "fasthessian_opt.h"
 
+#include "stdint.h"
 #include <vector>
 
 // Creates an integral image given an image, its corresponding height and width, the base function and a list of other functions. 
@@ -15,7 +16,12 @@
 // Messages clarifying the equality of the results are being printed.
 bool validate_integral_image(void (*original_function)(float *, struct integral_image *), 
                              const std::vector<void (*)(float *, struct integral_image *)> &test_functions, 
-                             int width, int height, float *image);
+                             int width, int height, float *image, bool is_padded = false);
+
+bool validate_integral_image_int(void (*original_function)(uint8_t *, struct integral_image *),
+                                 const std::vector<void (*)(uint8_t *, struct integral_image *)> &test_functions, int width,
+                                 int height, uint8_t *image, bool is_padded = false);
+
 
 bool validate_compute_response_layer_custom_matrix(void (*original_function)(struct fasthessian *),
                                                    const std::vector<void (*)(struct fasthessian *)> &test_functions);

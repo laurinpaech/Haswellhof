@@ -1,6 +1,8 @@
 #include "fasthessian_opt.h"
 #include "benchmarking.h"
 
+#include "integral_image_opt.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -17,14 +19,12 @@
 
 
 void bench_compute_integral_img(const std::vector<void (*)(float *, struct integral_image *)> &functions,
-                                float *gray_image, std::vector<struct benchmark_data> &data){
+                                float *gray_image, std::vector<struct benchmark_data> &data, bool is_padded) {
 
     assert(functions.size() == data.size());
 
     for (int j = 0; j < functions.size(); ++j) {
-
-        perf_compute_integral_img(functions[j], gray_image, data[j]);
-
+        perf_compute_integral_img(functions[j], gray_image, data[j], is_padded);
     }
 
 }
@@ -34,15 +34,96 @@ void bench_compute_integral_img(const std::vector<void (*)(float *, struct integ
 // The number of flops for compute_integral_img must be set in benchmark_data.
 // The height and width of the image must be set in benchmark_data.
 void perf_compute_integral_img(void (*function)(float *, struct integral_image *), float *gray_image,
-                               struct benchmark_data &data) {
+                               struct benchmark_data &data, bool is_padded) {
     double cycles = 0.;
     long num_runs = 100;
     double multiplier = 1;
     uint64_t start, end;
 
-    struct integral_image *iimage = create_integral_img(data.width, data.height);
+    // Checking if integral image should be padded and initializing it
+    struct integral_image *iimage;
+    if (!is_padded) {
+        iimage = create_integral_img(data.width, data.height);
+    } else {
+        iimage = create_padded_integral_img(data.width, data.height);
+    }
 
-    // float *dummy_iimage_data = (float *)calloc(data.width * data.height, sizeof(float));
+#ifdef WARM_UP
+    // Warm-up phase: we determine a number of executions that allows
+    // the code to be executed for at least CYCLES_REQUIRED cycles.
+    // This helps excluding timing overhead when measuring small runtimes.
+    do {
+        num_runs = num_runs * multiplier;
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; i++) {
+            (*function)(gray_image, iimage);
+        }
+        end = stop_tsc(start);
+
+        cycles = (double)end;
+        multiplier = (CYCLES_REQUIRED) / (cycles);
+
+    } while (multiplier > 2);
+#endif
+
+    std::vector<double> cycleslist;
+
+    // Actual performance measurements repeated REP times.
+    // We simply store all results and compute medians during post-processing.
+    double total_cycles = 0;
+    for (size_t j = 0; j < REP; j++) {
+        start = start_tsc();
+        for (size_t i = 0; i < num_runs; ++i) {
+            (*function)(gray_image, iimage);
+        }
+        end = stop_tsc(start);
+
+        cycles = ((double)end) / num_runs;
+        total_cycles += cycles;
+
+        cycleslist.push_back(cycles);
+    }
+    total_cycles /= REP;
+
+    free(iimage->padded_data);
+    free(iimage);
+
+    cycles = total_cycles;  // cyclesList.front();
+    double flops_per_cycle = round((100.0 * data.num_flops) / cycles) / 100.0;
+    std::sort(cycleslist.begin(), cycleslist.end());
+    data.avg_cycles = (uint64_t)cycles;
+    data.min_cycles = (uint64_t)cycleslist.front();
+    data.max_cycles = (uint64_t)cycleslist.back();
+    data.flops_per_cycle = flops_per_cycle;
+}
+
+void bench_compute_integral_img_int(const std::vector<void (*)(uint8_t *, struct integral_image *)> &functions,
+                                    uint8_t *gray_image, std::vector<struct benchmark_data> &data, bool is_padded) {
+    assert(functions.size() == data.size());
+
+    for (int j = 0; j < functions.size(); ++j) {
+        perf_compute_integral_img_int(functions[j], gray_image, data[j], is_padded);
+    }
+}
+
+// Times the function compute_integral_img.
+// Stores the average, minimum and maximum number of cycles and the flops per cycle in benchmark_data.
+// The number of flops for compute_integral_img must be set in benchmark_data.
+// The height and width of the image must be set in benchmark_data.
+void perf_compute_integral_img_int(void (*function)(uint8_t *, struct integral_image *), uint8_t *gray_image,
+                                   struct benchmark_data &data, bool is_padded) {
+    double cycles = 0.;
+    long num_runs = 100;
+    double multiplier = 1;
+    uint64_t start, end;
+
+    // Checking if integral image should be padded and initializing it
+    struct integral_image *iimage;
+    if (!is_padded) {
+        iimage = create_integral_img(data.width, data.height);
+    } else {
+        iimage = create_padded_integral_img(data.width, data.height);
+    }
 
 #ifdef WARM_UP
     // Warm-up phase: we determine a number of executions that allows

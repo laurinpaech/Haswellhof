@@ -17,7 +17,7 @@
 #define NUM_TOTAL_LAYERS 8
 #define NUM_OCTAVES 3
 #define NUM_LAYERS 4
-#define LARGEST_FILTER_SIZE 99
+#define PADDING_SIZE 50
 
 //static const int NUM_OCTAVES = 3;
 //static const int NUM_LAYERS = 4;

@@ -18,7 +18,7 @@ inline long get_flops_compute_integral_img_faster_alg(int width, int height, int
 // An optimized function to compute the integral image.
 // Parallelizes the additions which makes use of both addition ports.
 // Computes two rows simultaneously.
-void compute_integral_img_faster_alg(float *gray_image, int width, int height, float *iimage_data);
+void compute_integral_img_faster_alg(float *gray_image, struct integral_image *iimage);
 
 // Creates the struct of the padded integral image.
 // Has a larger size for the padding. the width is image_width + 2 * largest_lobe. The height is
@@ -38,6 +38,11 @@ inline float box_integral_unconditional(struct integral_image *iimage, int row, 
     int c0 = col - 1;
     int r1 = row + rows - 1;
     int c1 = col + cols - 1;
+
+    // r0 = x - lobe/2 -1
+    // c0 = y - lobe
+    // r1 = x + lobe/2 -1
+    // c1 = y + lobe - 1
 
     float A = data[r0 * data_width + c0];
     float B = data[r0 * data_width + c1];
