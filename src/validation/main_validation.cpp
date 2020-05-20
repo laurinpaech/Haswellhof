@@ -102,7 +102,7 @@ int main(int argc, char const *argv[])
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_response_layer_unconditional);
         test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional);
-        
+
         // test_functions.push_back(compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr); // is expected to fail for images < 128
         // test_functions.push_back(compute_response_layer_unconditional_strided); // is expected to fail on layers > 4
 

@@ -451,12 +451,12 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                             y = j;
 
                             // Calculate Dxx, Dyy, Dxy with Box Filter
-                            Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
-                                    - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
-                            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
-                                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
-                                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
-                                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+                            Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                                    - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+                            Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                                    + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                                    - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                                    - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
 
                             // Normalize Responses with inverse area
                             Dyy *= inv_area;
@@ -503,12 +503,12 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                             y = j;
 
                             // Calculate Dxx, Dyy, Dxy with Box Filter
-                            Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
-                                    - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
-                            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
-                                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
-                                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
-                                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+                            Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                                    - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+                            Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                                    + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                                    - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                                    - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
 
                             // Normalize Responses with inverse area
                             Dxx *= inv_area;
@@ -535,12 +535,12 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                             y = j;
 
                             // Calculate Dxx, Dyy, Dxy with Box Filter
-                            Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
-                                    - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
-                            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
-                                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
-                                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
-                                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+                            Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                                    - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+                            Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                                    + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                                    - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                                    - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
 
                             // Normalize Responses with inverse area
                             Dxx *= inv_area;
@@ -575,12 +575,12 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                             y = j;
 
                             // Calculate Dxx, Dyy, Dxy with Box Filter
-                            Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
-                                    - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
-                            Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
-                                    + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
-                                    - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
-                                    - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+                            Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                                    - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+                            Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                                    + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                                    - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                                    - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
 
                             // Normalize Responses with inverse area
                             Dxx *= inv_area;
@@ -649,13 +649,13 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                         y = j;
 
                         // Calculate Dxx, Dyy, Dxy with Box Filter
-                        Dyy = Dyy_arr[j] - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
-                        Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
-                                - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
-                        Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
-                                + box_integral(iimage, x + 1, y - lobe, lobe, lobe)
-                                - box_integral(iimage, x - lobe, y - lobe, lobe, lobe)
-                                - box_integral(iimage, x + 1, y + 1, lobe, lobe);
+                        Dyy = Dyy_arr[j] - 3 * box_integral_unconditional(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
+                        Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                                - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+                        Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                                + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                                - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                                - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
 
                         // Normalize Responses with inverse area
                         Dyy *= inv_area;
