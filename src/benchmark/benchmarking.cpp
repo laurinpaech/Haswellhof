@@ -12,7 +12,7 @@
 #include "tsc_x86.h"
 
 #define CYCLES_REQUIRED 1e8
-#define REP 50
+#define REP 10
 #define EPS (1e-3)
 // Determines whether the warm up for the timing functions will be conducted.
 #define WARM_UP
@@ -715,7 +715,7 @@ void perf_get_msurf_descriptors(void (*function)(struct integral_image *, std::v
                                struct integral_image *iimage, std::vector<struct interest_point> *ipoints,
                                struct benchmark_data &data) {
     double cycles = 0.;
-    long num_runs = 5;
+    long num_runs = 1;
     double multiplier = 1;
     uint64_t start, end;
 

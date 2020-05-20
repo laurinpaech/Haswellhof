@@ -69,6 +69,7 @@ void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* 
                                         
                     float rx = haarX(iimage, sample_y, sample_x, (int) 2.0 * round(scale));
                     float ry = haarY(iimage, sample_y, sample_x, (int) 2.0 * round(scale));
+                    // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x,sample_y,(int)round(scale),rx,ry);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     //float rrx = gauss_s1*(-rx*si + ry*co);

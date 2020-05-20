@@ -220,6 +220,7 @@ int main(int argc, char const *argv[])
         test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_rounding);
         test_functions.push_back(get_msurf_descriptor_arrays);
         test_functions.push_back(get_msurf_descriptor_haar_unroll_2_24_True_winner);
+        test_functions.push_back(get_msurf_descriptor_arrays_simd);
 
 
         // test_functions.push_back(get_msurf_descriptor_haar_unroll_4_1_False);

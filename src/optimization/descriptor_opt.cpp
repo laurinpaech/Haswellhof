@@ -8,6 +8,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <immintrin.h>
 
 #include <vector>
 
@@ -785,6 +786,7 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
                     float rx = 0.0f;
                     float ry = 0.0f;
                     haarXY(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
+                    // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale,sample_y_sub_int_scale, int_scale, rx,ry);
 
                     // float rx = haarX(iimage, sample_y, sample_x, int_scale*2);
                     // float ry = haarY(iimage, sample_y, sample_x, int_scale*2);
@@ -2125,6 +2127,7 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
                 int sample_x_sub_int_scale = (int) (ipoint_x_sub_int_scale_add_k_mul_scale + (ipoint_x_sub_int_scale_add_k_mul_scale>=0 ? 0.5 : -0.5));
 
                 haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+
             }
 
         }
@@ -2139,6 +2142,8 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
                 int sample_x_sub_int_scale = (int)(ipoint_x_sub_int_scale_add_05 + k * scale);
 
                 haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale,sample_y_sub_int_scale, int_scale, haarResponseX[l_count*24+k_count],haarResponseY[l_count*24+k_count]);
+
             }
 
         }
@@ -3648,4 +3653,308 @@ void get_msurf_descriptors_haar_unroll_2_24_True_winner_unconditional(struct int
     for (size_t i=0; i<interest_points->size(); ++i) {
         get_msurf_descriptor_haar_unroll_2_24_True_winner_unconditional(iimage, &interest_points->at(i));
     }
+}
+
+       
+void get_msurf_descriptor_arrays_simd(struct integral_image* iimage, struct interest_point* ipoint) {
+
+
+    float scale = ipoint->scale;
+    // float scale_mul_25f = 2.5f*scale;
+    int int_scale = (int) roundf(scale);
+
+    __m256i int_scale_vec = _mm256_set1_epi32(int_scale);
+
+    // int int_scale_mul_2 =  2 * int_scale;
+    float scale_squared = scale*scale;
+
+    float g1_factor = -0.08f / (scale_squared); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
+    //float g2_factor = -1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
+
+    float ipoint_x = roundf(ipoint->x) + 0.5*scale;
+    float ipoint_y = roundf(ipoint->y) + 0.5*scale;
+
+    float ipoint_x_sub_int_scale = ipoint_x-int_scale;
+    float ipoint_y_sub_int_scale = ipoint_y-int_scale;
+
+    float ipoint_x_sub_int_scale_add_05 = ipoint_x-int_scale + 0.5;
+    float ipoint_y_sub_int_scale_add_05 = ipoint_y-int_scale + 0.5;
+    
+    int width = iimage->width;
+    int height = iimage->height;
+
+    // build descriptor
+    float* descriptor = ipoint->descriptor;
+    int desc_idx = 0;
+    float sum_of_squares = 0.0f;
+
+    // Initializing gauss_s2 index for precomputed array
+    int gauss_s2_index = 0;
+
+    //r(2.5*s) + r(1.5*s) == -(r(2.5*s) - r(6.5*s))
+
+    // check if we ever hit a boundary
+    if (((int) roundf(ipoint_x - 12*scale)) - int_scale <= 0 
+        || ((int) roundf(ipoint_y - 12*scale)) - int_scale <= 0 
+        || ((int) roundf(ipoint_x + 11*scale)) + int_scale > width 
+        || ((int) roundf(ipoint_y + 11*scale)) + int_scale > height) 
+    { // some outside
+        for (int l=-12, l_count=0; l<12; ++l, ++l_count) {
+            float ipoint_y_sub_int_scale_add_l_mul_scale = ipoint_y_sub_int_scale + l * scale;
+            int sample_y_sub_int_scale = (int) (ipoint_y_sub_int_scale_add_l_mul_scale + (ipoint_y_sub_int_scale_add_l_mul_scale>=0 ? 0.5 : -0.5));
+
+            for (int k=-12, k_count=0; k<12; ++k, k_count++) {
+
+                //Get x coords of sample point
+                float ipoint_x_sub_int_scale_add_k_mul_scale = ipoint_x_sub_int_scale + k * scale;
+                int sample_x_sub_int_scale = (int) (ipoint_x_sub_int_scale_add_k_mul_scale + (ipoint_x_sub_int_scale_add_k_mul_scale>=0 ? 0.5 : -0.5));
+
+                haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+            }
+
+        }
+
+    } else {
+
+        for (int l=-12, l_count=0; l<12; ++l, ++l_count) {
+            int sample_y_sub_int_scale = (int)(ipoint_y_sub_int_scale_add_05 + l * scale);
+
+            __m256i sample_y_sub_int_scale_vec = _mm256_set1_epi32(sample_y_sub_int_scale);
+
+            for (int k=-12, k_count=0; k<12-7; k+=8, k_count+=8) {
+                int k0 = k + 0;
+                int k1 = k + 1;
+                int k2 = k + 2;
+                int k3 = k + 3;
+                int k4 = k + 4;
+                int k5 = k + 5;
+                int k6 = k + 6;
+                int k7 = k + 7;
+
+                int k_count0 = k_count + 0;
+                int k_count1 = k_count + 1;
+                int k_count2 = k_count + 2;
+                int k_count3 = k_count + 3;
+                int k_count4 = k_count + 4;
+                int k_count5 = k_count + 5;
+                int k_count6 = k_count + 6;
+                int k_count7 = k_count + 7;
+
+                //Get x coords of sample point
+                int sample_x_sub_int_scale0 = (int)(ipoint_x_sub_int_scale_add_05 + k0 * scale);
+                int sample_x_sub_int_scale1 = (int)(ipoint_x_sub_int_scale_add_05 + k1 * scale);
+                int sample_x_sub_int_scale2 = (int)(ipoint_x_sub_int_scale_add_05 + k2 * scale);
+                int sample_x_sub_int_scale3 = (int)(ipoint_x_sub_int_scale_add_05 + k3 * scale);
+                int sample_x_sub_int_scale4 = (int)(ipoint_x_sub_int_scale_add_05 + k4 * scale);
+                int sample_x_sub_int_scale5 = (int)(ipoint_x_sub_int_scale_add_05 + k5 * scale);
+                int sample_x_sub_int_scale6 = (int)(ipoint_x_sub_int_scale_add_05 + k6 * scale);
+                int sample_x_sub_int_scale7 = (int)(ipoint_x_sub_int_scale_add_05 + k7 * scale);
+
+                __m256i sample_x_sub_int_scale_vec = _mm256_setr_epi32(sample_x_sub_int_scale0,
+                                                                      sample_x_sub_int_scale1,
+                                                                      sample_x_sub_int_scale2,
+                                                                      sample_x_sub_int_scale3,
+                                                                      sample_x_sub_int_scale4,
+                                                                      sample_x_sub_int_scale5,
+                                                                      sample_x_sub_int_scale6,
+                                                                      sample_x_sub_int_scale7);
+
+                haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec, sample_x_sub_int_scale_vec, int_scale_vec, 
+                                          &haarResponseX[l_count*24+k_count0], &haarResponseY[l_count*24+k_count0]);
+                
+
+
+                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale0,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count0],haarResponseY[l_count*24+k_count0]);
+                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale1,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count1],haarResponseY[l_count*24+k_count1]);
+                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale2,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count2],haarResponseY[l_count*24+k_count2]);
+                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale3,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count3],haarResponseY[l_count*24+k_count3]);
+                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale4,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count4],haarResponseY[l_count*24+k_count4]);
+                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale5,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count5],haarResponseY[l_count*24+k_count5]);
+                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale6,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count6],haarResponseY[l_count*24+k_count6]);
+                // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale7,sample_y_sub_int_scale, int_scale,haarResponseX[l_count*24+k_count7],haarResponseY[l_count*24+k_count7]);
+
+                printf("Vec: %f %f %f %f %f %f %f %f\n", haarResponseY[l_count*24+k_count0],
+                                                      haarResponseY[l_count*24+k_count1],
+                                                      haarResponseY[l_count*24+k_count2],
+                                                      haarResponseY[l_count*24+k_count3],
+                                                      haarResponseY[l_count*24+k_count4],
+                                                      haarResponseY[l_count*24+k_count5],
+                                                      haarResponseY[l_count*24+k_count6],
+                                                      haarResponseY[l_count*24+k_count7]);
+
+                
+                
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale0, int_scale, &haarResponseX[l_count*24+k_count0], &haarResponseY[l_count*24+k_count0]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale1, int_scale, &haarResponseX[l_count*24+k_count1], &haarResponseY[l_count*24+k_count1]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale2, int_scale, &haarResponseX[l_count*24+k_count2], &haarResponseY[l_count*24+k_count2]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale3, int_scale, &haarResponseX[l_count*24+k_count3], &haarResponseY[l_count*24+k_count3]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale4, int_scale, &haarResponseX[l_count*24+k_count4], &haarResponseY[l_count*24+k_count4]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale5, int_scale, &haarResponseX[l_count*24+k_count5], &haarResponseY[l_count*24+k_count5]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale6, int_scale, &haarResponseX[l_count*24+k_count6], &haarResponseY[l_count*24+k_count6]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale7, int_scale, &haarResponseX[l_count*24+k_count7], &haarResponseY[l_count*24+k_count7]);
+
+                // printf("real: %f %f\n", haarResponseX[l_count*24+k_count0], haarResponseX[l_count*24+k_count1]);
+                printf("Real: %f %f %f %f %f %f %f %f\n", haarResponseY[l_count*24+k_count0],
+                                                      haarResponseY[l_count*24+k_count1],
+                                                      haarResponseY[l_count*24+k_count2],
+                                                      haarResponseY[l_count*24+k_count3],
+                                                      haarResponseY[l_count*24+k_count4],
+                                                      haarResponseY[l_count*24+k_count5],
+                                                      haarResponseY[l_count*24+k_count6],
+                                                      haarResponseY[l_count*24+k_count7]);
+                
+                // printf("real0: %i %i\n", sample_y_sub_int_scale, sample_x_sub_int_scale0);
+                // printf("real1: %i %i\n", sample_y_sub_int_scale, sample_x_sub_int_scale1);
+                // printf("real2: %i %i\n", sample_y_sub_int_scale, sample_x_sub_int_scale2);
+                // printf("real4: %i %i\n", sample_y_sub_int_scale, sample_x_sub_int_scale4);
+            }
+
+        }
+        
+    }
+
+    float s0  = roundf( 0.5 * scale);
+    float s1  = roundf( 1.5 * scale);
+    float s2  = roundf( 2.5 * scale);
+    float s3  = roundf( 3.5 * scale);
+    float s4  = roundf( 4.5 * scale);
+    float s5  = roundf( 5.5 * scale);
+    float s6  = roundf( 6.5 * scale);
+    float s7  = roundf( 7.5 * scale);
+    float s8  = roundf( 8.5 * scale);
+    float s9  = roundf( 9.5 * scale);
+    float s10 = roundf(10.5 * scale);
+    float s11 = roundf(11.5 * scale);
+
+    float e_c0_m4 = s2 + s1; // CAREFUL HERE!
+    float e_c0_m3 = s2 + s0; // CAREFUL HERE!
+    float e_c0_m2 = s2 - s0;
+    float e_c0_m1 = s2 - s1;
+    //float e_c0_z0 = s2 - s2;
+    float e_c0_p1 = s2 - s3;
+    float e_c0_p2 = s2 - s4;
+    float e_c0_p3 = s2 - s5;
+    float e_c0_p4 = s2 - s6;
+
+    float e_c1_m4 = s7 - s3;
+    float e_c1_m3 = s7 - s4;
+    float e_c1_m2 = s7 - s5;
+    float e_c1_m1 = s7 - s6;
+    //float e_c1_z0 = s7 - s7;
+    float e_c1_p1 = s7 - s8;
+    float e_c1_p2 = s7 - s9;
+    float e_c1_p3 = s7 - s10;
+    float e_c1_p4 = s7 - s11;
+
+    gauss_s1_c0[0] =  expf(g1_factor * (e_c0_m4 * e_c0_m4));
+    gauss_s1_c0[1] =  expf(g1_factor * (e_c0_m3 * e_c0_m3));
+    gauss_s1_c0[2] =  expf(g1_factor * (e_c0_m2 * e_c0_m2));
+    gauss_s1_c0[3] =  expf(g1_factor * (e_c0_m1 * e_c0_m1));
+    gauss_s1_c0[4] =  1.0f; //expf(g1_factor * (e_c0_z0 * e_c0_z0));
+    gauss_s1_c0[5] =  expf(g1_factor * (e_c0_p1 * e_c0_p1));
+    gauss_s1_c0[6] =  expf(g1_factor * (e_c0_p2 * e_c0_p2));
+    gauss_s1_c0[7] =  expf(g1_factor * (e_c0_p3 * e_c0_p3));
+    gauss_s1_c0[8] =  expf(g1_factor * (e_c0_p4 * e_c0_p4));
+
+    gauss_s1_c1[0] =  expf(g1_factor * (e_c1_m4 * e_c1_m4));
+    gauss_s1_c1[1] =  expf(g1_factor * (e_c1_m3 * e_c1_m3));
+    gauss_s1_c1[2] =  expf(g1_factor * (e_c1_m2 * e_c1_m2));
+    gauss_s1_c1[3] =  expf(g1_factor * (e_c1_m1 * e_c1_m1));
+    gauss_s1_c1[4] =  1.0f; //expf(g1_factor * (e_c1_z0 * e_c1_z0));
+    gauss_s1_c1[5] =  expf(g1_factor * (e_c1_p1 * e_c1_p1));
+    gauss_s1_c1[6] =  expf(g1_factor * (e_c1_p2 * e_c1_p2));
+    gauss_s1_c1[7] =  expf(g1_factor * (e_c1_p3 * e_c1_p3));
+    gauss_s1_c1[8] =  expf(g1_factor * (e_c1_p4 * e_c1_p4));
+    
+    // calculate descriptor for this interest point
+    for (int i=-8; i<8; i+=5) {
+
+        for (int j=-8; j<8; j+=5) {
+
+            float dx = 0.0f;
+            float dy = 0.0f; 
+            float mdx = 0.0f; 
+            float mdy = 0.0f;
+
+            int gauss_index_l = -4;
+            for (int l = j-4; l < j + 5; ++l, ++gauss_index_l) {
+                float gauss_s1_y = -1;
+
+                if (j == -8 ) {
+                    gauss_s1_y = gauss_s1_c1[8-(gauss_index_l+4)];
+                } else if (j == -3) {
+                    gauss_s1_y = gauss_s1_c0[8-(gauss_index_l+4)];
+                } else if (j == 2) {
+                    gauss_s1_y = gauss_s1_c0[gauss_index_l+4];
+                } else if (j == 7) {
+                    gauss_s1_y = gauss_s1_c1[gauss_index_l+4];
+                }
+
+                int gauss_index_k = -4;
+                for (int k = i-4; k < i + 5; ++k, ++gauss_index_k) {
+
+                    float gauss_s1_x = -1;
+                    if (i == -8 ) {
+                        gauss_s1_x = gauss_s1_c1[8-(gauss_index_k+4)];
+                    } else if (i == -3) {
+                        gauss_s1_x = gauss_s1_c0[8-(gauss_index_k+4)];
+                    } else if (i == 2) {
+                        gauss_s1_x = gauss_s1_c0[gauss_index_k+4];
+                    } else if (i == 7) {
+                        gauss_s1_x = gauss_s1_c1[gauss_index_k+4];
+                    }
+
+                    float gauss_s1 = gauss_s1_x * gauss_s1_y;
+
+                    float rx = haarResponseX[(l+12)*24+(k+12)];
+                    float ry = haarResponseY[(l+12)*24+(k+12)];
+                    
+                    //Get the gaussian weighted x and y responses on rotated axis
+                    float rrx = gauss_s1 * ry;
+                    float rry = gauss_s1 * rx;
+
+                    dx += rrx;
+                    dy += rry;
+                    mdx += fabsf(rrx);
+                    mdy += fabsf(rry);
+                }
+            }
+
+            // Precomputed 4x4 gauss_s2 with (x,y) = {-1.5, -0.5, 0.5, 1.5}^2 and sig = 1.5f
+            float gauss_s2 = gauss_s2_arr[gauss_s2_index];
+            gauss_s2_index++;
+
+            // add the values to the descriptor vector
+            float d1 = dx * gauss_s2;
+            float d2 = dy * gauss_s2;
+            float d3 = mdx * gauss_s2;
+            float d4 = mdy * gauss_s2;
+
+            descriptor[desc_idx] = d1;
+            descriptor[desc_idx+1] = d2;
+            descriptor[desc_idx+2] = d3;
+            descriptor[desc_idx+3] = d4;
+
+            // precompute for normaliztion
+            sum_of_squares += (d1*d1 + d2*d2 + d3*d3 + d4*d4);
+
+            desc_idx += 4;
+
+        }
+    }
+
+    // rescale to unit vector
+    // NOTE: using sqrtf() for floats
+    float norm_factor = 1.0f / sqrtf(sum_of_squares);
+
+    for (int i = 0; i < 64; ++i) {
+        descriptor[i] *= norm_factor;
+    }
+}
+
+
+void get_msurf_descriptors_arrays_simd(struct integral_image* iimage, std::vector<struct interest_point> *interest_points) {
+    for (size_t i=0; i<interest_points->size(); ++i) {
+        get_msurf_descriptor_arrays_simd(iimage, &interest_points->at(i));
+	}
 }
