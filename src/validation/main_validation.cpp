@@ -56,7 +56,7 @@ int main(int argc, char const *argv[])
     // Load uint8_t version of image
     stbi_ldr_to_hdr_gamma(1.0f);
     uint8_t *image_int = stbi_load(argv[1], &width_int, &height_int, &channels_int, STBI_grey);
-    
+
     if (!image_int) {
         printf("Could not open or find int image\n");
         return -1;
@@ -176,6 +176,7 @@ int main(int argc, char const *argv[])
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_response_layer_unconditional);
         test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional);
+        test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional_opt);
 
         // test_functions.push_back(compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr); // is expected to fail for images < 128
         // test_functions.push_back(compute_response_layer_unconditional_strided); // is expected to fail on layers > 4

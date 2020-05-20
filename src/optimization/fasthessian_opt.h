@@ -73,6 +73,10 @@ void compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops_invsqr(stru
 
 void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct response_layer* layer, struct integral_image* iimage);
 
+void compute_response_layers_sonic_Dyy_unconditional_opt(struct fasthessian *fh);
+
+void compute_response_layer_sonic_Dyy_unconditional_opt(struct response_layer *layer, struct integral_image *iimage);
+
 inline void height_greater_border_width_greater_double_lobe_Dyy_inlined(struct response_layer *layer, struct integral_image *iimage) {
     // Filter_size > height
     // 2. Case The filter is somewhat larger than the image
