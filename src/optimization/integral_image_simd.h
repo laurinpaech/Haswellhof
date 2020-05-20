@@ -43,19 +43,19 @@ void compute_padded_integral_img_int(uint8_t *gray_image, struct integral_image 
 
 void compute_padded_integral_img_simd_early_cast_int(uint8_t *gray_image, struct integral_image *iimage);
 
+const __m256 box_zeros_vec = _mm256_setzero_ps();
+const __m256i box_ones_vec = _mm256_set1_epi32(1);
 
-inline __m256 box_integral_simd(struct integral_image *iimage, __m256i r, __m256i c, __m256i rs, __m256i cs) {
+inline __m256 box_integral_unconditional_simd(struct integral_image *iimage, __m256i r, __m256i c, __m256i rs, __m256i cs) {
     
     float *data = iimage->data;
 
-    __m256 zeros = _mm256_setzero_ps();
-    __m256i ones = _mm256_set1_epi32(1);
     __m256i data_width = _mm256_set1_epi32(iimage->data_width);
 
     // TODO: Maybe resolve data dependency here
-    __m256i r0 = _mm256_sub_epi32(r, ones);
+    __m256i r0 = _mm256_sub_epi32(r, box_ones_vec);
     __m256i r1 = _mm256_add_epi32(r0, rs);
-    __m256i c0 = _mm256_sub_epi32(c, ones);
+    __m256i c0 = _mm256_sub_epi32(c, box_ones_vec);
     __m256i c1 = _mm256_add_epi32(c0, cs);
 
     __m256i r0w = _mm256_mul_epi32(r0, data_width);
@@ -73,6 +73,6 @@ inline __m256 box_integral_simd(struct integral_image *iimage, __m256i r, __m256
 
     __m256 res = _mm256_sub_ps(_mm256_sub_ps(A, B), _mm256_add_ps(C, D));
 
-    return _mm256_max_ps(res, zeros);
+    return _mm256_max_ps(res, box_zeros_vec);
 
 }
