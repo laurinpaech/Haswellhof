@@ -20,11 +20,11 @@
 
 const char *images[] = {
     "../images/sunflower/sunflower_32.jpg",
-    "../images/sunflower/sunflower_64.jpg",
-    "../images/sunflower/sunflower_128.jpg",
-    "../images/sunflower/sunflower_256.jpg",
-    "../images/sunflower/sunflower_512.jpg",
-    "../images/sunflower/sunflower_1024.jpg"
+    "../images/sunflower/sunflower_64.jpg"
+    //"../images/sunflower/sunflower_128.jpg",
+    //"../images/sunflower/sunflower_256.jpg",
+    //"../images/sunflower/sunflower_512.jpg",
+    //"../images/sunflower/sunflower_1024.jpg"
     //"../images/sunflower/sunflower_2048.jpg"
     //"../images/sunflower/sunflower_4096.jpg"
 };
@@ -42,6 +42,7 @@ const char *images[] = {
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
+    initialize_folder_name();
     for (int i = 0; i < n_images; i++) {
         char *image_name = (char *)malloc(1024 * sizeof(char));
         strcpy(image_name, images[i]);
@@ -491,6 +492,8 @@ int main(int argc, char const *argv[]) {
         free(fh);
 
         free(image_name);
+        save_benchmark_data(all_benchmark_data);
+        all_benchmark_data.clear();
     }
 
     extern float* haarResponseX;
@@ -499,7 +502,8 @@ int main(int argc, char const *argv[]) {
     aligned_free(haarResponseX);
     aligned_free(haarResponseY);
 
-    save_benchmark_data(all_benchmark_data);
+    free_benchmarking_folder();
+
     // free memory benchmarkdata
     // https://stackoverflow.com/questions/10464992/c-delete-vector-objects-free-memory
     // std::vector<struct benchmark_data *>().swap(all_benchmark_data);

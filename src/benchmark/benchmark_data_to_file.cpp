@@ -13,13 +13,11 @@
     #include <direct.h>
 #endif
 
-/**
- * Saves the data specified in all_benchmark_data to .csv files.
- * The timing information belonging to the same function (but different images) will be saved to the same .csv file.
- **/
-void save_benchmark_data(const std::vector<struct benchmark_data> &all_benchmark_data) {
+static char* nested_folder;
+
+void initialize_folder_name() {
     // get the current time
-    struct tm *timenow;
+    struct tm* timenow;
     time_t now = time(NULL);
     timenow = gmtime(&now);
     char folder_name[32] = "../benchmarking_files";
@@ -28,15 +26,26 @@ void save_benchmark_data(const std::vector<struct benchmark_data> &all_benchmark
     char current_time[32];
     strftime(current_time, sizeof(current_time), "/%Y_%m_%d_%H_%M", timenow);
 
-    char *nested_folder = concat(folder_name, current_time);
+    nested_folder = concat(folder_name, current_time);
     create_folder(nested_folder);
+}
+
+void free_benchmarking_folder() {
+    free(nested_folder);
+}
+
+/**
+ * Saves the data specified in all_benchmark_data to .csv files.
+ * The timing information belonging to the same function (but different images) will be saved to the same .csv file.
+ **/
+void save_benchmark_data(const std::vector<struct benchmark_data> &all_benchmark_data) {
+    
 
     // concatenate the path in the form  "../benchmarking_files/CURRENT_DATE/function_name"
     for (int i = 0; i < all_benchmark_data.size(); i++) {
         save_performance_file(all_benchmark_data[i], nested_folder);
     }
 
-    free(nested_folder);
 }
 
 // Creates a folder if it doesn't exist. Parent folders must exist.
