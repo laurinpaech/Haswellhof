@@ -56,7 +56,7 @@ int main(int argc, char const *argv[])
     // Load uint8_t version of image
     stbi_ldr_to_hdr_gamma(1.0f);
     uint8_t *image_int = stbi_load(argv[1], &width_int, &height_int, &channels_int, STBI_grey);
-    
+
     if (!image_int) {
         printf("Could not open or find int image\n");
         return -1;

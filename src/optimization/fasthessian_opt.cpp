@@ -92,9 +92,9 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
 
     int ind = 0;
 
-    int x, y, k, k0;
-    int i = 0;
-    int j = 0;
+    int i, j, k, k0;
+    int x = 0;
+    int y = 0;
 
     // 1. Case The filter is smaller than the image
     if (filter_size <= iheight) {
@@ -178,13 +178,10 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                 // 3. B inside, D outside
 
                 // 1. Case: B outside, D inside
-                for (i = 0; i < width*step-lobe/2; i += step) {
-                    // set x
-                    x = i;
-
+                for (x = 0; x < width*step-lobe/2; x += step) {
                     // negative part
                     r10 = x - lobe / 2 - 1;
-                    r11 = r10 + lobe;
+                    r11 = r10 + lobe;  // TODO fixer
 
                     D1 = data[r11 * data_width + (iwidth-1)];
 
@@ -192,9 +189,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                     Dyy = D0 - 3 * D1;
                     Dyy *= inv_area;
 
-                    for (j = 0; j < width * step; j += step) {
-                        // Image coordinates
-                        y = j;
+                    for (y = 0; y < width * step; y += step) {
 
                         // Calculate Dxx, Dyy, Dxy with Box Filter
                         Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
@@ -221,12 +216,9 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                 Dyy = - 2 * D0;
                 Dyy *= inv_area;
 
-                for (; i < lobe/2+1; i += step) {
-                    x = i;
+                for (; x < lobe/2+1; x += step) {
 
-                    for (j = 0; j < width*step; j += step) {
-                        // Image coordinates
-                        y = j;
+                    for (y = 0; y < width*step; y += step) {
 
                         // Calculate Dxx, Dyy, Dxy with Box Filter
                         Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
@@ -250,8 +242,8 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                 }
 
                 // 3. Case: B inside, D outside
-                for (; i < height * step; i += step) {
-                    x = i;
+                for (; x < height * step; x += step) {
+
                     r10 = x - lobe / 2 - 1;
 
                     B = data[r10 * data_width + (iwidth-1)];
@@ -264,9 +256,7 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                     Dyy = 3*B - 2*D0;
                     Dyy *= inv_area;
 
-                    for (j = 0; j < width * step; j += step) {
-                        // Image coordinates
-                        y = j;
+                    for (y = 0; y < width * step; y += step) {
 
                         // Calculate Dxx, Dyy, Dxy with Box Filter
                         Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
@@ -334,15 +324,12 @@ void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integ
                 }
 
                 // Use precomputation for faster compute
-                for (i = 0; i < height*step; i += step) {
+                for (x = 0; x < height*step; x += step) {
 
-                    for (j = 0; j < width*step; j += step) {
-                        // Image coordinates
-                        x = i;
-                        y = j;
+                    for (y = 0; y < width*step; y += step) {
 
                         // Calculate Dxx, Dyy, Dxy with Box Filter
-                        Dyy = Dyy_arr[j] - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
+                        Dyy = Dyy_arr[y] - 3 * box_integral(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
                         Dxx = box_integral(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
                                 - 3 * box_integral(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
                         Dxy = box_integral(iimage, x - lobe, y + 1, lobe, lobe)
@@ -395,9 +382,9 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
 
     int ind = 0;
 
-    int x, y, k, k0;
-    int i = 0;
-    int j = 0;
+    int k, k0, i, j;
+    int x = 0;
+    int y = 0;
 
     // 1. Case The filter is smaller than the image
     if (filter_size <= iheight) {
@@ -481,13 +468,10 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                 // 3. B inside, D outside
 
                 // 1. Case: B outside, D inside
-                for (i = 0; i < width*step-lobe/2; i += step) {
-                    // set x
-                    x = i;
-
+                for (x = 0; x < width*step-lobe/2; x += step) {
                     // negative part
                     r10 = x - lobe / 2 - 1;
-                    r11 = r10 + lobe;
+                    r11 = r10 + lobe;  // TODO: fix this
 
                     D1 = data[r11 * data_width + (iwidth-1)];
 
@@ -495,10 +479,7 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                     Dyy = D0 - 3 * D1;
                     Dyy *= inv_area;
 
-                    for (j = 0; j < width * step; j += step) {
-                        // Image coordinates
-                        y = j;
-
+                    for (y = 0; y < width * step; y += step) {
                         // Calculate Dxx, Dyy, Dxy with Box Filter
                         Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
                                 - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
@@ -524,13 +505,9 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                 Dyy = - 2 * D0;
                 Dyy *= inv_area;
 
-                for (; i < lobe/2+1; i += step) {
-                    x = i;
+                for (; x < lobe/2+1; x += step) {
 
-                    for (j = 0; j < width*step; j += step) {
-                        // Image coordinates
-                        y = j;
-
+                    for (y = 0; y < width*step; y += step) {
                         // Calculate Dxx, Dyy, Dxy with Box Filter
                         Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
                                 - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
@@ -553,8 +530,7 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                 }
 
                 // 3. Case: B inside, D outside
-                for (; i < height * step; i += step) {
-                    x = i;
+                for (; x < height * step; x += step) {
                     r10 = x - lobe / 2 - 1;
 
                     B = data[r10 * data_width + (iwidth-1)];
@@ -567,10 +543,7 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                     Dyy = 3*B - 2*D0;
                     Dyy *= inv_area;
 
-                    for (j = 0; j < width * step; j += step) {
-                        // Image coordinates
-                        y = j;
-
+                    for (y = 0; y < width * step; y += step) {
                         // Calculate Dxx, Dyy, Dxy with Box Filter
                         Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
                                 - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
@@ -637,15 +610,11 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                 }
 
                 // Use precomputation for faster compute
-                for (i = 0; i < height*step; i += step) {
+                for (x = 0; x < height * step; x += step) {
 
-                    for (j = 0; j < width*step; j += step) {
-                        // Image coordinates
-                        x = i;
-                        y = j;
-
+                    for (y = 0; y < width * step; y += step) {
                         // Calculate Dxx, Dyy, Dxy with Box Filter
-                        Dyy = Dyy_arr[j] - 3 * box_integral_unconditional(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
+                        Dyy = Dyy_arr[y] - 3 * box_integral_unconditional(iimage, x - lobe / 2, y - lobe + 1, lobe, 2 * lobe - 1);
                         Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
                                 - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
                         Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
@@ -10197,7 +10166,7 @@ void get_interest_points_block(struct fasthessian *fh, std::vector<struct intere
                                 interpolate_extremum(br, bc, top, middle, bottom, interest_points);
 
                             }
-                        } 
+                        }
                     }
                 }
             }
@@ -10205,4 +10174,3 @@ void get_interest_points_block(struct fasthessian *fh, std::vector<struct intere
         }
     }
 }
-
