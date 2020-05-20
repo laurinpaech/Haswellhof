@@ -114,7 +114,7 @@ struct integral_image *create_padded_integral_img(int width, int height) {
     struct integral_image *iimage = (struct integral_image *)malloc(sizeof(struct integral_image));
 
     // Border + 1 because A, B and C are always exclusive.
-    int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
+    int border = PADDING_SIZE;
 
     // Getting data width  (width of padded image)
     // Border as padding to the left and right because of Dxx.
@@ -162,7 +162,7 @@ void compute_padded_integral_img(float *gray_image, struct integral_image *iimag
     // Border + 1 because A, B and C are always exclusive. We would need too many special cases if we'd work with
     // different upper and lower borders and left and right borders.
     int border = (data_width - width) / 2; 
-    //int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
+    //int border = PADDING_SIZE;
 
     // Pad the top part with 0.
     for (int i = 0; i < border; ++i) {

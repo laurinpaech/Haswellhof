@@ -15,7 +15,7 @@ void compute_padded_integral_img_new(float *gray_image, struct integral_image *i
     int height = iimage->height;
 
     int border = (data_width - width) / 2; 
-    //int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
+    //int border = PADDING_SIZE;
 
     // Block layout of padded integral image:
     // AAA
@@ -95,7 +95,7 @@ void compute_padded_integral_img_faster_alg(float *gray_image, struct integral_i
     int height = iimage->height;
 
     int border = (data_width - width) / 2; 
-    //int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
+    //int border = PADDING_SIZE;
 
     // Block layout of padded integral image:
     // AAA
@@ -317,7 +317,7 @@ void compute_padded_integral_img_int(uint8_t *gray_image, struct integral_image 
     int height = iimage->height;
 
     int border = (data_width - width) / 2; 
-    //int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
+    //int border = PADDING_SIZE;
 
     // Block layout of padded integral image:
     // AAA
@@ -737,7 +737,7 @@ void compute_padded_integral_img_simd_early_cast_int(uint8_t *gray_image, struct
     int height = iimage->height;
 
     int border = (data_width - width) / 2; 
-    //int border = ((LARGEST_FILTER_SIZE - 1) / 2) + 1;
+    //int border = PADDING_SIZE;
 
     // Block layout of padded integral image:
     // AAA
