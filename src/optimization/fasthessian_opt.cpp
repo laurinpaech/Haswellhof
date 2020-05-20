@@ -1625,6 +1625,7 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
     float *response = layer->response;
     bool *laplacian = layer->laplacian;
 
+    int data_width = iimage->data_width;
     int step = layer->step;
     int filter_size = layer->filter_size;
     int height = layer->height;
@@ -1645,9 +1646,6 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
         / original image. In the original function these coordinates are
         coordinates of the layer. We changed it this way in the optimized function
         because its easier to about corner cases in raw coordinates.
-
-        TODO: Might be possible (and more optimal) to convert it back to coords
-        of the layer. Then ind would be again a simple counting function
     */
 
     // Top Left Corner - Case 1: B of neg part outside
@@ -1664,14 +1662,14 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
             r01 = x + border;
             c01 = y + lobe - 1;
 
-            Dyy0 = data[r01 * iwidth + c01];  // seg fault at: i: 12, j:0
+            Dyy0 = data[r01 * data_width + c01];  // seg fault at: i: 12, j:0
 
             // neg part box filter
             r10 = x - lobe / 2 - 1;
             r11 = r10 + lobe;  // -1 is already part of r10
             c11 = y + lobe - 1;
 
-            D = data[r11 * iwidth + c11];
+            D = data[r11 * data_width + c11];
             Dyy1 = D;
 
             Dyy = Dyy0 - 3 * Dyy1;
@@ -1714,15 +1712,15 @@ void compute_response_layer_Dyy_leftcorner(struct response_layer *layer, struct 
             r01 = x + border;
             c01 = y + lobe - 1;
 
-            Dyy0 = data[r01 * iwidth + c01];
+            Dyy0 = data[r01 * data_width + c01];
 
             // neg part box filter
             r10 = x - lobe / 2 - 1;
             r11 = r10 + lobe;   // -1 is already part of r10
             c11 = y + lobe - 1;
 
-            B = data[r10 * iwidth + c11];
-            D = data[r11 * iwidth + c11];
+            B = data[r10 * data_width + c11];
+            D = data[r11 * data_width + c11];
             Dyy1 = D - B;
 
             Dyy = Dyy0 - 3 * Dyy1;
