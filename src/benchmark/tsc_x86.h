@@ -1,4 +1,7 @@
-#define _WIN64
+#ifndef _WIN64
+	#define _WIN64
+#endif
+
 #include <stdint.h>
 /* ==================== GNU C and possibly other UNIX compilers ===================== */
 #if !(defined(WIN32) || defined(_WIN64)) || defined(__GNUC__)
@@ -17,18 +20,21 @@
 	#define INT32 unsigned int
 
 /* ======================== WIN32 ======================= */
-#else
-
-	#include <bitset>
-	#include <array>
+#elif defined(_WIN64)
 
 	#include <intrin.h>
 	#pragma intrinsic(__rdtsc, __cpuid)
-	//#pragma intrinsic(__cpuid)
 
+	#define myInt64 unsigned long long
+	#define INT32 unsigned int
+	//#define myInt64 uint64_t
+	//#define INT32 uint32_t
 
-	#define myInt64 uint64_t
-	#define INT32 uint32_t
+#else 
+
+	#define myInt64 unsigned long long
+	#define INT32 unsigned int
+
 
 #endif
 
@@ -67,21 +73,12 @@
 
 	typedef union
 	{
-	myInt64 int64;
-	struct { INT32 lo, hi; } int32;
+		myInt64 int64;
+		struct { INT32 lo, hi; } int32;
 	} tsc_counter;
 
-#define RDTSC(cpu_c) \
-	(cpu_c).int64 = __rdtsc()
-#if 0
-#define CPUID(void)               \
-	{                          \ 
-		int cpu_test[4];\
-		int* cpu_ptr = cpu_test;\
-		__cpuid(cpu_ptr, 0);   \
-		//__cpuid(cpui_info.data(), 0);  \
-	}
-#endif
+	#define RDTSC(cpu_c)          \
+		(cpu_c).int64 = __rdtsc()
 
 
 #else
@@ -112,22 +109,24 @@ void init_tsc() {
 
 inline myInt64 start_tsc(void) {
     tsc_counter start;
-	{                          
-		int cpu_test[4];
-		__cpuid(cpu_test, 0); 
-		
-	} 
-    RDTSC(start);
+#ifdef _WIN64
+	int cpu_test[4];
+	__cpuid(cpu_test, 0);
+#else
+	CPUID();
+#endif
+	RDTSC(start);
     return COUNTER_VAL(start);
 }
 
 inline myInt64 stop_tsc(myInt64 start) {
 	tsc_counter end;
 	RDTSC(end);
-	{
-		int cpu_test[4];
-		__cpuid(cpu_test, 0);
-
-	}
+#ifdef _WIN64
+	int cpu_test[4];
+	__cpuid(cpu_test, 0);
+#else
+	CPUID();
+#endif
 	return COUNTER_VAL(end) - start;
 }
