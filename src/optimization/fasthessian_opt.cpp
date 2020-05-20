@@ -24,6 +24,24 @@ void compute_response_layers_Dyy_laplacian_localityloops(struct fasthessian *fh)
     }
 }
 
+void compute_response_layers_Dyy_leftcorner(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_Dyy_leftcorner(fh->response_map[i], fh->iimage);
+    }
+}
+
+void compute_response_layers_Dyy_top(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_Dyy_top(fh->response_map[i], fh->iimage);
+    }
+}
+
+void compute_response_layers_Dyy_top_mid(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_Dyy_top_mid(fh->response_map[i], fh->iimage);
+    }
+}
+
 void compute_response_layers_unconditional(struct fasthessian* fh){
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer_unconditional(fh->response_map[i], fh->iimage);
@@ -48,6 +66,11 @@ void compute_response_layers_sonic_Dyy_unconditional_opt(struct fasthessian *fh)
     }
 }
 
+// void compute_response_layers_sonic_Dyy_unconditional_opt_naive(struct fasthessian *fh) {
+//     for (int i = 0; i < fh->total_layers; ++i) {
+//         compute_response_layer_sonic_Dyy_unconditional_opt_naive(fh->response_map[i], fh->iimage);
+//     }
+// }
 
 /* Dyy coords
 // whole box filter
@@ -985,6 +1008,22 @@ void compute_response_layer_sonic_Dyy_unconditional_opt(struct response_layer *l
                 }
             }
         }
+    }
+}
+
+void compute_response_layer_sonic_Dyy_unconditional_opt_naive(struct response_layer *layer, struct integral_image *iimage) {
+
+    int iheight = iimage->height;
+    int filter_size = layer->filter_size;
+
+    // 1. Case The filter is smaller than the image
+    if (filter_size <= iheight) {
+        // Split the image into 9 cases - corners, borders and middle part.
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+    } else {
+
+        compute_response_layer_unconditional(layer, iimage);
     }
 }
 
@@ -5916,12 +5955,14 @@ void compute_response_layer_unconditional(struct response_layer *layer, struct i
 
 }
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy_laplacian_localityloops_unconditional(struct fasthessian* fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer_Dyy_laplacian_localityloops_unconditional(fh->response_map[i], fh->iimage);
 	}
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y, k, k0, k1;
@@ -6790,12 +6831,14 @@ void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct res
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy_laplacian_locality_uncond_opt(struct fasthessian* fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer_Dyy_laplacian_locality_uncond_opt(fh->response_map[i], fh->iimage);
 	}
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_layer* layer, struct integral_image* iimage) {
     /*
         Optimized flop count and removed unnecessary computations
@@ -7718,12 +7761,14 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops(struct fasthessian* fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(fh->response_map[i], fh->iimage);
 	}
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(struct response_layer* layer, struct integral_image* iimage) {
     /*
         Flops optimized even further
@@ -8687,12 +8732,14 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(struct respo
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct fasthessian* fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(fh->response_map[i], fh->iimage);
 	}
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct response_layer* layer, struct integral_image* iimage) {
     /*
         Flops noch weiter verbessert indem
