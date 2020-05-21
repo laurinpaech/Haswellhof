@@ -7,10 +7,10 @@ if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
 endif()
 
 # Setting optimization flags
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -march=native")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -DNDEBUG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -march=native")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DNDEBUG")
 #set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mfma -ffast-math")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 # Setting cmake module path for potential later findXXX cmake functionality
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
