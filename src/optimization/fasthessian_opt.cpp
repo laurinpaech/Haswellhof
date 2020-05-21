@@ -3,17 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Dyy coords
+/* Dyy Cheatsheet
 // whole box filter
 r00 = x - border;
 r01 = x + border;  // -> x-border+filtersize-1 = x-border+(border+border+1)-1
 c00 = y - lobe;
 c01 = y + lobe - 1; // -> y-lobe+1 + 2*lobe -1 -1
-
-A =
-B =
-C =
-D =
 
 // neg part box filter
 r10 = x - lobe / 2 - 1;
@@ -26,6 +21,42 @@ B = (r10, c11) = (x - lobe / 2 - 1, y + lobe - 1)
 C = (r11, c10)
 D = (r11, c11)
 */
+
+void compute_response_layers_switch_Dyy(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_switch_Dyy(fh->response_map[i], fh->iimage);
+    }
+}
+
+void compute_response_layers_precompute(struct fasthessian* fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+		compute_response_layer_precompute(fh->response_map[i], fh->iimage);
+	}
+}
+
+void compute_response_layers_blocking(struct fasthessian* fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+		compute_response_layer_blocking(fh->response_map[i], fh->iimage);
+	}
+}
+
+void compute_response_layers_switch_Dyy_unconditional(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_switch_Dyy_unconditional(fh->response_map[i], fh->iimage);
+    }
+}
+
+void compute_response_layers_switch_Dyy_unconditional_opt(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_switch_Dyy_unconditional_opt(fh->response_map[i], fh->iimage);
+    }
+}
+
+void compute_response_layers_switch_Dyy_unconditional_opt_naive(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_switch_Dyy_unconditional_opt_naive(fh->response_map[i], fh->iimage);
+    }
+}
 
 void compute_response_layers_Dyy_leftcorner(struct fasthessian *fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
@@ -72,28 +103,14 @@ void compute_response_layers_unconditional(struct fasthessian* fh){
 	}
 }
 
-void compute_response_layers_switch_Dyy(struct fasthessian *fh) {
-    for (int i = 0; i < fh->total_layers; ++i) {
-        compute_response_layer_switch_Dyy(fh->response_map[i], fh->iimage);
-    }
-}
+void compute_response_layers_unconditional_strided(struct fasthessian* fh){
 
-void compute_response_layers_switch_Dyy_unconditional(struct fasthessian *fh) {
-    for (int i = 0; i < fh->total_layers; ++i) {
-        compute_response_layer_switch_Dyy_unconditional(fh->response_map[i], fh->iimage);
-    }
-}
-
-void compute_response_layers_switch_Dyy_unconditional_opt(struct fasthessian *fh) {
-    for (int i = 0; i < fh->total_layers; ++i) {
-        compute_response_layer_switch_Dyy_unconditional_opt(fh->response_map[i], fh->iimage);
-    }
-}
-
-void compute_response_layers_switch_Dyy_unconditional_opt_naive(struct fasthessian *fh) {
-    for (int i = 0; i < fh->total_layers; ++i) {
-        compute_response_layer_switch_Dyy_unconditional_opt_naive(fh->response_map[i], fh->iimage);
-    }
+    for (int i = 0; i < 4; ++i) {
+		compute_response_layer_unconditional_strided(fh->response_map[i], fh->iimage);
+	}
+    for (int i = 4; i < fh->total_layers; ++i) {
+		compute_response_layer_unconditional(fh->response_map[i], fh->iimage);
+	}
 }
 
 // Only for images >= 128x128
@@ -121,28 +138,6 @@ void compute_response_layers_Dyy_laplacian_locality_unconditional_opt_flops(stru
 void compute_response_layers_Dyy_laplacian_locality_unconditional_opt_flops_invsqr(struct fasthessian* fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer_Dyy_laplacian_locality_unconditional_opt_flops_invsqr(fh->response_map[i], fh->iimage);
-	}
-}
-
-void compute_response_layers_precompute(struct fasthessian* fh) {
-    for (int i = 0; i < fh->total_layers; ++i) {
-		compute_response_layer_precompute(fh->response_map[i], fh->iimage);
-	}
-}
-
-void compute_response_layers_blocking(struct fasthessian* fh) {
-    for (int i = 0; i < fh->total_layers; ++i) {
-		compute_response_layer_blocking(fh->response_map[i], fh->iimage);
-	}
-}
-
-void compute_response_layers_unconditional_strided(struct fasthessian* fh){
-
-    for (int i = 0; i < 4; ++i) {
-		compute_response_layer_unconditional_strided(fh->response_map[i], fh->iimage);
-	}
-    for (int i = 4; i < fh->total_layers; ++i) {
-		compute_response_layer_unconditional(fh->response_map[i], fh->iimage);
 	}
 }
 
