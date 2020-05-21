@@ -2192,7 +2192,7 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
     gauss_s1_c0[5] =  expf(g1_factor * (e_c0_p1 * e_c0_p1));
     gauss_s1_c0[6] =  expf(g1_factor * (e_c0_p2 * e_c0_p2));
     gauss_s1_c0[7] =  expf(g1_factor * (e_c0_p3 * e_c0_p3));
-    gauss_s1_c0[8] =  expf(g1_factor * (e_c0_p4 * e_c0_p4)); // 8 expf
+    gauss_s1_c0[8] =  expf(g1_factor * (e_c0_p4 * e_c0_p4)); 
 
     gauss_s1_c1[0] =  expf(g1_factor * (e_c1_m4 * e_c1_m4));
     gauss_s1_c1[1] =  expf(g1_factor * (e_c1_m3 * e_c1_m3));
@@ -2202,7 +2202,7 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
     gauss_s1_c1[5] =  expf(g1_factor * (e_c1_p1 * e_c1_p1));
     gauss_s1_c1[6] =  expf(g1_factor * (e_c1_p2 * e_c1_p2));
     gauss_s1_c1[7] =  expf(g1_factor * (e_c1_p3 * e_c1_p3));
-    gauss_s1_c1[8] =  expf(g1_factor * (e_c1_p4 * e_c1_p4)); // 8 expf
+    gauss_s1_c1[8] =  expf(g1_factor * (e_c1_p4 * e_c1_p4)); // 32 mul + 16 expf
     
     // calculate descriptor for this interest point
     for (int i=-8; i<8; i+=5) {
