@@ -49,7 +49,7 @@ int main(int argc, char const *argv[])
     get_interest_points(fh, &interest_points);
     
     // Getting M-SURF descriptors for each interest point
-	get_msurf_descriptors_gauss_pecompute_haar(iimage, &interest_points);
+	get_msurf_descriptors_rounding_unroll_2_24_True_winner(iimage, &interest_points);
     
 
     // skipping this part as it adds nise for profiler

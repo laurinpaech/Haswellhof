@@ -52,12 +52,16 @@ inline bool compare_arrays(float a[], float b[], int n) {
 }
 
 inline bool compare_arrays_close(float a[], float b[], int n, float epsilon = EPSILON) {
+    int total_errors = 0;
     for (int i = 0; i < n; ++i) {
         if (fabsf(a[i] - b[i]) > epsilon) {
-            return false;
+            printf("DIFFERENCE: (%i) original: %f, optimized: %f\n", i, a[i],
+                       b[i]);
+            total_errors++;
         }
+        if (total_errors>8) return false;
     }
-    return true;
+    return !total_errors;
 }
 
 // Compares two matrices of floats and checks if the values are equal.

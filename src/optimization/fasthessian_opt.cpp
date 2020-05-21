@@ -66,11 +66,11 @@ void compute_response_layers_sonic_Dyy_unconditional_opt(struct fasthessian *fh)
     }
 }
 
-// void compute_response_layers_sonic_Dyy_unconditional_opt_naive(struct fasthessian *fh) {
-//     for (int i = 0; i < fh->total_layers; ++i) {
-//         compute_response_layer_sonic_Dyy_unconditional_opt_naive(fh->response_map[i], fh->iimage);
-//     }
-// }
+void compute_response_layers_sonic_Dyy_unconditional_opt_naive(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_sonic_Dyy_unconditional_opt_naive(fh->response_map[i], fh->iimage);
+    }
+}
 
 /* Dyy coords
 // whole box filter
@@ -1025,6 +1025,90 @@ void compute_response_layer_sonic_Dyy_unconditional_opt_naive(struct response_la
 
         compute_response_layer_unconditional(layer, iimage);
     }
+}
+
+void compute_response_layers_sonic_Dyy_uncond_opt_order(struct fasthessian *fh) {
+    /*
+        optimize if statement for a better order
+    */
+    int i = 0;
+    int n = fh->total_layers;
+
+    struct response_layer *layer;
+    struct integral_image *iimage = fh->iimage;
+
+    int image_size = iimage->height;
+
+    if (image_size == 32) {
+
+        // filter 9, 15, 21, 27
+        layer = fh->response_map[0];
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+        layer = fh->response_map[1];
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+        layer = fh->response_map[2];
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+        layer = fh->response_map[3];
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+        // filter 39
+        layer = fh->response_map[4];
+        height_greater_border_width_greater_double_lobe_Dyy_inlined(layer, iimage);
+
+        // filter 51
+        layer = fh->response_map[5];
+        height_greater_border_width_less_double_lobe_Dyy_inlined(layer, iimage);
+
+        // filter 75
+        layer = fh->response_map[6];
+        image_32_filter_75_case(layer, iimage);
+
+        // filter 99
+        layer = fh->response_map[7];
+        image_32_filter_99_case(layer, iimage);
+
+    } else if (image_size == 64) {
+
+        // filter 9, 15, 21, 27, 39, 51
+        layer = fh->response_map[0];
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+        layer = fh->response_map[1];
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+        layer = fh->response_map[2];
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+        layer = fh->response_map[3];
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+        layer = fh->response_map[4];
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+        layer = fh->response_map[5];
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+        // filter 75
+        layer = fh->response_map[6];
+        height_greater_border_width_greater_double_lobe_Dyy_inlined(layer, iimage);
+
+        // filter 99
+        layer = fh->response_map[7];
+        height_greater_border_width_less_double_lobe_Dyy_inlined(layer, iimage);
+
+    } else {
+
+        // all other cases
+        for (; i < n; ++i) {
+            layer = fh->response_map[i];
+
+            compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+        }
+    }
+
 }
 
 void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *layer, struct integral_image *iimage) {
