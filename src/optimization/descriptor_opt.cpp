@@ -2081,21 +2081,22 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
 
     float scale = ipoint->scale;
     // float scale_mul_25f = 2.5f*scale;
-    int int_scale = (int) roundf(scale);
+    int int_scale = (int) roundf(scale); // 1 roundf + 1 float->int
     // int int_scale_mul_2 =  2 * int_scale;
-    float scale_squared = scale*scale;
-
-    float g1_factor = -0.08f / (scale_squared); // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
+    float scale_squared = scale*scale; // 1 mul
+    
+    // since 0.08f / (scale*scale) == 1.0f / (2.0f * 2.5f * scale * 2.5f * scale)
+    float g1_factor = -0.08f / (scale_squared); // 1 div
     //float g2_factor = -1.0f / 4.5f; // since 1.0f / 4.5f == 1.0f / (2.0f * 1.5f * 1.5f)
 
-    float ipoint_x = roundf(ipoint->x) + 0.5*scale;
-    float ipoint_y = roundf(ipoint->y) + 0.5*scale;
+    float ipoint_x = roundf(ipoint->x) + 0.5*scale; // 1 roundf + 1 add + 1 mul
+    float ipoint_y = roundf(ipoint->y) + 0.5*scale; // 1 roundf + 1 add + 1 mul
 
-    float ipoint_x_sub_int_scale = ipoint_x-int_scale;
-    float ipoint_y_sub_int_scale = ipoint_y-int_scale;
+    float ipoint_x_sub_int_scale = ipoint_x-int_scale; // 1 add
+    float ipoint_y_sub_int_scale = ipoint_y-int_scale; // 1 add
 
-    float ipoint_x_sub_int_scale_add_05 = ipoint_x-int_scale + 0.5;
-    float ipoint_y_sub_int_scale_add_05 = ipoint_y-int_scale + 0.5;
+    float ipoint_x_sub_int_scale_add_05 = ipoint_x-int_scale + 0.5; // 2 add
+    float ipoint_y_sub_int_scale_add_05 = ipoint_y-int_scale + 0.5; // 2 add
     
     int width = iimage->width;
     int height = iimage->height;
@@ -2114,19 +2115,19 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
     if (((int) roundf(ipoint_x - 12*scale)) - int_scale <= 0 
         || ((int) roundf(ipoint_y - 12*scale)) - int_scale <= 0 
         || ((int) roundf(ipoint_x + 11*scale)) + int_scale > width 
-        || ((int) roundf(ipoint_y + 11*scale)) + int_scale > height) 
+        || ((int) roundf(ipoint_y + 11*scale)) + int_scale > height) // 4 mul + 4 add + 4 roundf + 4 float->int
     { // some outside
         for (int l=-12, l_count=0; l<12; ++l, ++l_count) {
-            float ipoint_y_sub_int_scale_add_l_mul_scale = ipoint_y_sub_int_scale + l * scale;
-            int sample_y_sub_int_scale = (int) (ipoint_y_sub_int_scale_add_l_mul_scale + (ipoint_y_sub_int_scale_add_l_mul_scale>=0 ? 0.5 : -0.5));
+            float ipoint_y_sub_int_scale_add_l_mul_scale = ipoint_y_sub_int_scale + l * scale; // 12 add + 12 mul
+            int sample_y_sub_int_scale = (int) (ipoint_y_sub_int_scale_add_l_mul_scale + (ipoint_y_sub_int_scale_add_l_mul_scale>=0 ? 0.5 : -0.5)); // 12 add + 12 float->int
 
             for (int k=-12, k_count=0; k<12; ++k, k_count++) {
 
                 //Get x coords of sample point
-                float ipoint_x_sub_int_scale_add_k_mul_scale = ipoint_x_sub_int_scale + k * scale;
-                int sample_x_sub_int_scale = (int) (ipoint_x_sub_int_scale_add_k_mul_scale + (ipoint_x_sub_int_scale_add_k_mul_scale>=0 ? 0.5 : -0.5));
+                float ipoint_x_sub_int_scale_add_k_mul_scale = ipoint_x_sub_int_scale + k * scale; // 144 add + 144 mul
+                int sample_x_sub_int_scale = (int) (ipoint_x_sub_int_scale_add_k_mul_scale + (ipoint_x_sub_int_scale_add_k_mul_scale>=0 ? 0.5 : -0.5)); // 144 add + 144 float->int
 
-                haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+                haarXY_precheck_boundaries(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]); // 144 haarXY_unconditional(4 mul + 6 add) = 144*4 mul + 144*6 add
 
             }
 
@@ -2135,13 +2136,13 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
     } else {
 
         for (int l=-12, l_count=0; l<12; ++l, ++l_count) {
-            int sample_y_sub_int_scale = (int)(ipoint_y_sub_int_scale_add_05 + l * scale);
+            int sample_y_sub_int_scale = (int)(ipoint_y_sub_int_scale_add_05 + l * scale); // 12 add + 12 mul + 12 float->int
 
             for (int k=-12, k_count=0; k<12; ++k, ++k_count) {
                 //Get x coords of sample point
-                int sample_x_sub_int_scale = (int)(ipoint_x_sub_int_scale_add_05 + k * scale);
+                int sample_x_sub_int_scale = (int)(ipoint_x_sub_int_scale_add_05 + k * scale); // 144 add + 144 mul + 144 float->int
 
-                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]); // 144 haarXY_unconditional(4 mul + 6 add) = 144*4 mul + 144*6 add
                 // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale,sample_y_sub_int_scale, int_scale, haarResponseX[l_count*24+k_count],haarResponseY[l_count*24+k_count]);
 
             }
@@ -2161,7 +2162,7 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
     float s8  = roundf( 8.5 * scale);
     float s9  = roundf( 9.5 * scale);
     float s10 = roundf(10.5 * scale);
-    float s11 = roundf(11.5 * scale);
+    float s11 = roundf(11.5 * scale); // 12 mul + 12 roundf 
 
     float e_c0_m4 = s2 + s1; // CAREFUL HERE!
     float e_c0_m3 = s2 + s0; // CAREFUL HERE!
@@ -2171,7 +2172,7 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
     float e_c0_p1 = s2 - s3;
     float e_c0_p2 = s2 - s4;
     float e_c0_p3 = s2 - s5;
-    float e_c0_p4 = s2 - s6;
+    float e_c0_p4 = s2 - s6; // 8 add
 
     float e_c1_m4 = s7 - s3;
     float e_c1_m3 = s7 - s4;
@@ -2181,7 +2182,7 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
     float e_c1_p1 = s7 - s8;
     float e_c1_p2 = s7 - s9;
     float e_c1_p3 = s7 - s10;
-    float e_c1_p4 = s7 - s11;
+    float e_c1_p4 = s7 - s11; // 8 add
 
     gauss_s1_c0[0] =  expf(g1_factor * (e_c0_m4 * e_c0_m4));
     gauss_s1_c0[1] =  expf(g1_factor * (e_c0_m3 * e_c0_m3));
@@ -2191,7 +2192,7 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
     gauss_s1_c0[5] =  expf(g1_factor * (e_c0_p1 * e_c0_p1));
     gauss_s1_c0[6] =  expf(g1_factor * (e_c0_p2 * e_c0_p2));
     gauss_s1_c0[7] =  expf(g1_factor * (e_c0_p3 * e_c0_p3));
-    gauss_s1_c0[8] =  expf(g1_factor * (e_c0_p4 * e_c0_p4));
+    gauss_s1_c0[8] =  expf(g1_factor * (e_c0_p4 * e_c0_p4)); // 8 expf
 
     gauss_s1_c1[0] =  expf(g1_factor * (e_c1_m4 * e_c1_m4));
     gauss_s1_c1[1] =  expf(g1_factor * (e_c1_m3 * e_c1_m3));
@@ -2201,7 +2202,7 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
     gauss_s1_c1[5] =  expf(g1_factor * (e_c1_p1 * e_c1_p1));
     gauss_s1_c1[6] =  expf(g1_factor * (e_c1_p2 * e_c1_p2));
     gauss_s1_c1[7] =  expf(g1_factor * (e_c1_p3 * e_c1_p3));
-    gauss_s1_c1[8] =  expf(g1_factor * (e_c1_p4 * e_c1_p4));
+    gauss_s1_c1[8] =  expf(g1_factor * (e_c1_p4 * e_c1_p4)); // 8 expf
     
     // calculate descriptor for this interest point
     for (int i=-8; i<8; i+=5) {
@@ -2241,19 +2242,19 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
                         gauss_s1_x = gauss_s1_c1[gauss_index_k+4];
                     }
 
-                    float gauss_s1 = gauss_s1_x * gauss_s1_y;
+                    float gauss_s1 = gauss_s1_x * gauss_s1_y; // 81*16 mul
 
                     float rx = haarResponseX[(l+12)*24+(k+12)];
                     float ry = haarResponseY[(l+12)*24+(k+12)];
                     
                     //Get the gaussian weighted x and y responses on rotated axis
-                    float rrx = gauss_s1 * ry;
-                    float rry = gauss_s1 * rx;
+                    float rrx = gauss_s1 * ry; // 81*16 mul
+                    float rry = gauss_s1 * rx; // 81*16  mul
 
-                    dx += rrx;
-                    dy += rry;
-                    mdx += fabsf(rrx);
-                    mdy += fabsf(rry);
+                    dx += rrx; // 81*16 add
+                    dy += rry; // 81*16 add
+                    mdx += fabsf(rrx); // 81*16 add
+                    mdy += fabsf(rry); // 81*16 add
                 }
             }
 
@@ -2262,10 +2263,10 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
             gauss_s2_index++;
 
             // add the values to the descriptor vector
-            float d1 = dx * gauss_s2;
-            float d2 = dy * gauss_s2;
-            float d3 = mdx * gauss_s2;
-            float d4 = mdy * gauss_s2;
+            float d1 = dx * gauss_s2; // 16 mul
+            float d2 = dy * gauss_s2; // 16 mul
+            float d3 = mdx * gauss_s2; // 16 mul
+            float d4 = mdy * gauss_s2; // 16 mul
 
             descriptor[desc_idx] = d1;
             descriptor[desc_idx+1] = d2;
@@ -2273,7 +2274,7 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
             descriptor[desc_idx+3] = d4;
 
             // precompute for normaliztion
-            sum_of_squares += (d1*d1 + d2*d2 + d3*d3 + d4*d4);
+            sum_of_squares += (d1*d1 + d2*d2 + d3*d3 + d4*d4); // 64 mul + 48 add
 
             desc_idx += 4;
 
@@ -2282,10 +2283,10 @@ void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_
 
     // rescale to unit vector
     // NOTE: using sqrtf() for floats
-    float norm_factor = 1.0f / sqrtf(sum_of_squares);
+    float norm_factor = 1.0f / sqrtf(sum_of_squares); // 1 div
 
     for (int i = 0; i < 64; ++i) {
-        descriptor[i] *= norm_factor;
+        descriptor[i] *= norm_factor; // 64 mul
     }
 }
 

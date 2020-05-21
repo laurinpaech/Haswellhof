@@ -248,7 +248,7 @@ inline void haarXY_precheck_boundaries(struct integral_image *iimage, int row, i
 
 }
 
-inline void haarXY_unconditional(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
+inline void haarXY_unconditional(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) { // 4 mul + 6 add
     
     float *data = iimage->data;
     int data_width = iimage->data_width;
@@ -276,8 +276,8 @@ inline void haarXY_unconditional(struct integral_image *iimage, int row, int col
     float r2c2_sub_r0c0 = r2c2 - r0c0;
     float r2c0_sub_r0c2 = r2c0 - r0c2;
 
-    *haarX = 2*(r0c1 - r2c1) + r2c2_sub_r0c0 + r2c0_sub_r0c2;
-    *haarY = 2*(r1c0 - r1c2) + r2c2_sub_r0c0 - r2c0_sub_r0c2;
+    *haarX = 2*(r0c1 - r2c1) + r2c2_sub_r0c0 + r2c0_sub_r0c2; // 2 mul + 3 add
+    *haarY = 2*(r1c0 - r1c2) + r2c2_sub_r0c0 - r2c0_sub_r0c2; // 2 mul + 3 add
 
     // for FMA
     // *haarX = (2*r0c1 + r2c0_sub_r0c2) - (2*r2c1 - r2c2_sub_r0c0);
