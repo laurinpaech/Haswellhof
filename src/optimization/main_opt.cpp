@@ -6,12 +6,30 @@
 #include "fasthessian.h"
 #include "interest_point.h"
 #include "descriptor.h"
+
+#include "integral_image_opt.h"
+#include "integral_image_simd.h"
+#include "fasthessian_opt.h"
 #include "descriptor_opt.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <vector>
+
+#define CREATE_PADDED_INTEGRAL_IMAGE 0
+
+//#define BASE_COMPUTE_INTEGRAL_IMAGE
+//#define BASE_COMPUTE_RESPONSE_LAYERS
+//#define BASE_GET_INTEREST_POINTS
+//#define BASE_GET_MSURF_DESCRIPTORS
+
+#define FULL_OPTIMIZATION_COMPUTE_INTEGRAL_IMAGE
+#define FULL_OPTIMIZATION_COMPUTE_RESPONSE_LAYERS
+#define FULL_OPTIMIZATION_GET_INTEREST_POINTS
+#define FULL_OPTIMIZATION_GET_MSURF_DESCRIPTORS
+
+#define FILE_OUTPUT
 
 int main(int argc, char const *argv[])
 {
@@ -30,10 +48,23 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
+#if !CREATE_PADDED_INTEGRAL_IMAGE
     // Create integral image
     struct integral_image* iimage = create_integral_img(width, height);
-    // Compute integral image
+#else
+	// Create integral image
+	struct integral_image* iimage = create_padded_integral_img(width, height);
+#endif
+
+#ifdef BASE_COMPUTE_INTEGRAL_IMAGE
+	// Compute integral image
     compute_integral_img(image, iimage);
+#endif
+
+#ifdef FULL_OPTIMIZATION_COMPUTE_INTEGRAL_IMAGE
+	// Compute integral image
+	compute_integral_img_faster_alg(image, iimage);
+#endif
 
     // Fast-Hessian
     struct fasthessian* fh = create_fast_hessian(iimage);
@@ -41,19 +72,40 @@ int main(int argc, char const *argv[])
     // Create octaves with response layers
     create_response_map(fh);
 
+#ifdef BASE_COMPUTE_RESPONSE_LAYERS
 	// Compute responses for every layer
 	compute_response_layers(fh);
+#endif
 
-    // Getting interest points with non-maximum supression
-    std::vector<struct interest_point> interest_points;
+#ifdef FULL_OPTIMIZATION_COMPUTE_RESPONSE_LAYERS
+	// Compute responses for every layer
+	compute_response_layers_sonic_Dyy(fh);
+#endif
+
+	std::vector<struct interest_point> interest_points;
+
+#ifdef BASE_GET_INTEREST_POINTS
+	// Getting interest points with non-maximum supression
     get_interest_points(fh, &interest_points);
-    
-    // Getting M-SURF descriptors for each interest point
-	get_msurf_descriptors_gauss_pecompute_haar(iimage, &interest_points);
-    
+#endif
 
-    // skipping this part as it adds nise for profiler
-    
+#ifdef FULL_OPTIMIZATION_GET_INTEREST_POINTS
+	// Getting interest points with non-maximum supression
+	get_interest_points(fh, &interest_points);
+#endif
+
+#ifdef BASE_GET_MSURF_DESCRIPTORS
+    // Getting M-SURF descriptors for each interest point
+	get_msurf_descriptors(iimage, &interest_points);
+#endif
+
+#ifdef FULL_OPTIMIZATION_GET_MSURF_DESCRIPTORS
+	// Getting M-SURF descriptors for each interest point
+	get_msurf_descriptors_haar_unroll_2_24_True_winner(iimage, &interest_points);
+#endif
+
+
+#ifdef FILE_OUTPUT
     // Write results to file
     FILE * fp = fopen(argv[2],"w");
     printf("%d %d %d\n", iimage->width, iimage->height, channels);
@@ -65,6 +117,7 @@ int main(int argc, char const *argv[])
         fprintf(fp, "\n");
     }
     fclose(fp);
+#endif
     
 
     // Free memory
