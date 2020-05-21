@@ -228,7 +228,7 @@ int main(int argc, char const *argv[])
         test_functions.push_back(get_msurf_descriptor_rounding);
         test_functions.push_back(get_msurf_descriptor_rounding_unroll_2_24_True_winner);
         test_functions.push_back(get_msurf_descriptor_simd);
-
+        test_functions.push_back(get_msurf_descriptor_simd_2_24);
 
         // test_functions.push_back(get_msurf_descriptor_haar_unroll_4_1_False);
         // test_functions.push_back(get_msurf_descriptor_haar_unroll_1_4_True);

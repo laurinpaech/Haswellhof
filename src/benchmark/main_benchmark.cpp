@@ -30,15 +30,15 @@ const char *images[] = {
 };
 
 #define n_images (sizeof(images) / sizeof(const char *))
-#define BENCHMARK_INTEGRAL_IMAGE
-#define BENCHMARK_INTEGRAL_IMAGE_PADDED
-#define BENCHMARK_INTEGRAL_IMAGE_INT
-#define BENCHMARK_INTEGRAL_IMAGE_INT_PADDED
-#define BENCHMARK_COMPUTE_RESPONSE_LAYERS
+// #define BENCHMARK_INTEGRAL_IMAGE
+// #define BENCHMARK_INTEGRAL_IMAGE_PADDED
+// #define BENCHMARK_INTEGRAL_IMAGE_INT
+// #define BENCHMARK_INTEGRAL_IMAGE_INT_PADDED
+// #define BENCHMARK_COMPUTE_RESPONSE_LAYERS
 // BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED only works with BENCHMARK_COMPUTE_RESPONSE_LAYERS enabled
-#define BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED
-#define BENCHMARK_INTEREST_POINTS
-#define BENCHMARK_INTERPOLATE_STEPS
+// #define BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED
+// #define BENCHMARK_INTEREST_POINTS
+// #define BENCHMARK_INTERPOLATE_STEPS
 #define BENCHMARK_GET_MSURF_DESCRIPTORS
 
 int main(int argc, char const *argv[]) {
@@ -409,6 +409,7 @@ int main(int argc, char const *argv[]) {
             functions.push_back(get_msurf_descriptors_rounding);
             functions.push_back(get_msurf_descriptors_simd);
             functions.push_back(get_msurf_descriptors_rounding_unroll_2_24_True_winner);
+            functions.push_back(get_msurf_descriptors_simd_2_24);
 
             // TODO: (Sebastian) find FLOPS count for get_msurf_descriptor
             struct benchmark_data default_data(image_name, width, height, "get_msurf_descriptors",
@@ -440,6 +441,8 @@ int main(int argc, char const *argv[]) {
                                          interest_points.size(), -1);
             struct benchmark_data data14(image_name, width, height, "get_msurf_descriptors_rounding_unroll_2_24_True_winner",
                                          interest_points.size(), -1);
+            struct benchmark_data data15(image_name, width, height, "get_msurf_descriptors_simd_2_24",
+                                         interest_points.size(), -1);
 
             // Insert all respective benchmarking info for functions here
             std::vector<struct benchmark_data> data;
@@ -457,6 +460,7 @@ int main(int argc, char const *argv[]) {
             data.push_back(data11);
             data.push_back(data13);
             data.push_back(data14);
+            data.push_back(data15);
 
             // Benchmarking all get_msurf_descriptor functions and storing timing results in respective entries in data
             bench_get_msurf_descriptors(functions, iimage, &interest_points, data);
