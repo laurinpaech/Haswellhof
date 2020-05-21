@@ -3,14 +3,6 @@
 #include "fasthessian.h"
 #include "integral_image_opt.h"
 
-void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer *layer, struct integral_image *iimage);
-
-void height_greater_border_width_less_double_lobe_Dyy(struct response_layer *layer, struct integral_image *iimage);
-
-void get_interest_points_layers(struct fasthessian *fh, std::vector<struct interest_point> *interest_points);
-
-void interpolate_step_gauss(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets[3]);
-
 void compute_response_layer_Dyy_leftcorner(struct response_layer* layer, struct integral_image* iimage);
 
 void compute_response_layer_precompute(struct response_layer* layer, struct integral_image* iimage);
@@ -29,17 +21,21 @@ void compute_response_layers_Dyy(struct fasthessian *fh);
 
 void compute_response_layer_Dyy(struct response_layer* layer, struct integral_image* iimage);
 
-void compute_response_layer_sonic_Dyy(struct response_layer *layer, struct integral_image *iimage);
+void compute_response_layer_switch_Dyy(struct response_layer *layer, struct integral_image *iimage);
 
 void compute_response_layer_Dyy_laplacian(struct response_layer* layer, struct integral_image* iimage);
 
-void compute_response_layers_sonic_Dyy(struct fasthessian *fh);
+void compute_response_layers_switch_Dyy(struct fasthessian *fh);
 
 void compute_response_layers_Dyy_laplacian(struct fasthessian *fh);
 
-void compute_response_layers_Dyy_laplacian_localityloops(struct fasthessian *fh);
+void compute_response_layers_Dyy_laplacian_locality(struct fasthessian *fh);
 
-void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* layer, struct integral_image* iimage);
+void compute_response_layer_Dyy_laplacian_locality(struct response_layer* layer, struct integral_image* iimage);
+
+void compute_response_layers_Dyy_locality(struct fasthessian *fh);
+
+void compute_response_layer_Dyy_locality(struct response_layer* layer, struct integral_image* iimage);
 
 void compute_response_layers_at_once(struct fasthessian* fh);
 
@@ -53,41 +49,45 @@ void compute_response_layers_unconditional(struct fasthessian* fh);
 
 void compute_response_layer_unconditional(struct response_layer* layer, struct integral_image* iimage);
 
-void get_interest_points_block(struct fasthessian *fh, std::vector<struct interest_point> *interest_points);
-
 void compute_response_layers_unconditional_strided(struct fasthessian* fh);
 
 void compute_response_layer_unconditional_strided(struct response_layer* layer, struct integral_image* iimage);
 
-void compute_response_layers_sonic_Dyy_unconditional(struct fasthessian *fh);
+void compute_response_layers_switch_Dyy_unconditional(struct fasthessian *fh);
 
-void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer, struct integral_image *iimage);
+void compute_response_layer_switch_Dyy_unconditional(struct response_layer *layer, struct integral_image *iimage);
 
-void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct response_layer* layer, struct integral_image* iimage);
+void compute_response_layer_Dyy_laplacian_locality_unconditional(struct response_layer* layer, struct integral_image* iimage);
 
-void compute_response_layers_Dyy_laplacian_localityloops_unconditional(struct fasthessian* fh);
+void compute_response_layers_Dyy_laplacian_locality_unconditional(struct fasthessian* fh);
 
-void compute_response_layers_Dyy_laplacian_locality_uncond_opt(struct fasthessian* fh);
+void compute_response_layers_Dyy_laplacian_locality_unconditional_opt(struct fasthessian* fh);
 
-void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_layer* layer, struct integral_image* iimage);
+void compute_response_layer_Dyy_laplacian_locality_unconditional_opt(struct response_layer* layer, struct integral_image* iimage);
 
-void compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops(struct fasthessian* fh);
+void compute_response_layers_Dyy_laplacian_locality_unconditional_opt_flops(struct fasthessian* fh);
 
-void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(struct response_layer* layer, struct integral_image* iimage);
+void compute_response_layer_Dyy_laplacian_locality_unconditional_opt_flops(struct response_layer* layer, struct integral_image* iimage);
 
-void compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct fasthessian* fh);
+void compute_response_layers_Dyy_laplacian_locality_unconditional_opt_flops_invsqr(struct fasthessian* fh);
 
-void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct response_layer* layer, struct integral_image* iimage);
+void compute_response_layer_Dyy_laplacian_locality_unconditional_opt_flops_invsqr(struct response_layer* layer, struct integral_image* iimage);
 
-void compute_response_layers_sonic_Dyy_unconditional_opt(struct fasthessian *fh);
+void compute_response_layers_switch_Dyy_unconditional_opt(struct fasthessian *fh);
 
-void compute_response_layer_sonic_Dyy_unconditional_opt(struct response_layer *layer, struct integral_image *iimage);
+void compute_response_layer_switch_Dyy_unconditional_opt(struct response_layer *layer, struct integral_image *iimage);
 
-void compute_response_layers_sonic_Dyy_unconditional_opt_naive(struct fasthessian *fh);
+void compute_response_layers_switch_Dyy_unconditional_opt_naive(struct fasthessian *fh);
 
-void compute_response_layer_sonic_Dyy_unconditional_opt_naive(struct response_layer *layer, struct integral_image *iimage);
+void compute_response_layer_switch_Dyy_unconditional_opt_naive(struct response_layer *layer, struct integral_image *iimage);
 
-void compute_response_layers_sonic_Dyy_uncond_opt_order(struct fasthessian *fh);
+void compute_response_layers_switch_Dyy_unconditional_opt_order(struct fasthessian *fh);
+
+void get_interest_points_block(struct fasthessian *fh, std::vector<struct interest_point> *interest_points);
+
+void get_interest_points_layers(struct fasthessian *fh, std::vector<struct interest_point> *interest_points);
+
+void interpolate_step_gauss(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets[3]);
 
 inline void image_32_filter_75_case(struct response_layer *layer, struct integral_image *iimage) {
     int height = layer->height;
@@ -388,7 +388,7 @@ inline void height_greater_border_width_greater_double_lobe_Dyy_inlined(struct r
     // Filter_size > height
     // 2. Case The filter is somewhat larger than the image
     /*  (height > border && (iwidth > 2 * lobe - 1))
-          2.1. D is sometimes outside the image. Blue lines edition brings the sonic into Dyy
+          2.1. D is sometimes outside the image. Blue lines edition brings the switch into Dyy
           Idea: Do compute_response_layer_Dyy_leftcorner
           but everytime all corners are outside, we just use row values above
 
@@ -863,7 +863,7 @@ inline void height_greater_border_width_less_double_lobe_Dyy_inlined(struct resp
     // Filter_size > height
     // 2. Case The filter is somewhat larger than the image
     /*  (height > border && (iwidth < 2 * lobe))
-          2.1. D is sometimes outside the image. Blue lines edition brings the sonic into Dyy
+          2.1. D is sometimes outside the image. Blue lines edition brings the switch into Dyy
           Idea: Do compute_response_layer_Dyy_leftcorner
           but everytime all corners are outside, we just use row values above
 
@@ -1324,7 +1324,7 @@ inline void height_greater_border_width_less_double_lobe_Dyy_inlined(struct resp
     }
 }
 
-inline void compute_response_layer_Dyy_laplacian_localityloops_inlined(struct response_layer* layer, struct integral_image* iimage) {
+inline void compute_response_layer_Dyy_laplacian_locality_inlined(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y, k, k0, k1;
     int r00, r01, c00, c01, r10, r11, c10, c11;
@@ -2184,7 +2184,7 @@ inline void compute_response_layer_Dyy_laplacian_localityloops_inlined(struct re
 
 }
 
-inline void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(struct response_layer* layer, struct integral_image* iimage) {
+inline void compute_response_layer_Dyy_laplacian_locality_unconditional_opt_flops_inlined(struct response_layer* layer, struct integral_image* iimage) {
     /*
         Flops optimized even further
     */
