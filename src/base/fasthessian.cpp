@@ -7,6 +7,10 @@
 #include <math.h>
 #include <assert.h>
 
+#define COUNT_FLOPS
+
+long base_flop_counter = 0;
+
 struct fasthessian* create_fast_hessian(struct integral_image *iimage) {
 
     // malloc fast hessian struct
@@ -71,6 +75,10 @@ void compute_response_layers(struct fasthessian* fh) {
 		compute_response_layer(fh->response_map[i], fh->iimage);
 	}   
 
+#ifdef COUNT_FLOPS
+    printf("Function compute_response_layers\nimage size:%i; FLOPs:%ld\n", fh->iimage->width, base_flop_counter);
+#endif // COUNT_FLOPS
+
 }
 
 void compute_response_layer(struct response_layer* layer, struct integral_image* iimage) {
@@ -88,6 +96,10 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
     int lobe = filter_size/3;
     int border = (filter_size-1)/2;
     float inv_area = 1.f/(filter_size*filter_size);
+#ifdef COUNT_FLOPS
+    base_flop_counter += 2;
+#endif // COUNT_FLOPS
+
 
     for (int i = 0, ind = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j, ind++) {
@@ -115,6 +127,10 @@ void compute_response_layer(struct response_layer* layer, struct integral_image*
 
             // Calculate Laplacian
             laplacian[ind] = (Dxx + Dyy >= 0 ? true : false);
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 8 -> 15 +24
+            base_flop_counter += 39;
+#endif // COUNT_FLOPS
         }
     }
 

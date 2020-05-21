@@ -3,6 +3,8 @@
 #include "fasthessian.h"
 #include "integral_image_opt.h"
 
+void reset_flop_counter();
+
 void height_greater_border_width_greater_double_lobe_Dyy(struct response_layer* layer, struct integral_image* iimage);
 
 void height_greater_border_width_less_double_lobe_Dyy(struct response_layer* layer, struct integral_image* iimage);

@@ -3,7 +3,9 @@
 
 #include "stb_image.h"
 #include "integral_image.h"
+#include "integral_image_opt.h"
 #include "fasthessian.h"
+#include "fasthessian_opt.h"
 #include "interest_point.h"
 #include "descriptor.h"
 #include "descriptor_opt.h"
@@ -12,6 +14,8 @@
 #include <stdlib.h>
 
 #include <vector>
+
+//#define PADDING
 
 int main(int argc, char const *argv[])
 {
@@ -30,10 +34,17 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
+#ifdef PADDING
+    // Create padded integral image
+    struct integral_image* iimage = create_padded_integral_img(width, height);
+    // Compute padded integral image
+    compute_padded_integral_img(image, iimage);
+#else
     // Create integral image
     struct integral_image* iimage = create_integral_img(width, height);
     // Compute integral image
     compute_integral_img(image, iimage);
+#endif    
 
     // Fast-Hessian
     struct fasthessian* fh = create_fast_hessian(iimage);
@@ -41,8 +52,16 @@ int main(int argc, char const *argv[])
     // Create octaves with response layers
     create_response_map(fh);
 
-	// Compute responses for every layer
-	compute_response_layers(fh);
+#ifdef PADDING
+    compute_response_layers_unconditional_strided(fh);
+    
+#else
+    // Compute responses for every layer
+    compute_response_layers(fh);
+    //compute_response_layers_Dyy_laplacian_localityloops(fh);
+#endif // PADDING
+
+
 
     // Getting interest points with non-maximum supression
     std::vector<struct interest_point> interest_points;

@@ -3,6 +3,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define COUNT_FLOPS
+
+long flop_counter = 0;
+
+
+void reset_flop_counter() {
+    flop_counter = 0;
+}
+
+
 // Only for images >= 128x128
 void compute_response_layers_Dyy(struct fasthessian* fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
@@ -22,6 +32,9 @@ void compute_response_layers_Dyy_laplacian_localityloops(struct fasthessian* fh)
     for (int i = 0; i < fh->total_layers; ++i) {
         compute_response_layer_Dyy_laplacian_localityloops(fh->response_map[i], fh->iimage);
     }
+#ifdef COUNT_FLOPS
+    printf("Function compute_response_layers_Dyy_laplacian_localityloops\nimage size:%i; FLOPs:%ld\n", fh->iimage->width, flop_counter);
+#endif // COUNT_FLOPS
 }
 
 void compute_response_layers_Dyy_leftcorner(struct fasthessian* fh) {
@@ -5090,6 +5103,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
 
     int j, i;
 
+#ifdef COUNT_FLOPS
+    flop_counter += 2;
+#endif // COUNT_FLOPS
+
+
     /****************
     *   TOP
     *****************/
@@ -5138,6 +5156,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 15 + 18
+            flop_counter += 33;
+#endif // COUNT_FLOPS
         }
 
         // Top Mid - Case 1: B of neg part outside
@@ -5190,6 +5213,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 17 + 18
+            flop_counter += 35;
+#endif // COUNT_FLOPS
         }
 
         // Top Right - Case 1: A of neg part outside
@@ -5237,6 +5265,10 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 17 + 18
+            flop_counter += 35;
+#endif // COUNT_FLOPS
         }
 
     }
@@ -5285,6 +5317,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 16 + 18
+            flop_counter += 34;
+#endif // COUNT_FLOPS
         }
 
         // Top Mid - Case 2: B of neg part inside
@@ -5339,6 +5376,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 19 + 18
+            flop_counter += 37;
+#endif // COUNT_FLOPS
         }
 
         // Top Right - Case 2: A of neg part inside
@@ -5390,6 +5432,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 19 + 18
+            flop_counter += 37;
+#endif // COUNT_FLOPS
         }
 
     }
@@ -5448,6 +5495,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 17 + 18
+            flop_counter += 35;
+#endif // COUNT_FLOPS
         }
 
         // Mid Mid
@@ -5512,6 +5564,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 21 + 18
+            flop_counter += 39;
+#endif // COUNT_FLOPS
         }
 
         // Mid Right
@@ -5571,6 +5628,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 21 + 18
+            flop_counter += 39;
+#endif // COUNT_FLOPS
         }
 
     }
@@ -5629,6 +5691,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 17 + 18
+            flop_counter += 35;
+#endif // COUNT_FLOPS
         }
 
         // Bottom Mid - Case 1: inner D inside
@@ -5689,6 +5756,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 21 + 18
+            flop_counter += 39;
+#endif // COUNT_FLOPS
         }
 
         // Bottom Right - Case 1: inner C inside
@@ -5747,6 +5819,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 21 + 18
+            flop_counter += 39;
+#endif // COUNT_FLOPS
         }
     }
 
@@ -5799,6 +5876,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 17 + 18
+            flop_counter += 35;
+#endif // COUNT_FLOPS
         }
 
         // Bottom Mid - Case 2: inner D outside
@@ -5858,6 +5940,11 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 21 + 18
+            flop_counter += 39;
+#endif // COUNT_FLOPS
         }
 
         // Bottom Right - Case 2: inner C outside
@@ -5917,6 +6004,10 @@ void compute_response_layer_Dyy_laplacian_localityloops(struct response_layer* l
             // Calculate Laplacian
             laplacian[ind] = Dxx + Dyy >= 0;
             ind += 1;
+#ifdef COUNT_FLOPS
+            // box_integral does 3 flops * 6 -> 21 + 18
+            flop_counter += 39;
+#endif // COUNT_FLOPS
         }
     }
 
@@ -5937,6 +6028,14 @@ void compute_response_layer_unconditional(struct response_layer* layer, struct i
     int lobe = filter_size / 3;
     int border = (filter_size - 1) / 2;
     float inv_area = 1.f / (filter_size * filter_size);
+
+#ifdef COUNT_FLOPS
+    flop_counter += 2;
+#endif // COUNT_FLOPS
+
+
+
+
     for (int i = 0, ind = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j, ind++) {
             // Image coordinates
@@ -5963,6 +6062,11 @@ void compute_response_layer_unconditional(struct response_layer* layer, struct i
             response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
             // Calculate Laplacian
             laplacian[ind] = (Dxx + Dyy >= 0);
+
+#ifdef COUNT_FLOPS
+            flop_counter += 15;
+#endif // COUNT_FLOPS
+
         }
     }
 
@@ -10303,6 +10407,10 @@ void compute_response_layer_unconditional_strided(struct response_layer* layer, 
     int border = (filter_size - 1) / 2;
     float inv_area = 1.f / (filter_size * filter_size);
 
+#ifdef COUNT_FLOPS
+    flop_counter += 2;
+#endif // COUNT_FLOPS    
+
     int Dxy_stride = (lobe + 1) / step;
     // printf("\nDxy_stride: lobe+1:%d step:%d Dxy_stride:%d\n", lobe+1, step, Dxy_stride);
 
@@ -10338,6 +10446,11 @@ void compute_response_layer_unconditional_strided(struct response_layer* layer, 
             response[ind] = Dxx * Dyy;
             // Calculate Laplacian
             laplacian[ind] = (Dxx + Dyy >= 0);
+
+#ifdef COUNT_FLOPS
+            flop_counter += 8;
+#endif // COUNT_FLOPS
+
         }
     }
     /*
@@ -10451,6 +10564,11 @@ void compute_response_layer_unconditional_strided(struct response_layer* layer, 
                         // Calculate Determinant
                         response[ii * width + j] -= 0.81f * Dxy * Dxy;
                         // printf("ii:%d ",ii);
+
+#ifdef COUNT_FLOPS
+                        flop_counter += 7;
+#endif//COUNT_FLOPS
+
                     }
                 }
             }
@@ -10476,6 +10594,10 @@ void compute_response_layer_unconditional_strided(struct response_layer* layer, 
 
                     // Calculate Determinant
                     response[i * width + j] -= 0.81f * Dxy * Dxy;
+
+#ifdef COUNT_FLOPS
+                    flop_counter += 7;
+#endif//COUNT_FLOPS
 
                 }
 
@@ -10523,6 +10645,10 @@ void compute_response_layers_unconditional_strided(struct fasthessian* fh) {
     for (int i = 4; i < fh->total_layers; ++i) {
         compute_response_layer_unconditional(fh->response_map[i], fh->iimage);
     }
+#ifdef COUNT_FLOPS
+    printf("Function compute_response_layers_unconditional_strided\nimage size:%i; FLOPs:%ld\n", fh->iimage->width, flop_counter);
+#endif // COUNT_FLOPS
+
 }
 
 void get_interest_points_block(struct fasthessian* fh, std::vector<struct interest_point>* interest_points) {
