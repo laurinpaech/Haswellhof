@@ -30,7 +30,11 @@ def my_xticks(x,pos):
         return r'${{ {:2d} }}$'.format(value)
 
 def my_yticks(y,pos):
-    return r'${{ {:2d} }}$'.format(y)
+    if y <= 0:
+        return '$0$'
+    exponent = int(np.log10(y)) 
+    value = y / float(10**exponent);
+    return r'${{ {val:1.1f} e{ex:2d} }}$'.format(val=value, ex=exponent)
 
 # Name of output file to save the plot to
 outputFileName = 'get_msurf_descriptor_runtime_plot.png'
