@@ -221,13 +221,13 @@ int main(int argc, char const *argv[])
         test_functions.push_back(get_msurf_descriptor_improved);
         test_functions.push_back(get_msurf_descriptor_inlined);
         test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
-        test_functions.push_back(get_msurf_descriptor_gauss_compute_once_case);
-        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar);
+        test_functions.push_back(get_msurf_descriptor_precompute_gauss_case);
+        test_functions.push_back(get_msurf_descriptor_precompute_gauss_array);
+        test_functions.push_back(get_msurf_descriptor_pecompute_haar);
         test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_unroll);
-        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_rounding);
-        test_functions.push_back(get_msurf_descriptor_arrays);
-        test_functions.push_back(get_msurf_descriptor_haar_unroll_2_24_True_winner);
-        test_functions.push_back(get_msurf_descriptor_arrays_simd);
+        test_functions.push_back(get_msurf_descriptor_rounding);
+        test_functions.push_back(get_msurf_descriptor_rounding_unroll_2_24_True_winner);
+        test_functions.push_back(get_msurf_descriptor_simd);
 
 
         // test_functions.push_back(get_msurf_descriptor_haar_unroll_4_1_False);

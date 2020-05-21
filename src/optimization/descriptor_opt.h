@@ -92,41 +92,41 @@ void get_msurf_descriptor_inlinedHaarWavelets_precheck_boundaries(struct integra
 
 void get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
-void get_msurf_descriptor_gauss_compute_once_case(struct integral_image* iimage, struct interest_point* ipoint);
+void get_msurf_descriptor_precompute_gauss_case(struct integral_image* iimage, struct interest_point* ipoint);
 
-void get_msurf_descriptors_gauss_compute_once_case(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+void get_msurf_descriptors_precompute_gauss_case(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
-void get_msurf_descriptor_gauss_pecompute_haar(struct integral_image* iimage, struct interest_point* ipoint);
+void get_msurf_descriptor_precompute_gauss_array(struct integral_image* iimage, struct interest_point* ipoint);
 
-void get_msurf_descriptors_gauss_pecompute_haar(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+void get_msurf_descriptors_precompute_gauss_array(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
-void get_msurf_descriptor_gauss_pecompute_haar_rounding(struct integral_image* iimage, struct interest_point* ipoint);
+void get_msurf_descriptor_pecompute_haar(struct integral_image* iimage, struct interest_point* ipoint);
 
-void get_msurf_descriptors_gauss_pecompute_haar_rounding(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+void get_msurf_descriptors_pecompute_haar(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
-void get_msurf_descriptor_arrays(struct integral_image* iimage, struct interest_point* ipoint);
+void get_msurf_descriptor_rounding(struct integral_image* iimage, struct interest_point* ipoint);
 
-void get_msurf_descriptors_arrays(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+void get_msurf_descriptors_rounding(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
-void get_msurf_descriptor_arrays_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
+void get_msurf_descriptor_rounding_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
 
-void get_msurf_descriptors_arrays_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+void get_msurf_descriptors_rounding_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
 void get_msurf_descriptor_gauss_pecompute_haar_unroll(struct integral_image* iimage, struct interest_point* ipoint);
 
 void get_msurf_descriptors_gauss_pecompute_haar_unroll(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
-void get_msurf_descriptor_haar_unroll_2_24_True_winner(struct integral_image* iimage, struct interest_point* ipoint);
+void get_msurf_descriptor_rounding_unroll_2_24_True_winner(struct integral_image* iimage, struct interest_point* ipoint);
 
-void get_msurf_descriptors_haar_unroll_2_24_True_winner(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+void get_msurf_descriptors_rounding_unroll_2_24_True_winner(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
 void get_msurf_descriptor_haar_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
 
 void get_msurf_descriptors_haar_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
-void get_msurf_descriptor_arrays_simd(struct integral_image* iimage, struct interest_point* ipoint);
+void get_msurf_descriptor_simd(struct integral_image* iimage, struct interest_point* ipoint);
 
-void get_msurf_descriptors_arrays_simd(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+void get_msurf_descriptors_simd(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
 
 inline void haarXY(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
