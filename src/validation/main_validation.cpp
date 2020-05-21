@@ -155,7 +155,7 @@ int main(int argc, char const *argv[])
         test_functions.push_back(compute_response_layers_precompute);
         test_functions.push_back(compute_response_layers_blocking);
         test_functions.push_back(compute_response_layers_at_once);
-        test_functions.push_back(compute_response_layers_sonic_Dyy);
+        // test_functions.push_back(compute_response_layers_sonic_Dyy);
 
         // test_functions.push_back(compute_response_layers_blocking_3_3_False);
         // test_functions.push_back(compute_response_layers_blocking_3_7_False);
@@ -175,8 +175,8 @@ int main(int argc, char const *argv[])
     {
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_response_layer_unconditional);
-        test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional);
-        test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional_opt);
+        // test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional);
+        // test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional_opt);
 
         // test_functions.push_back(compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr); // is expected to fail for images < 128
         // test_functions.push_back(compute_response_layer_unconditional_strided); // is expected to fail on layers > 4
