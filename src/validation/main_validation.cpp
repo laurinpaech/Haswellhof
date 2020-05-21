@@ -101,32 +101,38 @@ int main(int argc, char const *argv[])
 
 #ifdef VALIDATE_INTEGRAL_IMAGE_INT
     {
-        std::vector<void (*)(uint8_t *, struct integral_image *)> test_functions;
-        test_functions.push_back(compute_integral_img_simd_int);
-        test_functions.push_back(compute_integral_img_simd_early_cast_int);
-        //test_functions.push_back(compute_integral_img_simd_original);
+        //if (width < 2895) {
+        if (width <= 2048) {
+            std::vector<void (*)(uint8_t *, struct integral_image *)> test_functions;
+            test_functions.push_back(compute_integral_img_simd_int);
+            test_functions.push_back(compute_integral_img_simd_early_cast_int);
+            //test_functions.push_back(compute_integral_img_simd_original);
 
-        bool valid = validate_integral_image_int(compute_integral_img_int, test_functions, width, height, image_int, false);
-        if (valid) {
-            printf("INTEGRAL IMAGE INT VALIDATION:             \033[0;32mSUCCESS!\033[0m\n");
-        } else {
-            printf("INTEGRAL IMAGE INT VALIDATION:             \033[1;31mFAILED!\033[0m\n");
+            bool valid = validate_integral_image_int(compute_integral_img_int, test_functions, width, height, image_int, false);
+            if (valid) {
+                printf("INTEGRAL IMAGE INT VALIDATION:             \033[0;32mSUCCESS!\033[0m\n");
+            } else {
+                printf("INTEGRAL IMAGE INT VALIDATION:             \033[1;31mFAILED!\033[0m\n");
+            }
         }
     }
 #endif
 
 #ifdef VALIDATE_INTEGRAL_IMAGE_INT_PADDED
     {
-        std::vector<void (*)(uint8_t *, struct integral_image *)> test_functions;
-        //test_functions.push_back(compute_padded_integral_img_int);
-        test_functions.push_back(compute_padded_integral_img_simd_early_cast_int);
-        //test_functions.push_back(compute_integral_img_simd_original);
+        //if (width + 2 * PADDING_SIZE < 2895) {
+        if (width + 2 * PADDING_SIZE <= 2048 + 2 * PADDING_SIZE) {
+            std::vector<void (*)(uint8_t *, struct integral_image *)> test_functions;
+            //test_functions.push_back(compute_padded_integral_img_int);
+            test_functions.push_back(compute_padded_integral_img_simd_early_cast_int);
+            //test_functions.push_back(compute_integral_img_simd_original);
 
-        bool valid = validate_integral_image_int(compute_padded_integral_img_int, test_functions, width, height, image_int, true);
-        if (valid) {
-            printf("INTEGRAL IMAGE INT PADDED VALIDATION:      \033[0;32mSUCCESS!\033[0m\n");
-        } else {
-            printf("INTEGRAL IMAGE INT PADDED VALIDATION:      \033[1;31mFAILED!\033[0m\n");
+            bool valid = validate_integral_image_int(compute_padded_integral_img_int, test_functions, width, height, image_int, true);
+            if (valid) {
+                printf("INTEGRAL IMAGE INT PADDED VALIDATION:      \033[0;32mSUCCESS!\033[0m\n");
+            } else {
+                printf("INTEGRAL IMAGE INT PADDED VALIDATION:      \033[1;31mFAILED!\033[0m\n");
+            }
         }
     }
 #endif
@@ -170,6 +176,7 @@ int main(int argc, char const *argv[])
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_response_layer_unconditional);
         test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional);
+        test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional_opt);
 
         // test_functions.push_back(compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr); // is expected to fail for images < 128
         // test_functions.push_back(compute_response_layer_unconditional_strided); // is expected to fail on layers > 4

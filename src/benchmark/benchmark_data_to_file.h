@@ -4,6 +4,8 @@
 
 #include "benchmarking.h"
 
+void initialize_folder_name();
+
 // Saves a vector of different benchmarking data to their respective files. One file contains the timing data of
 // multiple images and one function.
 void save_benchmark_data(const std::vector<struct benchmark_data> &all_benchmark_data);
@@ -17,3 +19,5 @@ void create_folder(const char *folder_name);
 
 // Concatenates two given strings
 char *concat(const char *s1, const char *s2);
+
+void free_benchmarking_folder();

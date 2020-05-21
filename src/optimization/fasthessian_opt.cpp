@@ -24,6 +24,24 @@ void compute_response_layers_Dyy_laplacian_localityloops(struct fasthessian *fh)
     }
 }
 
+void compute_response_layers_Dyy_leftcorner(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_Dyy_leftcorner(fh->response_map[i], fh->iimage);
+    }
+}
+
+void compute_response_layers_Dyy_top(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_Dyy_top(fh->response_map[i], fh->iimage);
+    }
+}
+
+void compute_response_layers_Dyy_top_mid(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_Dyy_top_mid(fh->response_map[i], fh->iimage);
+    }
+}
+
 void compute_response_layers_unconditional(struct fasthessian* fh){
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer_unconditional(fh->response_map[i], fh->iimage);
@@ -42,6 +60,17 @@ void compute_response_layers_sonic_Dyy_unconditional(struct fasthessian *fh) {
     }
 }
 
+void compute_response_layers_sonic_Dyy_unconditional_opt(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_sonic_Dyy_unconditional_opt(fh->response_map[i], fh->iimage);
+    }
+}
+
+// void compute_response_layers_sonic_Dyy_unconditional_opt_naive(struct fasthessian *fh) {
+//     for (int i = 0; i < fh->total_layers; ++i) {
+//         compute_response_layer_sonic_Dyy_unconditional_opt_naive(fh->response_map[i], fh->iimage);
+//     }
+// }
 
 /* Dyy coords
 // whole box filter
@@ -639,6 +668,362 @@ void compute_response_layer_sonic_Dyy_unconditional(struct response_layer *layer
                 }
             }
         }
+    }
+}
+
+void compute_response_layer_sonic_Dyy_unconditional_opt(struct response_layer *layer, struct integral_image *iimage) {
+
+    int height = layer->height;
+    int width = layer->width;
+
+    int data_width = iimage->data_width;
+
+    int iwidth = iimage->width;
+    int iheight = iimage->height;
+
+    float *data = (float *) iimage->data;
+    int step = layer->step;
+    int filter_size = layer->filter_size;
+    int border = (filter_size - 1) / 2;
+    int lobe = filter_size / 3;
+    float inv_area = 1.f/(filter_size*filter_size);
+
+    float Dxx, Dyy, Dxy, Dyy0, Dyy1, A, B, C, D;
+    float A0, A1, B0, B1, C0, C1, D0, D1;
+    int r10, r11, c10, c11, r00, r01, c00, c01;
+    float* response = layer->response;
+    bool* laplacian = layer->laplacian;
+
+    int ind = 0;
+
+    int k, k0, i, j, t0, t1, t2, t3, t4, t5, t6, t7, t8, t9;
+    int x = 0;
+    int y = 0;
+
+    // 1. Case The filter is smaller than the image
+    if (filter_size <= iheight) {
+        // Split the image into 9 cases - corners, borders and middle part.
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+    } else {
+        // 2. Case The filter is somewhat larger than the image
+        if (iheight > border) {
+
+            // 2.1. D is sometimes outside the image. Blue lines edition brings the sonic into Dyy
+            // Idea: Do compute_response_layer_Dyy_leftcorner
+            // but everytime all corners are outside, we just use row values above
+            if (iwidth > 2 * lobe - 1) {
+                height_greater_border_width_greater_double_lobe_Dyy_inlined(layer, iimage);
+            } else {
+                height_greater_border_width_less_double_lobe_Dyy_inlined(layer, iimage);
+            }
+
+        } else {
+            // Case 2.2 D is always outside the image.
+            // Half the filter height is longer than the image.
+            if (iwidth <= lobe) {
+                // Case 2.2a the filter is longer and wider than the image.
+
+                // D is right bottom corner or to the right (possibly below image)
+                // A, B, C = 0
+                D0 = data[(iheight-1) * data_width + (iwidth-1)];
+
+                // Differentiate 2 cases
+                // for the negative part:
+                // 1.
+                // is negative / inner part of Dyy box filter completely too big
+                // i.e. is inner D on the right bottom corner or even bigger (to the right or below)
+                // SADLY THIS CASE NEVER HAPPENS. CRY :(
+
+                // if (iheight <= lobe/2-1) {
+                // D1 = D0;
+                //
+                // // combine Dyy
+                // Dyy = D0 - 3 * D1;
+                // Dyy *= inv_area;
+                //
+                // for (i = 0; i < height * step; i += step) {
+                //
+                //     for (j = 0; j < width * step; j += step) {
+                //         // Image coordinates
+                //         x = i;
+                //         y = j;
+                //
+                //         // Calculate Dxx, Dyy, Dxy with Box Filter
+                //         Dxx = box_integral_unconditional(iimage, x - lobe + 1, y - border, 2*lobe - 1, filter_size)
+                //                 - 3 * box_integral_unconditional(iimage, x - lobe + 1, y - lobe / 2, 2*lobe - 1, lobe);
+                //         Dxy = box_integral_unconditional(iimage, x - lobe, y + 1, lobe, lobe)
+                //                 + box_integral_unconditional(iimage, x + 1, y - lobe, lobe, lobe)
+                //                 - box_integral_unconditional(iimage, x - lobe, y - lobe, lobe, lobe)
+                //                 - box_integral_unconditional(iimage, x + 1, y + 1, lobe, lobe);
+                //
+                //         // Normalize Responses with inverse area
+                //         Dyy *= inv_area;
+                //         Dxy *= inv_area;
+                //
+                //         // Calculate Determinant
+                //         response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+                //
+                //         // Calculate Laplacian
+                //         laplacian[ind] = Dxx + Dyy >= 0;
+                //         ind += 1;
+                //     }
+                // }
+
+                // 2. Case
+                // Only for - image_size: 32, filter_size: 99
+                // inner D is in last col but the inner part is not too big
+                // col is irrelevant, B and D have always the same value
+                // i.e. inner loop is irrelevant for coords and values
+
+                // We divide it again in 3 parts.
+                // 1. B outside, D inside
+                // 2. B outside, D outside
+                // 3. B inside, D outside
+
+                // 1. Case: B outside, D inside
+                for (x = 0; x < width*step-lobe/2; x += step) {
+                    // negative part
+                    r10 = x - lobe / 2 - 1;
+                    r11 = r10 + lobe;  // TODO: fix this
+
+                    D1 = data[r11 * data_width + (iwidth-1)];
+
+                    // Compute Dyy
+                    Dyy = D0 - 3 * D1;
+                    Dyy *= inv_area;
+
+                    // precompute
+                    t0 = x - lobe;
+                    t1 = x + lobe - 1;
+                    t2 = lobe/2 + 1;
+                    t3 = x - 1;
+                    t5 = x - lobe - 1;
+                    t7 = x + lobe;
+
+                    for (y = 0; y < width * step; y += step) {
+                        // box_integral_unconditional precompute
+                        t4 = y - 1;
+                        t6 = y - lobe - 1;
+                        t8 = y + lobe;
+
+                        // Compute Dxx, Dxy
+                        Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                            - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+                        Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                                + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                                - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                                - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+                        // Normalize Responses with inverse area
+                        Dxx *= inv_area;
+                        Dxy *= inv_area;
+
+                        // Calculate Determinant
+                        response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+                        // Calculate Laplacian
+                        laplacian[ind] = Dxx + Dyy >= 0;
+                        ind += 1;
+                    }
+                }
+
+                // 2. Case: B outside, D outside
+                Dyy = - 2 * D0;
+                Dyy *= inv_area;
+
+                for (; x < lobe/2+1; x += step) {
+
+                    // precompute
+                    t0 = x - lobe;
+                    t1 = x + lobe - 1;
+                    t2 = lobe/2 + 1;
+                    t3 = x - 1;
+                    t5 = x - lobe - 1;
+                    t7 = x + lobe;
+
+                    for (y = 0; y < width*step; y += step) {
+                        // box_integral_unconditional precompute
+                        t4 = y - 1;
+                        t6 = y - lobe - 1;
+                        t8 = y + lobe;
+
+                        // Compute Dxx, Dxy
+                        Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                            - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+                        Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                                + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                                - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                                - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+                        // Normalize Responses with inverse area
+                        Dxx *= inv_area;
+                        Dxy *= inv_area;
+
+                        // Calculate Determinant
+                        response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+                        // Calculate Laplacian
+                        laplacian[ind] = Dxx + Dyy >= 0;
+                        ind += 1;
+                    }
+                }
+
+                // 3. Case: B inside, D outside
+                for (; x < height * step; x += step) {
+                    r10 = x - lobe / 2 - 1;
+
+                    B = data[r10 * data_width + (iwidth-1)];
+                    // D1 = D0 - B;
+                    // Dyy = D0 - 3 * D1;
+                    // Dyy *= inv_area;
+
+                    // this can be simplified to:
+                    // (small difference in original is this but error is <0.000001 eps)
+                    Dyy = 3*B - 2*D0;
+                    Dyy *= inv_area;
+
+                    // precompute
+                    t0 = x - lobe;
+                    t1 = x + lobe - 1;
+                    t2 = lobe/2 + 1;
+                    t3 = x - 1;
+                    t5 = x - lobe - 1;
+                    t7 = x + lobe;
+
+                    for (y = 0; y < width * step; y += step) {
+                        // box_integral_unconditional precompute
+                        t4 = y - 1;
+                        t6 = y - lobe - 1;
+                        t8 = y + lobe;
+
+                        // Compute Dxx, Dxy
+                        Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                            - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+                        Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                                + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                                - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                                - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+                        // Normalize Responses with inverse area
+                        Dxx *= inv_area;
+                        Dxy *= inv_area;
+
+                        // Calculate Determinant
+                        response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+                        // Calculate Laplacian
+                        laplacian[ind] = Dxx + Dyy >= 0;
+                        ind += 1;
+                    }
+                }
+
+            } else {
+                /* 2.2.b Half the filter is longer than the image, but narrower.
+                // HERE: width > lobe and height <= border
+                // Here only the whole filter is optimized, not negative part
+
+                // Only happens for filter: 75 and image: 32
+
+                // A, B = 0
+                // D is outside (i.e. below) the image, but the columns change.
+                // => D = [height-1, some_column]
+                // C = 0 or [height-1, some_column]
+                */
+
+                // Create array for Dyy that has image width length
+                // all rows (for big part) have same Dyy values
+                float Dyy_arr[iwidth];  // stack is faster than heap
+
+                // C = 0 and D = [height-1, some_column]
+                // from y = 0 until D is (exclusive) in last column
+                for (i = 0; i < width*step-lobe; i += step) {  // 0 - 7
+                    // C = 0
+                    // D = [height-1, i+lobe-1]
+                    D = data[(iheight-1) * data_width + (i+lobe-1)];
+                    Dyy_arr[i] = D;
+                }
+
+                // only bottom left corner value needed
+                D = data[(iheight-1) * data_width + (iwidth-1)];
+
+                // C = 0 and D = [height-1, width-1] (below or right of bottom corner)
+                // C is still outside and D now too
+                for (; i < lobe; i += step) {  // 7 - 25
+                    Dyy_arr[i] = D;
+                }
+
+                // if y = lobe, then C = [height-1, 0]
+                // C = [height-1, some_column] and D = [height-1, width-1] (below or right of bottom corner)
+                for (; i < width*step; i += step) {  // 25 - 32
+                    // C = [height-1, i-lobe]
+                    // D = [height-1, width-1]
+                    C = data[(iheight-1) * data_width + (i-lobe)];
+                    Dyy_arr[i] = D - C;
+                }
+
+                // Use precomputation for faster compute
+                for (x = 0; x < height * step; x += step) {
+
+                    // precompute
+                    t0 = x - lobe;
+                    t1 = x + lobe - 1;
+                    t2 = lobe/2 + 1;
+                    t3 = x - 1;
+                    t5 = x - lobe - 1;
+                    t7 = x + lobe;
+                    t9 = x - lobe / 2 - 1;
+
+                    for (y = 0; y < width * step; y += step) {
+                        // box_integral_unconditional precompute
+                        t4 = y - 1;
+                        t6 = y - lobe - 1;
+                        t8 = y + lobe;
+
+                        // Calculate Dxx, Dyy, Dxy with Box Filter
+                        Dyy = Dyy_arr[y] - 3 * box_integral_unconditional_opt(iimage, t9, t6 + 1, t9 + lobe , t8 - 2);
+
+                        // Compute Dxx, Dxy
+                        Dxx = box_integral_unconditional_opt(iimage, t0, y-border-1, t1, y+border)
+                            - 3 * box_integral_unconditional_opt(iimage, t0, y-t2, t1, t8-t2);
+                        Dxy = box_integral_unconditional_opt(iimage, t5, y, t3, t8)
+                                + box_integral_unconditional_opt(iimage, x, t6, t7, t4)
+                                - box_integral_unconditional_opt(iimage, t5, t6, t3, t4)
+                                - box_integral_unconditional_opt(iimage, x, y, t7, t8);
+
+                        // Normalize Responses with inverse area
+                        Dyy *= inv_area;
+                        Dxx *= inv_area;
+                        Dxy *= inv_area;
+
+                        // Calculate Determinant
+                        response[ind] = Dxx * Dyy - 0.81f * Dxy * Dxy;
+
+                        // Calculate Laplacian
+                        laplacian[ind] = Dxx + Dyy >= 0;
+
+                        // Increment index
+                        ind += 1;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void compute_response_layer_sonic_Dyy_unconditional_opt_naive(struct response_layer *layer, struct integral_image *iimage) {
+
+    int iheight = iimage->height;
+    int filter_size = layer->filter_size;
+
+    // 1. Case The filter is smaller than the image
+    if (filter_size <= iheight) {
+        // Split the image into 9 cases - corners, borders and middle part.
+        compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_inlined(layer, iimage);
+
+    } else {
+
+        compute_response_layer_unconditional(layer, iimage);
     }
 }
 
@@ -5570,12 +5955,14 @@ void compute_response_layer_unconditional(struct response_layer *layer, struct i
 
 }
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy_laplacian_localityloops_unconditional(struct fasthessian* fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer_Dyy_laplacian_localityloops_unconditional(fh->response_map[i], fh->iimage);
 	}
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct response_layer* layer, struct integral_image* iimage) {
     float Dxx, Dyy, Dxy;
     int x, y, k, k0, k1;
@@ -6444,12 +6831,14 @@ void compute_response_layer_Dyy_laplacian_localityloops_unconditional(struct res
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy_laplacian_locality_uncond_opt(struct fasthessian* fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer_Dyy_laplacian_locality_uncond_opt(fh->response_map[i], fh->iimage);
 	}
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_layer* layer, struct integral_image* iimage) {
     /*
         Optimized flop count and removed unnecessary computations
@@ -7372,12 +7761,14 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt(struct response_la
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops(struct fasthessian* fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(fh->response_map[i], fh->iimage);
 	}
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(struct response_layer* layer, struct integral_image* iimage) {
     /*
         Flops optimized even further
@@ -8341,12 +8732,14 @@ void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops(struct respo
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct fasthessian* fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
 		compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(fh->response_map[i], fh->iimage);
 	}
 }
 
+// Only for images >= 128x128
 void compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr(struct response_layer* layer, struct integral_image* iimage) {
     /*
         Flops noch weiter verbessert indem

@@ -72,12 +72,12 @@ inline float box_integral(struct integral_image *iimage, int row, int col, int r
     // there was a floating point arithmetic bug in the original implementation
     // this fixes it and now fmaxf is not needed
     // use this for validation:
-    temp0 = A - C;
-    temp1 = D - B;
-    res = temp0 + temp1;
-
-    return res;
+    // temp0 = A - C;
+    // temp1 = D - B;
+    // res = temp0 + temp1;
+    //
+    // return res;
 
     // use this for benchmarking:
-    // return fmax(0.0f, A - B - C + D);
+    return fmax(0.0f, A - B - C + D);
 }
