@@ -12,7 +12,7 @@ def my_yticks(y,pos):
         return '$0$'
     exponent = int(np.log10(y)) 
     value = y / float(10**exponent);
-    return r'${{ {val:1.1f} e{ex:2d} }}$'.format(val=value, ex=exponent)
+    return '${{ %1.1f \mathrm{e} {%2d} }}$' % (value, exponent)
 
 # Name of output file to save the plot to
 outputFileName = 'compute_response_layers_runtime_bar_plot.png'
