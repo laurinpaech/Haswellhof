@@ -95,6 +95,8 @@ add_executable(optimization
     # Add optimization header and source files here
     optimization/integral_image_opt.h
     optimization/integral_image_opt.cpp
+    optimization/integral_image_simd.h
+    optimization/integral_image_simd.cpp
     optimization/fasthessian_opt.h
     optimization/fasthessian_opt.cpp
     optimization/main_opt.cpp
