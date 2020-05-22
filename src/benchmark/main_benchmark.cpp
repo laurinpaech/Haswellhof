@@ -30,15 +30,15 @@ const char *images[] = {
 };
 
 #define n_images (sizeof(images) / sizeof(const char *))
-// #define BENCHMARK_INTEGRAL_IMAGE
-// #define BENCHMARK_INTEGRAL_IMAGE_PADDED
-// #define BENCHMARK_INTEGRAL_IMAGE_INT
-// #define BENCHMARK_INTEGRAL_IMAGE_INT_PADDED
-// #define BENCHMARK_COMPUTE_RESPONSE_LAYERS
+#define BENCHMARK_INTEGRAL_IMAGE
+#define BENCHMARK_INTEGRAL_IMAGE_PADDED
+#define BENCHMARK_INTEGRAL_IMAGE_INT
+#define BENCHMARK_INTEGRAL_IMAGE_INT_PADDED
+#define BENCHMARK_COMPUTE_RESPONSE_LAYERS
 // BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED only works with BENCHMARK_COMPUTE_RESPONSE_LAYERS enabled
-// #define BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED
-// #define BENCHMARK_INTEREST_POINTS
-// #define BENCHMARK_INTERPOLATE_STEPS
+#define BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED
+#define BENCHMARK_INTEREST_POINTS
+#define BENCHMARK_INTERPOLATE_STEPS
 #define BENCHMARK_GET_MSURF_DESCRIPTORS
 
 int main(int argc, char const *argv[]) {
@@ -217,7 +217,7 @@ int main(int argc, char const *argv[]) {
             functions.push_back(compute_response_layers_precompute);
             functions.push_back(compute_response_layers_blocking);
             functions.push_back(compute_response_layers_at_once);
-            functions.push_back(compute_response_layers_sonic_Dyy);
+            functions.push_back(compute_response_layers_switch_Dyy);
 
             struct benchmark_data default_data(image_name, width, height, "compute_response_layer", -1,
                                                (1 + height * width * 13));
@@ -227,7 +227,7 @@ int main(int argc, char const *argv[]) {
                                         (1 + height * width * 13));
             struct benchmark_data data3(image_name, width, height, "compute_response_layers_at_once", -1,
                                         (1 + height * width * 13));
-            struct benchmark_data data4(image_name, width, height, "compute_response_layers_sonic_Dyy", -1,
+            struct benchmark_data data4(image_name, width, height, "compute_response_layers_switch_Dyy", -1,
                                         (1 + height * width * 13));
 
             std::vector<struct benchmark_data> data;
@@ -243,14 +243,14 @@ int main(int argc, char const *argv[]) {
                 functions.push_back(compute_response_layers_Dyy_top_mid);
                 functions.push_back(compute_response_layers_Dyy);
                 functions.push_back(compute_response_layers_Dyy_laplacian);
-                functions.push_back(compute_response_layers_Dyy_laplacian_localityloops);
+                functions.push_back(compute_response_layers_Dyy_laplacian_locality);
 
                 struct benchmark_data data5(image_name, width, height, "compute_response_layers_Dyy_leftcorner", -1, (1 + height * width * 13));
                 struct benchmark_data data6(image_name, width, height, "compute_response_layers_Dyy_top", -1, (1 + height * width * 13));
                 struct benchmark_data data7(image_name, width, height, "compute_response_layers_Dyy_top_mid", -1, (1 + height * width * 13));
                 struct benchmark_data data8(image_name, width, height, "compute_response_layers_Dyy", -1, (1 + height * width * 13));
                 struct benchmark_data data9(image_name, width, height, "compute_response_layers_Dyy_laplacian", -1, (1 + height * width * 13));
-                struct benchmark_data data10(image_name, width, height, "compute_response_layers_Dyy_laplacian_localityloops", -1, (1 + height * width * 13));
+                struct benchmark_data data10(image_name, width, height, "compute_response_layers_Dyy_laplacian_locality", -1, (1 + height * width * 13));
 
                 data.push_back(data5);
                 data.push_back(data6);
@@ -274,8 +274,8 @@ int main(int argc, char const *argv[]) {
                 std::vector<void (*)(struct fasthessian *)> padded_functions;
                 padded_functions.push_back(compute_response_layers_unconditional);
                 padded_functions.push_back(compute_response_layers_unconditional_strided);
-                padded_functions.push_back(compute_response_layers_sonic_Dyy_unconditional);
-                padded_functions.push_back(compute_response_layers_sonic_Dyy_unconditional_opt);
+                padded_functions.push_back(compute_response_layers_switch_Dyy_unconditional);
+                padded_functions.push_back(compute_response_layers_switch_Dyy_unconditional_opt);
                 // padded_functions.push_back(compute_response_layers_sonic_Dyy_unconditional_opt_naive);
 
 
@@ -284,9 +284,9 @@ int main(int argc, char const *argv[]) {
                 struct benchmark_data padded_data2(image_name, width, height,
                                                 "compute_response_layers_unconditional_strided", -1, (1 + height * width * 13));
                 struct benchmark_data padded_data3(image_name, width, height,
-                                                "compute_response_layers_sonic_Dyy_unconditional", -1, (1 + height * width * 13));
+                                                "compute_response_layers_switch_Dyy_unconditional", -1, (1 + height * width * 13));
                 struct benchmark_data padded_data4(image_name, width, height,
-                                                "compute_response_layers_sonic_Dyy_unconditional_opt", -1, (1 + height * width * 13));
+                                                "compute_response_layers_switch_Dyy_unconditional_opt", -1, (1 + height * width * 13));
                 // struct benchmark_data padded_data5(image_name, width, height,
                 //                                 "compute_response_layers_sonic_Dyy_unconditional_opt_naive", -1, (1 + height * width * 13));
 
@@ -299,10 +299,10 @@ int main(int argc, char const *argv[]) {
                 // data_padded_functions.push_back(padded_data5);
 
                 if (width >= 128) {
-                    padded_functions.push_back(compute_response_layers_Dyy_laplacian_localityloops_unconditional);
-                    padded_functions.push_back(compute_response_layers_Dyy_laplacian_locality_uncond_opt);
-                    padded_functions.push_back(compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops);
-                    padded_functions.push_back(compute_response_layers_Dyy_laplacian_locality_uncond_opt_flops_invsqr);
+                    padded_functions.push_back(compute_response_layers_Dyy_laplacian_locality_unconditional);
+                    padded_functions.push_back(compute_response_layers_Dyy_laplacian_locality_unconditional_opt);
+                    padded_functions.push_back(compute_response_layers_Dyy_laplacian_locality_unconditional_opt_flops);
+                    padded_functions.push_back(compute_response_layers_Dyy_laplacian_locality_unconditional_opt_flops_invsqr);
 
                     struct benchmark_data padded_data5(image_name, width, height, "compute_response_layers_Dyy_laplacian_localityloops_unconditional", -1, (1 + height * width * 13));
                     struct benchmark_data padded_data6(image_name, width, height, "compute_response_layers_Dyy_laplacian_locality_uncond_opt", -1, (1 + height * width * 13));
