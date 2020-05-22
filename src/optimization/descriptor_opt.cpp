@@ -75,8 +75,8 @@ void get_msurf_descriptor_improved(struct integral_image* iimage, struct interes
                     // TODO: (Sebastian) Precompute this...
                     float gauss_s1 = gaussianf(xs_sub_sample_x, ys_sub_sample_y, scale_mul_25f);
                     
-                    float rx = haarX(iimage, sample_y, sample_x, int_scale_mul_2);
-                    float ry = haarY(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float rx = haarX_improved(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float ry = haarY_improved(iimage, sample_y, sample_x, int_scale_mul_2);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -185,8 +185,8 @@ void get_msurf_descriptor_improved_flip(struct integral_image* iimage, struct in
                     // TODO: (Sebastian) Precompute this...
                     float gauss_s1 = gaussianf(xs_sub_sample_x, ys_sub_sample_y, scale_mul_25f);
                     
-                    float rx = haarX(iimage, sample_y, sample_x, int_scale_mul_2);
-                    float ry = haarY(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float rx = haarX_improved(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float ry = haarY_improved(iimage, sample_y, sample_x, int_scale_mul_2);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -295,8 +295,8 @@ void get_msurf_descriptor_improved_flip_flip(struct integral_image* iimage, stru
                     // TODO: (Sebastian) Precompute this...
                     float gauss_s1 = gaussianf(xs_sub_sample_x, ys_sub_sample_y, scale_mul_25f);
                     
-                    float rx = haarX(iimage, sample_y, sample_x, int_scale_mul_2);
-                    float ry = haarY(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float rx = haarX_improved(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float ry = haarY_improved(iimage, sample_y, sample_x, int_scale_mul_2);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -416,8 +416,8 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
                     // NOTE: We use expf here
                     float gauss_s1 = expf(g1_factor * (xs_sub_sample_x_squared + ys_sub_sample_y_squared));
                     
-                    float rx = haarX(iimage, sample_y, sample_x, int_scale_mul_2);
-                    float ry = haarY(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float rx = haarX_improved(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float ry = haarY_improved(iimage, sample_y, sample_x, int_scale_mul_2);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -539,8 +539,8 @@ void get_msurf_descriptor_gauss_s1_separable_test(struct integral_image* iimage,
                     // Computing gauss_s1 2d kernel weight with separable gaussian in x and y direction
                     float gauss_s1 = gauss_s1_x * gauss_s1_y;
                     
-                    float rx = haarX(iimage, sample_y, sample_x, int_scale_mul_2);
-                    float ry = haarY(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float rx = haarX_improved(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float ry = haarY_improved(iimage, sample_y, sample_x, int_scale_mul_2);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -661,8 +661,8 @@ void get_msurf_descriptor_gauss_s2_precomputed(struct integral_image* iimage, st
                     //Get the gaussian weighted x and y responses
                     float gauss_s1 = expf(g1_factor * (xs_sub_sample_x_squared + ys_sub_sample_y_squared));
                     
-                    float rx = haarX(iimage, sample_y, sample_x, int_scale_mul_2);
-                    float ry = haarY(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float rx = haarX_improved(iimage, sample_y, sample_x, int_scale_mul_2);
+                    float ry = haarY_improved(iimage, sample_y, sample_x, int_scale_mul_2);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -788,8 +788,8 @@ void get_msurf_descriptor_inlinedHaarWavelets(struct integral_image* iimage, str
                     haarXY(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &rx, &ry);
                     // printf("sample_x,y:%i %i int_scale:%i rx:%f ry:%f\n",sample_x_sub_int_scale,sample_y_sub_int_scale, int_scale, rx,ry);
 
-                    // float rx = haarX(iimage, sample_y, sample_x, int_scale*2);
-                    // float ry = haarY(iimage, sample_y, sample_x, int_scale*2);
+                    // float rx = haarX_improved(iimage, sample_y, sample_x, int_scale*2);
+                    // float ry = haarY_improved(iimage, sample_y, sample_x, int_scale*2);
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
