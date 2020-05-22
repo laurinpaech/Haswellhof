@@ -1,6 +1,7 @@
 #pragma once 
 
 #include "integral_image.h"
+#include "integral_image_opt.h"
 #include "interest_point.h"
 #include "helper.h"
 #include <immintrin.h>
@@ -120,9 +121,9 @@ void get_msurf_descriptor_rounding_unroll_2_24_True_winner(struct integral_image
 
 void get_msurf_descriptors_rounding_unroll_2_24_True_winner(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
-void get_msurf_descriptor_haar_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
+void get_msurf_descriptor_rounding_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
 
-void get_msurf_descriptors_haar_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+void get_msurf_descriptors_rounding_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
 void get_msurf_descriptor_simd(struct integral_image* iimage, struct interest_point* ipoint);
 
@@ -132,6 +133,17 @@ void get_msurf_descriptor_simd_2_24(struct integral_image* iimage, struct intere
 
 void get_msurf_descriptors_simd_2_24(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
+void get_msurf_descriptor_simd_2_24_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_simd_2_24_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
+inline float haarX_improved(struct integral_image *iimage, int row, int col, int s) {
+    return box_integral_improved(iimage, row-s/2, col, s, s/2) - box_integral_improved(iimage, row-s/2, col-s/2, s, s/2);
+}
+
+inline float haarY_improved(struct integral_image *iimage, int row, int col, int s) {
+    return box_integral_improved(iimage, row, col-s/2, s/2, s) - box_integral_improved(iimage, row-s/2, col-s/2, s/2, s);
+}
 
 inline void haarXY(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
     

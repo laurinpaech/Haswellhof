@@ -17,7 +17,7 @@
 #define NUM_TOTAL_LAYERS 8
 #define NUM_OCTAVES 3
 #define NUM_LAYERS 4
-#define PADDING_SIZE 50
+#define PADDING_SIZE 128
 
 //static const int NUM_OCTAVES = 3;
 //static const int NUM_LAYERS = 4;
