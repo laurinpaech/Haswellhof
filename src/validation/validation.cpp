@@ -390,7 +390,7 @@ bool validate_get_msurf_descriptors(
 
     bool all_valid = true;
 
-    for (int i = 0; i < interest_points->size(); ++i) {
+    for (int i = 50; i < interest_points->size(); ++i) { 
 
         struct interest_point ref_ipoint = interest_points->at(i);
         original_function(iimage, &ref_ipoint);

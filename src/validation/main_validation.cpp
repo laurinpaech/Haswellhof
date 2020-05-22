@@ -31,6 +31,7 @@
 #define VALIDATE_COMPUTE_RESPONSE_LAYER_PADDED
 #define VALIDATE_GET_INTEREST_POINTS
 #define VALIDATE_GET_MSURF_DESCRIPTORS
+//#define VALIDATE_GET_MSURF_DESCRIPTORS_PADDED
 
 
 int main(int argc, char const *argv[])
@@ -155,7 +156,7 @@ int main(int argc, char const *argv[])
         test_functions.push_back(compute_response_layers_precompute);
         test_functions.push_back(compute_response_layers_blocking);
         test_functions.push_back(compute_response_layers_at_once);
-        test_functions.push_back(compute_response_layers_sonic_Dyy);
+        test_functions.push_back(compute_response_layers_switch_Dyy);
 
         // test_functions.push_back(compute_response_layers_blocking_3_3_False);
         // test_functions.push_back(compute_response_layers_blocking_3_7_False);
@@ -175,8 +176,8 @@ int main(int argc, char const *argv[])
     {
         std::vector<void (*)(struct response_layer *, struct integral_image *)> test_functions;
         test_functions.push_back(compute_response_layer_unconditional);
-        test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional);
-        test_functions.push_back(compute_response_layer_sonic_Dyy_unconditional_opt);
+        test_functions.push_back(compute_response_layer_switch_Dyy_unconditional);
+        test_functions.push_back(compute_response_layer_switch_Dyy_unconditional_opt);
 
         // test_functions.push_back(compute_response_layer_Dyy_laplacian_locality_uncond_opt_flops_invsqr); // is expected to fail for images < 128
         // test_functions.push_back(compute_response_layer_unconditional_strided); // is expected to fail on layers > 4
@@ -221,13 +222,14 @@ int main(int argc, char const *argv[])
         test_functions.push_back(get_msurf_descriptor_improved);
         test_functions.push_back(get_msurf_descriptor_inlined);
         test_functions.push_back(get_msurf_descriptor_inlinedHaarWavelets);
-        test_functions.push_back(get_msurf_descriptor_gauss_compute_once_case);
-        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar);
+        test_functions.push_back(get_msurf_descriptor_precompute_gauss_case);
+        test_functions.push_back(get_msurf_descriptor_precompute_gauss_array);
+        test_functions.push_back(get_msurf_descriptor_pecompute_haar);
         test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_unroll);
-        test_functions.push_back(get_msurf_descriptor_gauss_pecompute_haar_rounding);
-        test_functions.push_back(get_msurf_descriptor_arrays);
-        test_functions.push_back(get_msurf_descriptor_haar_unroll_2_24_True_winner);
-
+        test_functions.push_back(get_msurf_descriptor_rounding);
+        test_functions.push_back(get_msurf_descriptor_rounding_unroll_2_24_True_winner);
+        test_functions.push_back(get_msurf_descriptor_simd);
+        test_functions.push_back(get_msurf_descriptor_simd_2_24);
 
         // test_functions.push_back(get_msurf_descriptor_haar_unroll_4_1_False);
         // test_functions.push_back(get_msurf_descriptor_haar_unroll_1_4_True);
@@ -242,6 +244,27 @@ int main(int argc, char const *argv[])
     }
 #endif
 
+#ifdef VALIDATE_GET_MSURF_DESCRIPTORS_PADDED
+    {
+        std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
+        // test_functions.push_back(get_msurf_descriptor);
+        //test_functions.push_back(get_msurf_descriptor_rounding_unconditional);
+        //test_functions.push_back(get_msurf_descriptor_rounding_unroll_2_24_True_winner_unconditional);
+
+        struct integral_image *padded_iimage = create_padded_integral_img(width, height);
+        compute_padded_integral_img_new(image, padded_iimage);
+
+        bool valid = validate_get_msurf_descriptors(get_msurf_descriptor, test_functions, padded_iimage, &interest_points);
+        if (valid) {
+            printf("MSURF DESCRIPTOR PADDED VALIDATION:        \033[0;32mSUCCESS!\033[0m\n");
+        } else {
+            printf("MSURF DESCRIPTOR PADDED VALIDATION:        \033[1;31mFAILED!\033[0m\n");
+        }
+
+        free(padded_iimage->padded_data);
+        free(padded_iimage);
+    }
+#endif
 
 	// Write results to file
     FILE * fp = fopen(argv[2],"w");

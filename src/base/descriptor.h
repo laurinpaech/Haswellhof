@@ -28,15 +28,15 @@ inline float* get_gaussian(float sigma) {
 }
 
 inline float gaussian(float x, float y, float sig) {
-    return 1.0f / (2.0f * M_PI * sig*sig) * exp(-(x*x+y*y)/(2.0f*sig*sig));
+    return 1.0f / (2.0f * M_PI * sig*sig) * exp(-(x*x+y*y)/(2.0f*sig*sig)); // 2 div + 8 x mul + 1 x add + 1 x exp
 }
 
 inline float haarX(struct integral_image *iimage, int row, int col, int s) {
-    return box_integral(iimage, row-s/2, col, s, s/2) - box_integral(iimage, row-s/2, col-s/2, s, s/2);
+    return box_integral(iimage, row-s/2, col, s, s/2) - box_integral(iimage, row-s/2, col-s/2, s, s/2); // 1 x add + 2 x box_integral(3 x add + 1 x fmax) => Total: 7 x add + 2 x fmax
 }
 
 inline float haarY(struct integral_image *iimage, int row, int col, int s) {
-    return box_integral(iimage, row, col-s/2, s/2, s) - box_integral(iimage, row-s/2, col-s/2, s/2, s);
+    return box_integral(iimage, row, col-s/2, s/2, s) - box_integral(iimage, row-s/2, col-s/2, s/2, s); // 1 x add + 2 x box_integral(3 x add + 1 x fmax) => Total: 7 x add + 2 x fmax
 }
 
 void get_msurf_descriptor(struct integral_image* iimage, struct interest_point* ipoint);

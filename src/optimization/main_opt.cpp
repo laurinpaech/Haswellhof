@@ -79,7 +79,7 @@ int main(int argc, char const *argv[])
 
 #ifdef FULL_OPTIMIZATION_COMPUTE_RESPONSE_LAYERS
 	// Compute responses for every layer
-	compute_response_layers_sonic_Dyy(fh);
+	compute_response_layers_switch_Dyy(fh);
 #endif
 
 	std::vector<struct interest_point> interest_points;
@@ -101,7 +101,7 @@ int main(int argc, char const *argv[])
 
 #ifdef FULL_OPTIMIZATION_GET_MSURF_DESCRIPTORS
 	// Getting M-SURF descriptors for each interest point
-	get_msurf_descriptors_haar_unroll_2_24_True_winner(iimage, &interest_points);
+    get_msurf_descriptors_rounding_unroll_2_24_True_winner(iimage, &interest_points);
 #endif
 
 
@@ -139,3 +139,4 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
+
