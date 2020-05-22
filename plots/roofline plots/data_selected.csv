@@ -1,0 +1,13 @@
+function,runtime,flops,memory
+'compute_integral_img',4058780,2166666.667,12666666.67
+'compute_response_layers',135342608,47333333.33,1368166667
+'get_interest_points',27068836,166666.6667,32666666.67
+'get_msurf_descriptors',199613,171800000,3948000000
+'compute_integral_img_faster_alg',2785559,2000000,11600000
+'compute_response_layer_switch_Dyy',129156728,47200000,1086800000
+'get_interest_points',27068836,166666.6667,32666666.67
+'get_msurf_descriptors_simd_2_24',10384,36400000,162000000
+'compute_padded_integral_img_faster_alg',11216815,2000000,12800000
+'compute_response_layer_Dyy_laplacian_locality_unconditional_opt_flops',45345216,47200000,410000000
+'get_interest_points',27068836,166666.6667,32666666.67
+'get_msurf_descriptors_simd_2_24',10384,36400000,162000000
