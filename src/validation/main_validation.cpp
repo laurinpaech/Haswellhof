@@ -31,7 +31,7 @@
 #define VALIDATE_COMPUTE_RESPONSE_LAYER_PADDED
 #define VALIDATE_GET_INTEREST_POINTS
 #define VALIDATE_GET_MSURF_DESCRIPTORS
-//#define VALIDATE_GET_MSURF_DESCRIPTORS_PADDED
+#define VALIDATE_GET_MSURF_DESCRIPTORS_PADDED
 
 
 int main(int argc, char const *argv[])
@@ -247,9 +247,9 @@ int main(int argc, char const *argv[])
 #ifdef VALIDATE_GET_MSURF_DESCRIPTORS_PADDED
     {
         std::vector<void (*)(struct integral_image *, struct interest_point *)> test_functions;
-        // test_functions.push_back(get_msurf_descriptor);
-        //test_functions.push_back(get_msurf_descriptor_rounding_unconditional);
-        //test_functions.push_back(get_msurf_descriptor_rounding_unroll_2_24_True_winner_unconditional);
+        test_functions.push_back(get_msurf_descriptor);
+        test_functions.push_back(get_msurf_descriptor_rounding_unconditional);
+        test_functions.push_back(get_msurf_descriptor_rounding_unroll_2_24_True_winner_unconditional);
 
         struct integral_image *padded_iimage = create_padded_integral_img(width, height);
         compute_padded_integral_img_new(image, padded_iimage);

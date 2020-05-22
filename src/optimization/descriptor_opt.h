@@ -120,9 +120,9 @@ void get_msurf_descriptor_rounding_unroll_2_24_True_winner(struct integral_image
 
 void get_msurf_descriptors_rounding_unroll_2_24_True_winner(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
-void get_msurf_descriptor_haar_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
+void get_msurf_descriptor_rounding_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
 
-void get_msurf_descriptors_haar_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+void get_msurf_descriptors_rounding_unroll_2_24_True_winner_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
 void get_msurf_descriptor_simd(struct integral_image* iimage, struct interest_point* ipoint);
 

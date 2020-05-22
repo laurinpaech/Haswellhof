@@ -2269,16 +2269,45 @@ void get_msurf_descriptor_rounding_unconditional(struct integral_image* iimage, 
     // Initializing gauss_s2 index for precomputed array
     int gauss_s2_index = 0;
 
-    for (int l=-12, l_count=0; l<12; ++l, ++l_count) {
-        int sample_y_sub_int_scale = (int)(ipoint_y_sub_int_scale_add_05 + l * scale);
+    // check if we ever hit a boundary
+    if (((int) roundf(ipoint_x - 12*scale)) - int_scale <= 0 
+        || ((int) roundf(ipoint_y - 12*scale)) - int_scale <= 0 
+        || ((int) roundf(ipoint_x + 11*scale)) + int_scale > width 
+        || ((int) roundf(ipoint_y + 11*scale)) + int_scale > height) 
+    { // some outside // still needed for rounding scheme to work -.-
 
-        for (int k=-12, k_count=0; k<12; ++k, ++k_count) {
-            //Get x coords of sample point
-            int sample_x_sub_int_scale = (int)(ipoint_x_sub_int_scale_add_05 + k * scale);
+        for (int l=-12, l_count=0; l<12; ++l, ++l_count) {
+            // int sample_y = (int) roundf(ipoint_y + l * scale);
+            float ipoint_y_sub_int_scale_add_l_mul_scale = ipoint_y_sub_int_scale + l * scale;
+            int sample_y_sub_int_scale = (int) (ipoint_y_sub_int_scale_add_l_mul_scale + (ipoint_y_sub_int_scale_add_l_mul_scale>=0 ? 0.5 : -0.5));
 
-            haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+            for (int k=-12, k_count=0; k<12; ++k, k_count++) {
+                float ipoint_x_sub_int_scale_add_k_mul_scale = ipoint_x_sub_int_scale + k * scale;
+                int sample_x_sub_int_scale = (int) (ipoint_x_sub_int_scale_add_k_mul_scale + (ipoint_x_sub_int_scale_add_k_mul_scale>=0 ? 0.5 : -0.5));
+
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+
+            }
+
         }
 
+    } else {
+
+        for (int l=-12, l_count=0; l<12; ++l, ++l_count) {
+            // int sample_y = (int) roundf(ipoint_y + l * scale);
+            int sample_y_sub_int_scale = (int)(ipoint_y_sub_int_scale_add_05 + l * scale);
+
+            for (int k=-12, k_count=0; k<12; ++k, ++k_count) {
+
+                //Get x coords of sample point
+                // int sample_x = (int) roundf(ipoint_x + k * scale);
+                int sample_x_sub_int_scale = (int)(ipoint_x_sub_int_scale_add_05 + k * scale);
+
+                haarXY_unconditional(iimage, sample_y_sub_int_scale, sample_x_sub_int_scale, int_scale, &haarResponseX[l_count*24+k_count], &haarResponseY[l_count*24+k_count]);
+            }
+
+        }
+        
     }
         
 
@@ -3313,6 +3342,170 @@ void get_msurf_descriptor_rounding_unroll_2_24_True_winner_unconditional(struct 
     int gauss_s2_index = 0;
 
     // check if we ever hit a boundary
+    if (((int) roundf(ipoint_x - 12*scale)) - int_scale <= 0 
+        || ((int) roundf(ipoint_y - 12*scale)) - int_scale <= 0 
+        || ((int) roundf(ipoint_x + 11*scale)) + int_scale > width 
+        || ((int) roundf(ipoint_y + 11*scale)) + int_scale > height) 
+    { // still need this for rounding to work -.-
+        for (int l=-12, l_count=0; l<12; l+=2, l_count+=2) {
+            int l0 = l + 0;
+            int l1 = l + 1;
+            int l_count0 = l_count + 0;
+            int l_count1 = l_count + 1;
+            float ipoint_y_sub_int_scale_add_l0_mul_scale = ipoint_y_sub_int_scale + l0 * scale;
+            float ipoint_y_sub_int_scale_add_l1_mul_scale = ipoint_y_sub_int_scale + l1 * scale;
+            int sample_y_sub_int_scale0 = (int) (ipoint_y_sub_int_scale_add_l0_mul_scale + (ipoint_y_sub_int_scale_add_l0_mul_scale>=0 ? 0.5 : -0.5));
+            int sample_y_sub_int_scale1 = (int) (ipoint_y_sub_int_scale_add_l1_mul_scale + (ipoint_y_sub_int_scale_add_l1_mul_scale>=0 ? 0.5 : -0.5));
+
+            for (int k=-12, k_count=0; k<12; k+=24, k_count+=24) {
+                int k0 = k + 0;
+                int k1 = k + 1;
+                int k2 = k + 2;
+                int k3 = k + 3;
+                int k4 = k + 4;
+                int k5 = k + 5;
+                int k6 = k + 6;
+                int k7 = k + 7;
+                int k8 = k + 8;
+                int k9 = k + 9;
+                int k10 = k + 10;
+                int k11 = k + 11;
+                int k12 = k + 12;
+                int k13 = k + 13;
+                int k14 = k + 14;
+                int k15 = k + 15;
+                int k16 = k + 16;
+                int k17 = k + 17;
+                int k18 = k + 18;
+                int k19 = k + 19;
+                int k20 = k + 20;
+                int k21 = k + 21;
+                int k22 = k + 22;
+                int k23 = k + 23;
+                int k_count0 = k_count + 0;
+                int k_count1 = k_count + 1;
+                int k_count2 = k_count + 2;
+                int k_count3 = k_count + 3;
+                int k_count4 = k_count + 4;
+                int k_count5 = k_count + 5;
+                int k_count6 = k_count + 6;
+                int k_count7 = k_count + 7;
+                int k_count8 = k_count + 8;
+                int k_count9 = k_count + 9;
+                int k_count10 = k_count + 10;
+                int k_count11 = k_count + 11;
+                int k_count12 = k_count + 12;
+                int k_count13 = k_count + 13;
+                int k_count14 = k_count + 14;
+                int k_count15 = k_count + 15;
+                int k_count16 = k_count + 16;
+                int k_count17 = k_count + 17;
+                int k_count18 = k_count + 18;
+                int k_count19 = k_count + 19;
+                int k_count20 = k_count + 20;
+                int k_count21 = k_count + 21;
+                int k_count22 = k_count + 22;
+                int k_count23 = k_count + 23;
+                float ipoint_x_sub_int_scale_add_k0_mul_scale = ipoint_x_sub_int_scale + k0 * scale;
+                float ipoint_x_sub_int_scale_add_k1_mul_scale = ipoint_x_sub_int_scale + k1 * scale;
+                float ipoint_x_sub_int_scale_add_k2_mul_scale = ipoint_x_sub_int_scale + k2 * scale;
+                float ipoint_x_sub_int_scale_add_k3_mul_scale = ipoint_x_sub_int_scale + k3 * scale;
+                float ipoint_x_sub_int_scale_add_k4_mul_scale = ipoint_x_sub_int_scale + k4 * scale;
+                float ipoint_x_sub_int_scale_add_k5_mul_scale = ipoint_x_sub_int_scale + k5 * scale;
+                float ipoint_x_sub_int_scale_add_k6_mul_scale = ipoint_x_sub_int_scale + k6 * scale;
+                float ipoint_x_sub_int_scale_add_k7_mul_scale = ipoint_x_sub_int_scale + k7 * scale;
+                float ipoint_x_sub_int_scale_add_k8_mul_scale = ipoint_x_sub_int_scale + k8 * scale;
+                float ipoint_x_sub_int_scale_add_k9_mul_scale = ipoint_x_sub_int_scale + k9 * scale;
+                float ipoint_x_sub_int_scale_add_k10_mul_scale = ipoint_x_sub_int_scale + k10 * scale;
+                float ipoint_x_sub_int_scale_add_k11_mul_scale = ipoint_x_sub_int_scale + k11 * scale;
+                float ipoint_x_sub_int_scale_add_k12_mul_scale = ipoint_x_sub_int_scale + k12 * scale;
+                float ipoint_x_sub_int_scale_add_k13_mul_scale = ipoint_x_sub_int_scale + k13 * scale;
+                float ipoint_x_sub_int_scale_add_k14_mul_scale = ipoint_x_sub_int_scale + k14 * scale;
+                float ipoint_x_sub_int_scale_add_k15_mul_scale = ipoint_x_sub_int_scale + k15 * scale;
+                float ipoint_x_sub_int_scale_add_k16_mul_scale = ipoint_x_sub_int_scale + k16 * scale;
+                float ipoint_x_sub_int_scale_add_k17_mul_scale = ipoint_x_sub_int_scale + k17 * scale;
+                float ipoint_x_sub_int_scale_add_k18_mul_scale = ipoint_x_sub_int_scale + k18 * scale;
+                float ipoint_x_sub_int_scale_add_k19_mul_scale = ipoint_x_sub_int_scale + k19 * scale;
+                float ipoint_x_sub_int_scale_add_k20_mul_scale = ipoint_x_sub_int_scale + k20 * scale;
+                float ipoint_x_sub_int_scale_add_k21_mul_scale = ipoint_x_sub_int_scale + k21 * scale;
+                float ipoint_x_sub_int_scale_add_k22_mul_scale = ipoint_x_sub_int_scale + k22 * scale;
+                float ipoint_x_sub_int_scale_add_k23_mul_scale = ipoint_x_sub_int_scale + k23 * scale;
+                int sample_x_sub_int_scale0 = (int) (ipoint_x_sub_int_scale_add_k0_mul_scale + (ipoint_x_sub_int_scale_add_k0_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale1 = (int) (ipoint_x_sub_int_scale_add_k1_mul_scale + (ipoint_x_sub_int_scale_add_k1_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale2 = (int) (ipoint_x_sub_int_scale_add_k2_mul_scale + (ipoint_x_sub_int_scale_add_k2_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale3 = (int) (ipoint_x_sub_int_scale_add_k3_mul_scale + (ipoint_x_sub_int_scale_add_k3_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale4 = (int) (ipoint_x_sub_int_scale_add_k4_mul_scale + (ipoint_x_sub_int_scale_add_k4_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale5 = (int) (ipoint_x_sub_int_scale_add_k5_mul_scale + (ipoint_x_sub_int_scale_add_k5_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale6 = (int) (ipoint_x_sub_int_scale_add_k6_mul_scale + (ipoint_x_sub_int_scale_add_k6_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale7 = (int) (ipoint_x_sub_int_scale_add_k7_mul_scale + (ipoint_x_sub_int_scale_add_k7_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale8 = (int) (ipoint_x_sub_int_scale_add_k8_mul_scale + (ipoint_x_sub_int_scale_add_k8_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale9 = (int) (ipoint_x_sub_int_scale_add_k9_mul_scale + (ipoint_x_sub_int_scale_add_k9_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale10 = (int) (ipoint_x_sub_int_scale_add_k10_mul_scale + (ipoint_x_sub_int_scale_add_k10_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale11 = (int) (ipoint_x_sub_int_scale_add_k11_mul_scale + (ipoint_x_sub_int_scale_add_k11_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale12 = (int) (ipoint_x_sub_int_scale_add_k12_mul_scale + (ipoint_x_sub_int_scale_add_k12_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale13 = (int) (ipoint_x_sub_int_scale_add_k13_mul_scale + (ipoint_x_sub_int_scale_add_k13_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale14 = (int) (ipoint_x_sub_int_scale_add_k14_mul_scale + (ipoint_x_sub_int_scale_add_k14_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale15 = (int) (ipoint_x_sub_int_scale_add_k15_mul_scale + (ipoint_x_sub_int_scale_add_k15_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale16 = (int) (ipoint_x_sub_int_scale_add_k16_mul_scale + (ipoint_x_sub_int_scale_add_k16_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale17 = (int) (ipoint_x_sub_int_scale_add_k17_mul_scale + (ipoint_x_sub_int_scale_add_k17_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale18 = (int) (ipoint_x_sub_int_scale_add_k18_mul_scale + (ipoint_x_sub_int_scale_add_k18_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale19 = (int) (ipoint_x_sub_int_scale_add_k19_mul_scale + (ipoint_x_sub_int_scale_add_k19_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale20 = (int) (ipoint_x_sub_int_scale_add_k20_mul_scale + (ipoint_x_sub_int_scale_add_k20_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale21 = (int) (ipoint_x_sub_int_scale_add_k21_mul_scale + (ipoint_x_sub_int_scale_add_k21_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale22 = (int) (ipoint_x_sub_int_scale_add_k22_mul_scale + (ipoint_x_sub_int_scale_add_k22_mul_scale>=0 ? 0.5 : -0.5));
+                int sample_x_sub_int_scale23 = (int) (ipoint_x_sub_int_scale_add_k23_mul_scale + (ipoint_x_sub_int_scale_add_k23_mul_scale>=0 ? 0.5 : -0.5));
+
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale0, int_scale, &haarResponseX[l_count0*24+k_count0], &haarResponseY[l_count0*24+k_count0]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale0, int_scale, &haarResponseX[l_count1*24+k_count0], &haarResponseY[l_count1*24+k_count0]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale1, int_scale, &haarResponseX[l_count0*24+k_count1], &haarResponseY[l_count0*24+k_count1]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale1, int_scale, &haarResponseX[l_count1*24+k_count1], &haarResponseY[l_count1*24+k_count1]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale2, int_scale, &haarResponseX[l_count0*24+k_count2], &haarResponseY[l_count0*24+k_count2]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale2, int_scale, &haarResponseX[l_count1*24+k_count2], &haarResponseY[l_count1*24+k_count2]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale3, int_scale, &haarResponseX[l_count0*24+k_count3], &haarResponseY[l_count0*24+k_count3]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale3, int_scale, &haarResponseX[l_count1*24+k_count3], &haarResponseY[l_count1*24+k_count3]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale4, int_scale, &haarResponseX[l_count0*24+k_count4], &haarResponseY[l_count0*24+k_count4]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale4, int_scale, &haarResponseX[l_count1*24+k_count4], &haarResponseY[l_count1*24+k_count4]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale5, int_scale, &haarResponseX[l_count0*24+k_count5], &haarResponseY[l_count0*24+k_count5]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale5, int_scale, &haarResponseX[l_count1*24+k_count5], &haarResponseY[l_count1*24+k_count5]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale6, int_scale, &haarResponseX[l_count0*24+k_count6], &haarResponseY[l_count0*24+k_count6]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale6, int_scale, &haarResponseX[l_count1*24+k_count6], &haarResponseY[l_count1*24+k_count6]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale7, int_scale, &haarResponseX[l_count0*24+k_count7], &haarResponseY[l_count0*24+k_count7]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale7, int_scale, &haarResponseX[l_count1*24+k_count7], &haarResponseY[l_count1*24+k_count7]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale8, int_scale, &haarResponseX[l_count0*24+k_count8], &haarResponseY[l_count0*24+k_count8]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale8, int_scale, &haarResponseX[l_count1*24+k_count8], &haarResponseY[l_count1*24+k_count8]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale9, int_scale, &haarResponseX[l_count0*24+k_count9], &haarResponseY[l_count0*24+k_count9]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale9, int_scale, &haarResponseX[l_count1*24+k_count9], &haarResponseY[l_count1*24+k_count9]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale10, int_scale, &haarResponseX[l_count0*24+k_count10], &haarResponseY[l_count0*24+k_count10]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale10, int_scale, &haarResponseX[l_count1*24+k_count10], &haarResponseY[l_count1*24+k_count10]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale11, int_scale, &haarResponseX[l_count0*24+k_count11], &haarResponseY[l_count0*24+k_count11]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale11, int_scale, &haarResponseX[l_count1*24+k_count11], &haarResponseY[l_count1*24+k_count11]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale12, int_scale, &haarResponseX[l_count0*24+k_count12], &haarResponseY[l_count0*24+k_count12]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale12, int_scale, &haarResponseX[l_count1*24+k_count12], &haarResponseY[l_count1*24+k_count12]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale13, int_scale, &haarResponseX[l_count0*24+k_count13], &haarResponseY[l_count0*24+k_count13]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale13, int_scale, &haarResponseX[l_count1*24+k_count13], &haarResponseY[l_count1*24+k_count13]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale14, int_scale, &haarResponseX[l_count0*24+k_count14], &haarResponseY[l_count0*24+k_count14]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale14, int_scale, &haarResponseX[l_count1*24+k_count14], &haarResponseY[l_count1*24+k_count14]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale15, int_scale, &haarResponseX[l_count0*24+k_count15], &haarResponseY[l_count0*24+k_count15]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale15, int_scale, &haarResponseX[l_count1*24+k_count15], &haarResponseY[l_count1*24+k_count15]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale16, int_scale, &haarResponseX[l_count0*24+k_count16], &haarResponseY[l_count0*24+k_count16]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale16, int_scale, &haarResponseX[l_count1*24+k_count16], &haarResponseY[l_count1*24+k_count16]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale17, int_scale, &haarResponseX[l_count0*24+k_count17], &haarResponseY[l_count0*24+k_count17]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale17, int_scale, &haarResponseX[l_count1*24+k_count17], &haarResponseY[l_count1*24+k_count17]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale18, int_scale, &haarResponseX[l_count0*24+k_count18], &haarResponseY[l_count0*24+k_count18]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale18, int_scale, &haarResponseX[l_count1*24+k_count18], &haarResponseY[l_count1*24+k_count18]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale19, int_scale, &haarResponseX[l_count0*24+k_count19], &haarResponseY[l_count0*24+k_count19]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale19, int_scale, &haarResponseX[l_count1*24+k_count19], &haarResponseY[l_count1*24+k_count19]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale20, int_scale, &haarResponseX[l_count0*24+k_count20], &haarResponseY[l_count0*24+k_count20]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale20, int_scale, &haarResponseX[l_count1*24+k_count20], &haarResponseY[l_count1*24+k_count20]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale21, int_scale, &haarResponseX[l_count0*24+k_count21], &haarResponseY[l_count0*24+k_count21]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale22, int_scale, &haarResponseX[l_count1*24+k_count22], &haarResponseY[l_count1*24+k_count22]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale23, int_scale, &haarResponseX[l_count0*24+k_count23], &haarResponseY[l_count0*24+k_count23]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale23, int_scale, &haarResponseX[l_count1*24+k_count23], &haarResponseY[l_count1*24+k_count23]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale21, int_scale, &haarResponseX[l_count1*24+k_count21], &haarResponseY[l_count1*24+k_count21]);
+                haarXY_unconditional(iimage, sample_y_sub_int_scale0, sample_x_sub_int_scale22, int_scale, &haarResponseX[l_count0*24+k_count22], &haarResponseY[l_count0*24+k_count22]);
+            }
+        }
+    } else {
         for (int l=-12, l_count=0; l<12; l+=2, l_count+=2) {
             int l0 = l + 0;
             int l1 = l + 1;
@@ -3445,7 +3638,7 @@ void get_msurf_descriptor_rounding_unroll_2_24_True_winner_unconditional(struct 
                 haarXY_unconditional(iimage, sample_y_sub_int_scale1, sample_x_sub_int_scale23, int_scale, &haarResponseX[l_count1*24+k_count23], &haarResponseY[l_count1*24+k_count23]);
             }
         }
-    
+    }
 
     float s0  = roundf( 0.5 * scale);
     float s1  = roundf( 1.5 * scale);
@@ -4048,57 +4241,19 @@ void get_msurf_descriptor_simd_2_24(struct integral_image* iimage, struct intere
         for (int l=-12, l_count=0; l<12; l+=4, l_count+=4) {
 
             int l_count1 = l_count + 1;
-            // int l_count2 = l_count + 2;
-            // int l_count3 = l_count + 3;
 
             int sample_y_sub_int_scale0 = (int)(ipoint_y_sub_int_scale_add_05 + l * scale);
-            int sample_y_sub_int_scale1 = (int)(ipoint_y_sub_int_scale_add_05 + (l+1) * scale);
-            // int sample_y_sub_int_scale2 = (int)(ipoint_y_sub_int_scale_add_05 + (l+2) * scale);
-            // int sample_y_sub_int_scale3 = (int)(ipoint_y_sub_int_scale_add_05 + (l+3) * scale);
-            
+            int sample_y_sub_int_scale1 = (int)(ipoint_y_sub_int_scale_add_05 + (l+1) * scale);  
 
             __m256i sample_y_sub_int_scale_vec0 = _mm256_set1_epi32(sample_y_sub_int_scale0);
             __m256i sample_y_sub_int_scale_vec1 = _mm256_set1_epi32(sample_y_sub_int_scale1);
-            // __m256i sample_y_sub_int_scale_vec2 = _mm256_set1_epi32(sample_y_sub_int_scale2);
-            // __m256i sample_y_sub_int_scale_vec3 = _mm256_set1_epi32(sample_y_sub_int_scale3);
             
-            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec0, sample_col0, int_scale_vec, 
-                                            &haarResponseX[l_count*24+0], &haarResponseY[l_count*24+0]);
-
-            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec1, sample_col0, int_scale_vec, 
-                                            &haarResponseX[l_count1*24+0], &haarResponseY[l_count1*24+0]);
-
-            // haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec2, sample_col0, int_scale_vec, 
-            //                                 &haarResponseX[l_count2*24+0], &haarResponseY[l_count2*24+0]);
-            
-            // haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec3, sample_col0, int_scale_vec, 
-            //                                 &haarResponseX[l_count3*24+0], &haarResponseY[l_count3*24+0]);
-
-            
-            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec0, sample_col1, int_scale_vec, 
-                                            &haarResponseX[l_count*24+8], &haarResponseY[l_count*24+8]);
-
-            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec1, sample_col1, int_scale_vec, 
-                                            &haarResponseX[l_count1*24+8], &haarResponseY[l_count1*24+8]);
-            
-            // haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec2, sample_col1, int_scale_vec, 
-            //                                 &haarResponseX[l_count2*24+8], &haarResponseY[l_count2*24+8]);
-
-            // haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec3, sample_col1, int_scale_vec, 
-            //                                 &haarResponseX[l_count3*24+8], &haarResponseY[l_count3*24+8]);
-
-            
-            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec0, sample_col2, int_scale_vec, 
-                                            &haarResponseX[l_count*24+16], &haarResponseY[l_count*24+16]);
-
-            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec1, sample_col2, int_scale_vec, 
-                                            &haarResponseX[l_count1*24+16], &haarResponseY[l_count1*24+16]);
-
-            // haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec2, sample_col2, int_scale_vec, 
-            //                                 &haarResponseX[l_count2*24+16], &haarResponseY[l_count2*24+16]);
-
-            // haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec3, sample_col2, int_scale_vec, 
-            //                                 &haarResponseX[l_count3*24+16], &haarResponseY[l_count3*24+16]);
+            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec0, sample_col0, int_scale_vec, &haarResponseX[l_count*24+0], &haarResponseY[l_count*24+0]);
+            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec1, sample_col0, int_scale_vec, &haarResponseX[l_count1*24+0], &haarResponseY[l_count1*24+0]);
+            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec0, sample_col1, int_scale_vec, &haarResponseX[l_count*24+8], &haarResponseY[l_count*24+8]);
+            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec1, sample_col1, int_scale_vec, &haarResponseX[l_count1*24+8], &haarResponseY[l_count1*24+8]);
+            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec0, sample_col2, int_scale_vec, &haarResponseX[l_count*24+16], &haarResponseY[l_count*24+16]);
+            haarXY_unconditional_vectorized(iimage, sample_y_sub_int_scale_vec1, sample_col2, int_scale_vec, &haarResponseX[l_count1*24+16], &haarResponseY[l_count1*24+16]);
 
         }
         
