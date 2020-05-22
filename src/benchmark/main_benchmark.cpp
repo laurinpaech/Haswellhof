@@ -30,16 +30,18 @@ const char *images[] = {
 };
 
 #define n_images (sizeof(images) / sizeof(const char *))
-#define BENCHMARK_INTEGRAL_IMAGE
-#define BENCHMARK_INTEGRAL_IMAGE_PADDED
-#define BENCHMARK_INTEGRAL_IMAGE_INT
-#define BENCHMARK_INTEGRAL_IMAGE_INT_PADDED
-#define BENCHMARK_COMPUTE_RESPONSE_LAYERS
+// #define BENCHMARK_INTEGRAL_IMAGE
+// #define BENCHMARK_INTEGRAL_IMAGE_PADDED
+// #define BENCHMARK_INTEGRAL_IMAGE_INT
+// #define BENCHMARK_INTEGRAL_IMAGE_INT_PADDED
+// #define BENCHMARK_COMPUTE_RESPONSE_LAYERS
 // BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED only works with BENCHMARK_COMPUTE_RESPONSE_LAYERS enabled
-#define BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED
-#define BENCHMARK_INTEREST_POINTS
-#define BENCHMARK_INTERPOLATE_STEPS
+// #define BENCHMARK_COMPUTE_RESPONSE_LAYERS_PADDED
+// #define BENCHMARK_INTEREST_POINTS
+// #define BENCHMARK_INTERPOLATE_STEPS
 #define BENCHMARK_GET_MSURF_DESCRIPTORS
+// BENCHMARK_GET_MSURF_DESCRIPTORS_PADDED only works with BENCHMARK_GET_MSURF_DESCRIPTORS enabled
+#define BENCHMARK_GET_MSURF_DESCRIPTORS_PADDED
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
@@ -467,9 +469,50 @@ int main(int argc, char const *argv[]) {
 
             // Appending this data to all benchmarking data
             all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
-
-            printf("get_msurf_descriptor end\n");
         }
+
+     #ifdef BENCHMARK_GET_MSURF_DESCRIPTORS_PADDED
+        {
+            // Create padded integral image
+            struct integral_image *padded_iimage = create_padded_integral_img(width, height);
+            // Compute padded integral image
+            compute_padded_integral_img(image, padded_iimage);
+
+            // Insert all interpolate_step functions for benchmarking here
+            std::vector<void (*)(struct integral_image *, std::vector<struct interest_point> *)> functions;
+            functions.push_back(get_msurf_descriptors_rounding_unconditional);
+            functions.push_back(get_msurf_descriptors_rounding_unroll_2_24_True_winner_unconditional);
+            functions.push_back(get_msurf_descriptors_simd_2_24_unconditional);
+
+
+            // TODO: (Sebastian) find FLOPS count for get_msurf_descriptor
+            struct benchmark_data data1(image_name, width, height, "get_msurf_descriptors_rounding_unconditional",
+                                            interest_points.size(), -1);
+            struct benchmark_data data2(image_name, width, height, "get_msurf_descriptors_rounding_unroll_2_24_True_winner_unconditional",
+                                            interest_points.size(), -1);
+            struct benchmark_data data3(image_name, width, height, "get_msurf_descriptors_simd_2_24_unconditional",
+                                            interest_points.size(), -1);
+
+            // Insert all respective benchmarking info for functions here
+            std::vector<struct benchmark_data> data;
+            data.push_back(data1);
+            data.push_back(data2);
+            data.push_back(data3);
+
+
+            // Benchmarking all get_msurf_descriptor functions and storing timing results in respective entries in data
+            bench_get_msurf_descriptors(functions, padded_iimage, &interest_points, data);
+
+            // Appending this data to all benchmarking data
+            all_benchmark_data.insert(all_benchmark_data.end(), data.begin(), data.end());
+
+                free(padded_iimage->padded_data);
+                free(padded_iimage);
+        }
+    #endif
+
+    printf("get_msurf_descriptor end\n");
+        
 #endif
 
         // Getting M-SURF descriptors for each interest point
