@@ -132,6 +132,10 @@ void get_msurf_descriptor_simd_2_24(struct integral_image* iimage, struct intere
 
 void get_msurf_descriptors_simd_2_24(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
 
+void get_msurf_descriptor_simd_2_24_unconditional(struct integral_image* iimage, struct interest_point* ipoint);
+
+void get_msurf_descriptors_simd_2_24_unconditional(struct integral_image* iimage, std::vector<struct interest_point> *interest_points);
+
 
 inline void haarXY(struct integral_image *iimage, int row, int col, int scale, float* haarX, float* haarY) {
     

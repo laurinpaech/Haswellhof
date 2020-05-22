@@ -250,6 +250,9 @@ int main(int argc, char const *argv[])
         test_functions.push_back(get_msurf_descriptor);
         test_functions.push_back(get_msurf_descriptor_rounding_unconditional);
         test_functions.push_back(get_msurf_descriptor_rounding_unroll_2_24_True_winner_unconditional);
+        test_functions.push_back(get_msurf_descriptor_simd_2_24_unconditional);
+
+        
 
         struct integral_image *padded_iimage = create_padded_integral_img(width, height);
         compute_padded_integral_img_new(image, padded_iimage);
