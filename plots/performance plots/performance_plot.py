@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import os
 
 import seaborn as sns
 sns.set()
@@ -30,38 +31,53 @@ def my_xticks(x,pos):
         return r'${{ {:2d} }}$'.format(value)
 
 def my_yticks(y,pos):
-    return r'${{ {:2d} }}$'.format(y)
+    return r'${{ {:.1f} }}$'.format(y)
 
 # Name of output file to save the plot to
-outputFileName = 'performance_plot.png'
+outputFileName = 'performance_plot_test.png'
+
+source_folder = '/Users/valentinwolf/Documents/Studium/ETH/ASL/team042/benchmark/perf_measurements/'
 
 # Name of input files with performance data, etc.
 inputFileNames = [
-    '../../benchmark/2020_04_30_00_27/compute_integral_img.csv', 
-    '../../benchmark/2020_04_30_00_27/compute_response_layer.csv',
-    '../../benchmark/2020_04_30_00_27/get_interest_points.csv',
-    '../../benchmark/2020_04_30_00_27/interpolate_step.csv',
-    '../../benchmark/2020_04_30_00_27/get_descriptor.csv'
+    # os.path.join(source_folder,'compute_integral_img.csv'), 
+    # os.path.join(source_folder,'compute_integral_img_faster_alg.csv'), 
+    # os.path.join(source_folder,'compute_padded_integral_img_faster_alg.csv'), 
+    # os.path.join(source_folder,'compute_response_layer.csv'),
+    # os.path.join(source_folder,'compute_response_layers_Dyy_laplacian.csv'),
+    # os.path.join(source_folder,'compute_response_layers_sonic_Dyy_unconditional_opt.csv'),
+    # os.path.join(source_folder,'get_interest_points.csv'),
+    os.path.join(source_folder,'get_msurf_descriptors.csv'),
+    os.path.join(source_folder,'get_msurf_descriptors_simd_2_24.csv'),
+    os.path.join(source_folder,'get_msurf_descriptors_simd_2_24_unconditional.csv')
 ]
+
+# /Users/valentinwolf/Documents/Studium/ETH/ASL/team042/benchmark/2020_05_20_23_57_sebastian/compute_integral_img.csv
 
 # Name of labels
 plotLabels = [
-    '$\mathtt{ compute\_integral\_img }$', 
-    '$\mathtt{ compute\_response\_layer }$',
-    '$\mathtt{ get\_interest\_points }$',
-    '$\mathtt{ interpolate\_step }$',
-    '$\mathtt{ get\_descriptor }$',
+    # '$\mathtt{ compute\_integral\_img }$', 
+    # 'compute_integral_img_faster_alg',
+    # 'compute_padded_integral_img_faster_alg',
+    # '$\mathtt{ compute\_response\_layer }$',
+    # 'compute_response_layers_Dyy_laplacian',
+    # 'compute_response_layers_sonic_Dyy_unconditional_opt',
+    # '$\mathtt{ get\_interest\_points }$',
+    # # '$\mathtt{ interpolate\_step }$',
+    '$\mathtt{ get\_msurf\_descriptors }$',
+    'get_msurf_descriptors_simd_2_24',
+    'get_msurf_descriptors_simd_2_24_unconditional'
 ]
 
 # Getting current axis
 ax = plt.gca()
 
 # Initializing plot title
-plt.title('Base Implementation Performance on Sunflower Image',  x=-0.1, y=1.05, ha='left', fontsize=16, fontweight='bold')
+plt.title('Base Performance on Sunflower Image',  x=-0.1, y=1.05, ha='left', fontsize=16, fontweight='bold')
 
 # Initializing plot axis labels
 plt.xlabel('image size', fontsize=10)
-yl = plt.ylabel('[flops/cycles]', fontsize=10, ha='left')
+yl = plt.ylabel('[flops/cycle]', fontsize=10, ha='left')
 yl.set_rotation(0)
 ax.yaxis.set_label_coords(-0.1, 1.01)
 
@@ -72,16 +88,16 @@ plt.xscale('log')
 
 # Initializing and setting axis ticks
 ticks_x = []
-for i in range(5, 13):
+for i in range(8, 12):
     ticks_x.append(2**(i))
-ticks_y = [0, 1, 2, 3, 4]
+ticks_y = [0, 0.5, 1, 1.5]
 
 plt.xticks(ticks_x, va='center')
 plt.yticks(ticks_y)
 
 # Setting x and y limits (min, max)
 plt.xlim(ticks_x[0] / 2.0, ticks_x[len(ticks_x) - 1] * 2.0)
-plt.ylim(ticks_y[0] - 1, ticks_y[len(ticks_y) - 1] + 1)
+plt.ylim(ticks_y[0]-0.1, ticks_y[len(ticks_y) - 1] + 0.1)
 #plt.ylim(ticks_y[0] / 2.0, ticks_y[len(ticks_y) - 1] * 2.0)
 
 # Setting axis ticks formatter
@@ -102,6 +118,7 @@ for i in range(0, len(inputFileNames)):
     # Reading csv data from input file 
     data = np.genfromtxt(inputFileNames[i], delimiter=',')
 
+
     # Getting width, height, number of interest points, average/min/max cycles, flops per cycles
     imageName = data[:, 0]
     width = data[:, 1]
@@ -111,13 +128,14 @@ for i in range(0, len(inputFileNames)):
     avg_cycles = data[:, 5]
     min_cycles = data[:, 6]
     max_cycles = data[:, 7]
-    flops_per_cycles = data[:, 8]
+    flops_per_cycles = num_flops / avg_cycles
 
     print("Flops per cycles:")
     print(num_flops / avg_cycles)
 
     # Plotting  flops per cycles performance
-    plt.plot(width, flops_per_cycles, label=plotLabels[i], color=colors[i], marker='o')
+    print(i, len(plotLabels))
+    plt.plot(width, flops_per_cycles, label=plotLabels[i], marker='o')
 
 # Adding legend to plot
 plt.legend()
