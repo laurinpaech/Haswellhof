@@ -34,54 +34,70 @@ def my_yticks(y,pos):
         return '$0$'
     exponent = int(np.log10(y)) 
     value = y / float(10**exponent);
-    return r'${{ {val:1.1f} e{ex:2d} }}$'.format(val=value, ex=exponent)
+    return '${{ %1.1f \mathrm{e} {%2d} }}$' % (value, exponent)
 
 # Name of output file to save the plot to
-outputFileName = 'get_msurf_descriptor_runtime_plot.png'
+outputFileName = 'msurf_runtime_plot.png'
 
 # Name of input files with performance data, etc.
 inputFileNames = [
-    '../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors.csv', 
-    '../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors_improved.csv',
-    #'../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors_improved_flip.csv', 
-    #'../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors_improved_flip_flip.csv', 
-    '../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors_inlined.csv', 
-    '../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors_inlinedHaarWavelets.csv', 
-    '../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries.csv', 
-    '../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors_gauss_compute_once_case.csv', 
-    '../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors_gauss_pecompute_haar.csv', 
-    '../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors_gauss_pecompute_haar_rounding.csv', 
-    '../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors_arrays.csv', 
-    '../../benchmark/2020_05_20_23_57_first_try/get_msurf_descriptors_haar_unroll_2_24_True_winner.csv'
+    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors.csv', 
+    #'2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_improved.csv',
+    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_inlined.csv', 
+    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_inlinedHaarWavelets.csv', 
+    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries.csv', 
+    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_precompute_gauss_case.csv', 
+    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_precompute_gauss_array.csv',
+    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_pecompute_haar.csv', 
+    #'2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_rounding.csv', 
+    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_rounding_unroll_2_24_True_winner.csv',
+    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_simd.csv', 
+    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_simd_2_24.csv',
+    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_simd_2_24_unconditional.csv'
 ]
 
 # Name of labels
 plotLabels = [
     '$\mathtt{ base }$', 
     '$\mathtt{ improved }$',
-    #'$\mathtt{ improved flip }$',
-    #'$\mathtt{ improved flip flip }$',
-    '$\mathtt{ inlined }$',
+    #'$\mathtt{ inlined }$',
     '$\mathtt{ joined\ haar\ wavelets }$',
     '$\mathtt{ precheck\ boundaries }$', 
     '$\mathtt{ gauss\ (cases) }$', 
+    '$\mathtt{ gauss\ (array) }$',
     '$\mathtt{ precompute\ haar }$', 
-    '$\mathtt{ rounding }$', 
-    '$\mathtt{ gauss\ (arrays) }$', 
-    '$\mathtt{ blocked\ 2x24\ autotune }$'
+    #'$\mathtt{ rounding }$',
+    '$\mathtt{ autotune\ 2x24 }$',
+    '$\mathtt{ avx2 }$', 
+    '$\mathtt{ autotune\ 2x24\ avx2 }$',
+    '$\mathtt{ autotune\ 2x24\ avx2\ padded }$'
+]
+
+labelOffset = [
+    (0.075, 0.0),
+    (0.075, 0.0),
+    (0.075, 0.0),
+    (0.075, 0.0),
+    (0.075, 0.075),
+    (0.075, -0.075),
+    (0.075, 0.0),
+    (0.075, 0.0),
+    (0.075, 0.0),
+    (0.075, 0.05),
+    (0.075, -0.05)
 ]
 
 # Getting current axis
 ax = plt.gca()
 
 # Initializing plot title
-plt.title('Runtime of $\mathtt{ get\_msurf\_descriptors }$ optimizations',  x=-0.1, y=1.05, ha='left', fontsize=16, fontweight='bold')
+plt.title('M-SURF Descriptor Runtime Optimizations',  x=-0.1, y=1.05, ha='left', fontsize=16, fontweight='bold')
 
 # Initializing plot axis labels
 plt.xlabel('image size', fontsize=10)
 yl = plt.ylabel('[cycles]', fontsize=10, ha='left')
 yl.set_rotation(0)
-ax.yaxis.set_label_coords(-0.1, 1.01)
+ax.yaxis.set_label_coords(-0.1, 1.02)
 
 # Setting x-axis to be log axis
 plt.xscale('log')
@@ -90,15 +106,15 @@ plt.yscale('log')
 
 # Initializing and setting axis ticks
 ticks_x = []
-for i in range(6, 13):
+for i in range(6, 12):
     ticks_x.append(2**(i))
-ticks_y = [10000, 100000, 1000000]
+ticks_y = [5000, 10000, 50000, 100000, 500000]
 
 plt.xticks(ticks_x, va='center')
 plt.yticks(ticks_y)
 
 # Setting x and y limits (min, max)
-plt.xlim(ticks_x[0] / 2.0, ticks_x[len(ticks_x) - 1] * 2.0)
+plt.xlim(ticks_x[0] / 2.0, ticks_x[len(ticks_x) - 1] * 4.0)
 plt.ylim(ticks_y[0] - 1, ticks_y[len(ticks_y) - 1] + 1)
 #plt.ylim(ticks_y[0] / 2.0, ticks_y[len(ticks_y) - 1] * 2.0)
 
@@ -108,6 +124,8 @@ ax.yaxis.set_major_formatter(ticker.FuncFormatter(my_yticks))
 
 # Setting label size
 ax.tick_params(axis='both', which='major', labelsize=8)
+
+print(colors)
 
 # Iterating through all input files and plotting each as a line
 for i in range(0, len(inputFileNames)):
@@ -134,11 +152,14 @@ for i in range(0, len(inputFileNames)):
     print("Cycles:")
     print(avg_cycles)
 
+    labelPos = (width[-1]  * (1.0 + labelOffset[i][0]), avg_cycles[-1] * (1.0 + labelOffset[i][1]))
+
     # Plotting  flops per cycles performance
-    plt.plot(width, avg_cycles, label=plotLabels[i], marker='o')
+    plt.plot(width, avg_cycles, label=plotLabels[i], color=colors[i%10], marker='o')
+    ax.annotate(plotLabels[i], xy=labelPos, va='center', fontsize=6)
 
 # Adding legend to plot
-plt.legend(loc=1, prop={'size': 6})
+#plt.legend(loc=1, prop={'size': 6})
 
 # Saving plot to file
 plt.savefig(outputFileName, dpi=300)
