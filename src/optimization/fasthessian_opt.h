@@ -53,6 +53,10 @@ void compute_response_layers_Dxx_top(struct fasthessian *fh);
 
 void compute_response_layer_Dxx_top(struct response_layer* layer, struct integral_image* iimage);
 
+void compute_response_layers_Dxx_top_mid(struct fasthessian *fh);
+
+void compute_response_layer_Dxx_top_mid(struct response_layer* layer, struct integral_image* iimage);
+
 void compute_response_layers_unconditional(struct fasthessian* fh);
 
 void compute_response_layer_unconditional(struct response_layer* layer, struct integral_image* iimage);
