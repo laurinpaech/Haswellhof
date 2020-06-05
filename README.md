@@ -1,7 +1,7 @@
 # Haswellhof
 Advanced Systems Lab Project 2020
 
-Group: Carla Jancik, Sebastian Winberg, Valentin Wolf, Laurin Paech
+Team 42: Carla Jancik, Sebastian Winberg, Valentin Wolf, Laurin Paech
 
 ## Getting started
 
@@ -21,7 +21,7 @@ mkdir build
 cd build
 ```
 
-- Run [CMake](https://cmake.org/download/) to create project structure: 
+- Run [CMake](https://cmake.org/download/) to create project structure:
 
 ```
 cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -43,7 +43,22 @@ make
 
 - Note that everytime you change something in the project structure, you need to call `cmake ..` again. If something isn't working correctly it is sometimes also helpful to delete the current `build` folder and redo all the above steps again.
 
- 
+## Running Benchmarking
 
+- Instead of executing the program, one can also run benchmarking in directory `build`:
 
+```
+./src/benchmark
+```
 
+- This will run benchmarking with the configuration defined in `src/benchmark/main_benchmark.cpp` and create csv timings of every function in `benchmarking_files`.
+
+## Running Validation
+
+- Instead of executing the program, one can also validate functions:
+
+```
+./src/validation IMAGE_PATH desc1
+```
+
+- This will run validation with the configuration defined in `src/validation/main_validation.cpp` and will compare the outputs to the baseline.
