@@ -3,43 +3,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Dyy Cheatsheet
-// whole box filter
-r00 = x - border;
-r01 = x + border;  // -> x-border+filtersize-1 = x-border+(border+border+1)-1
-c00 = y - lobe;
-c01 = y + lobe - 1; // -> y-lobe+1 + 2*lobe -1 -1
+/*  Optimizations for compute_response_layer
 
-// neg part box filter
-r10 = x - lobe / 2 - 1;
-r11 = r10 + lobe;
-c10 = y - lobe;
-c11 = y + lobe - 1;
+    'layers' take as input the fasthessian struct and iterate over
+    all layers in the struct and call 'layer' functions on each layer
 
-A = (r10, c10)
-B = (r10, c11) = (x - lobe / 2 - 1, y + lobe - 1)
-C = (r11, c10)
-D = (r11, c11)
+    'layer' are optimized versions of compute_response_layer
+
+    Structured in:
+    - Naive implementations
+    - Unpadded
+    - Padded (making use of padded integral image)
+
+    'switch'-functions are combinations of case-wise optimizations
+
+    Be aware: Most functions only work for images >= 128x128
+    These are then fused with other functions as images < 128x128 have special
+    corner cases that are a bit tricky.
 */
 
-/* Dxx Cheatsheet
-// whole box filter
-r00 = x - lobe;
-r01 = x + lobe - 1;
-c00 = y - border - 1;
-c01 = y + border;
-
-// neg part box filter
-r10 = x - lobe;
-r11 = x + lobe - 1;
-c10 = y - lobe/2 - 1;
-c11 = c10 + lobe;
-
-A = (r10, c10)
-B = (r10, c11)
-C = (r11, c10)
-D = (r11, c11)
-*/
+/*******************
+*   LAYERS FUNCTIONS
+********************/
 
 void compute_response_layers_switch_Dyy(struct fasthessian *fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
@@ -77,39 +62,24 @@ void compute_response_layers_switch_Dyy_unconditional_opt_naive(struct fasthessi
     }
 }
 
+// Only for images >= 128x128
 void compute_response_layers_Dyy_leftcorner(struct fasthessian *fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
         compute_response_layer_Dyy_leftcorner(fh->response_map[i], fh->iimage);
     }
 }
 
-void compute_response_layers_Dxx_leftcorner(struct fasthessian *fh) {
-    for (int i = 0; i < fh->total_layers; ++i) {
-        compute_response_layer_Dxx_leftcorner(fh->response_map[i], fh->iimage);
-    }
-}
-
+// Only for images >= 128x128
 void compute_response_layers_Dyy_top(struct fasthessian *fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
         compute_response_layer_Dyy_top(fh->response_map[i], fh->iimage);
     }
 }
 
-void compute_response_layers_Dxx_top(struct fasthessian *fh) {
-    for (int i = 0; i < fh->total_layers; ++i) {
-        compute_response_layer_Dxx_top(fh->response_map[i], fh->iimage);
-    }
-}
-
+// Only for images >= 128x128
 void compute_response_layers_Dyy_top_mid(struct fasthessian *fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
         compute_response_layer_Dyy_top_mid(fh->response_map[i], fh->iimage);
-    }
-}
-
-void compute_response_layers_Dxx_top_mid(struct fasthessian *fh) {
-    for (int i = 0; i < fh->total_layers; ++i) {
-        compute_response_layer_Dxx_top_mid(fh->response_map[i], fh->iimage);
     }
 }
 
@@ -117,6 +87,27 @@ void compute_response_layers_Dxx_top_mid(struct fasthessian *fh) {
 void compute_response_layers_Dyy(struct fasthessian *fh) {
     for (int i = 0; i < fh->total_layers; ++i) {
         compute_response_layer_Dyy(fh->response_map[i], fh->iimage);
+    }
+}
+
+// Only for images >= 128x128
+void compute_response_layers_Dxx_leftcorner(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_Dxx_leftcorner(fh->response_map[i], fh->iimage);
+    }
+}
+
+// Only for images >= 128x128
+void compute_response_layers_Dxx_top(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_Dxx_top(fh->response_map[i], fh->iimage);
+    }
+}
+
+// Only for images >= 128x128
+void compute_response_layers_Dxx_top_mid(struct fasthessian *fh) {
+    for (int i = 0; i < fh->total_layers; ++i) {
+        compute_response_layer_Dxx_top_mid(fh->response_map[i], fh->iimage);
     }
 }
 
@@ -192,18 +183,62 @@ void compute_response_layers_Dyy_laplacian_locality_unconditional_opt_flops_invs
 	}
 }
 
+
+/* Dyy Cheatsheet
+// whole box filter
+r00 = x - border;
+r01 = x + border;
+c00 = y - lobe;
+c01 = y + lobe - 1;
+
+// negative part box filter
+r10 = x - lobe / 2 - 1;
+r11 = r10 + lobe;
+c10 = y - lobe;
+c11 = y + lobe - 1;
+
+A = (r10, c10)
+B = (r10, c11) = (x - lobe / 2 - 1, y + lobe - 1)
+C = (r11, c10)
+D = (r11, c11)
+*/
+
+/* Dxx Cheatsheet
+// whole box filter
+r00 = x - lobe;
+r01 = x + lobe - 1;
+c00 = y - border - 1;
+c01 = y + border;
+
+// negative part box filter
+r10 = x - lobe;
+r11 = x + lobe - 1;
+c10 = y - lobe/2 - 1;
+c11 = c10 + lobe;
+
+A = (r10, c10)
+B = (r10, c11)
+C = (r11, c10)
+D = (r11, c11)
+*/
+
 /*******************
 *   UNPADDED
 ********************/
 
 void compute_response_layer_switch_Dyy(struct response_layer *layer, struct integral_image *iimage) {
+    /*
+        optimizations:
+            - Case distinction to calculate Dyy filter more optimaly
+            - Combination of different functions and uses them depending on case
+    */
 
     int height = layer->height;
     int width = layer->width;
 
     int data_width = iimage->data_width;
 
-    int iwidth = iimage->width;  // TODO: fix where needs to be fixed
+    int iwidth = iimage->width;
     int iheight = iimage->height;
 
     float *data = (float *) iimage->data;
@@ -486,6 +521,7 @@ void compute_response_layer_switch_Dyy(struct response_layer *layer, struct inte
     }
 }
 
+// Naive Implementation
 void compute_response_layer_precompute(struct response_layer* layer, struct integral_image* iimage) {
     /*
     optimizations:
@@ -540,7 +576,12 @@ void compute_response_layer_precompute(struct response_layer* layer, struct inte
 
 }
 
+// Naive Implementation
 void compute_response_layer_blocking(struct response_layer* layer, struct integral_image* iimage) {
+    /*
+        optimizations:
+            - TODO
+    */
     float* response = layer->response;
     bool* laplacian = layer->laplacian;
 
@@ -641,6 +682,7 @@ void compute_response_layer_blocking(struct response_layer* layer, struct integr
 
 }
 
+// Naive Implementation
 void compute_response_layers_at_once(struct fasthessian* fh) {
     /*
     TODO: (valentin) add index precomputation as in compute_response_layer_precompute
@@ -983,6 +1025,10 @@ void compute_response_layers_at_once(struct fasthessian* fh) {
 ********************/
 
 void compute_response_layer_unconditional(struct response_layer *layer, struct integral_image *iimage) {
+    /*
+    optimizations:
+        - uses padded image and therefore box_integral that is completely unconditional
+    */
     float Dxx, Dyy, Dxy;
     int x, y;
 
@@ -1029,8 +1075,13 @@ void compute_response_layer_unconditional(struct response_layer *layer, struct i
 }
 
 void compute_response_layer_unconditional_strided(struct response_layer *layer, struct integral_image *iimage) {
-    // float Dxx, Dyy, Dxy;
-    // int x, y;
+    /*
+    base function: compute_response_layer_unconditional
+
+    optimizations:
+        - Computes Dxy in a strided manner, as a result eliminates unnecessary
+            recomputations
+    */
 
     float *response = layer->response;
     bool *laplacian = layer->laplacian;
@@ -1908,7 +1959,7 @@ void compute_response_layer_switch_Dyy_unconditional_opt_naive(struct response_l
         - uses compute_response_layer_unconditional for all corner-cases for 32x32, 64x64 image
 
         notes:
-        - intended to check if our corner case optimizations are more optimal or not
+        - intended to check if our corner case optimizations are better or not
     */
 
     int iheight = iimage->height;
@@ -11724,8 +11775,10 @@ void compute_response_layer_Dyy_Dxx_laplacian_locality_unconditional(struct resp
         base function: compute_response_layer_Dyy_laplacian_locality
 
         optimization:
-        - box_integral changed to box_integral_unconditional
-            to make use of padded image and remove conditional statements
+        - integrated Dxx optimizations
+
+        results:
+        - unfortunately didn't really improve runtime
     */
     float Dxx, Dyy, Dxy;
     int x, y, k, k0, k1;

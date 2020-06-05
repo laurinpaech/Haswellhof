@@ -109,6 +109,7 @@ void get_interest_points_layers(struct fasthessian *fh, std::vector<struct inter
 
 void interpolate_step_gauss(int row, int col, struct response_layer *top, struct response_layer *middle, struct response_layer *bottom, float offsets[3]);
 
+// Inlined functions
 inline void image_32_filter_75_case(struct response_layer *layer, struct integral_image *iimage) {
     int height = layer->height;
     int width = layer->width;
