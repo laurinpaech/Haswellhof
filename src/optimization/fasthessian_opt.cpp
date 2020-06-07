@@ -266,12 +266,11 @@ void compute_response_layer_switch_Dyy(struct response_layer *layer, struct inte
         compute_response_layer_Dyy_laplacian_locality_inlined(layer, iimage);
 
     } else {
-        // 2. Case The filter is somewhat larger than the image
+        // 2. Case The filter is taller than the image
         if (iheight > border) {
 
-            // 2.1. D is sometimes outside the image. Blue lines edition brings the switch into Dyy
-            // Idea: Do compute_response_layer_Dyy_leftcorner
-            // but everytime all corners are outside, we just use row values above
+            // 2.1. D is sometimes outside the image.
+            // everytime all corners are outside, we just use row values above
             if (iwidth > 2 * lobe - 1) {
                 height_greater_border_width_greater_double_lobe_Dyy_inlined(layer, iimage);
             } else {
@@ -280,7 +279,7 @@ void compute_response_layer_switch_Dyy(struct response_layer *layer, struct inte
 
         } else {
             // Case 2.2 D is always outside the image.
-            // Half the filter height is longer than the image.
+            // Half the filter height is longer than the image.  // TODO this makes no sense
             if (iwidth <= lobe) {
                 // Case 2.2a the filter is longer and wider than the image.
 
