@@ -17,8 +17,8 @@ void get_msurf_descriptor_improved(struct integral_image* iimage, struct interes
     /*
     applied optimizations:
         - replaced outer wihle loops with for loops, simplifying index calculation
-        - scalar replacement & FLOP reduction by computing in the outer most (possible) loop
-        - changed math functions to their float counterparts (??? or is that part of base)
+        - scalar replacement & FLOP reduction by computing everything in the most outer loop
+        - changed math functions to their correct float counterparts
     
     ideas:
         - flip outer for loops (this will change how desc_idx hat to be incremeted to yield the same feature vector)
@@ -352,7 +352,7 @@ void get_msurf_descriptor_inlined(struct integral_image* iimage, struct interest
     /*
     applied optimizations:
         - all of get_msurf_descriptor_improved_flip
-        - inlined gaussian funktion and removed its noralization (as we normalize in the end)
+        - inlined gaussian function and removed its noralization constatnt (as we normalize in the end)
 
     ideas:
         - keep xs_sub_sample_x and xs_sub_sample_x_squared as int and cast in expf (same for y)
