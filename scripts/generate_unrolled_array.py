@@ -451,11 +451,11 @@ int main(int argc, char const *argv[]) {
         free(image_name);
     }
     
-    // extern float* haarResponseX;
-    // extern float* haarResponseY;
+    extern float* haarResponseX;
+    extern float* haarResponseY;
 
-    // aligned_free(haarResponseX);
-    // aligned_free(haarResponseY);
+    aligned_free(haarResponseX);
+    aligned_free(haarResponseY);
     
     save_benchmark_data(all_benchmark_data);
     // free memory benchmarkdata

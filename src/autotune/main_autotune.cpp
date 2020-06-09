@@ -21,9 +21,9 @@ const char *images[] = {
     // "../images/sunflower/sunflower_32.jpg",  
     "../images/sunflower/sunflower_64.jpg",
     "../images/sunflower/sunflower_128.jpg", 
-    // "../images/sunflower/sunflower_256.jpg",
-    // "../images/sunflower/sunflower_512.jpg",
-    // "../images/sunflower/sunflower_1024.jpg",
+    "../images/sunflower/sunflower_256.jpg",
+    "../images/sunflower/sunflower_512.jpg",
+    "../images/sunflower/sunflower_1024.jpg",
     // "../images/sunflower/sunflower_2048.jpg",
     // "../images/sunflower/sunflower_4096.jpg",
 };
@@ -613,9 +613,6 @@ int main(int argc, char const *argv[]) {
         
         free(image_name);
     }
-
-    save_benchmark_data(all_benchmark_data);
-    printf("Benchmarking done!\n");
     
     extern float* haarResponseX;
     extern float* haarResponseY;
@@ -623,11 +620,11 @@ int main(int argc, char const *argv[]) {
     aligned_free(haarResponseX);
     aligned_free(haarResponseY);
     
-    
+    save_benchmark_data(all_benchmark_data);
     // free memory benchmarkdata
     // https://stackoverflow.com/questions/10464992/c-delete-vector-objects-free-memory
     //std::vector<struct benchmark_data *>().swap(all_benchmark_data);
-    
+    printf("Benchmarking done!\n");
 
     return 0;
 }
