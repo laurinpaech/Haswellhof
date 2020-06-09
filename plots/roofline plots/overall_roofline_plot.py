@@ -156,15 +156,15 @@ labels = [
     "$\mathtt{ (b)\ iimage }$",
     "$\mathtt{ (b)\ response }$",
     "$\mathtt{ (b)\ interest }$",
-    "$\mathtt{ (b)\ msurf }$",
+    "$\mathtt{ (b)\ descriptors }$",
     "$\mathtt{ (o)\ iimage }$",
     "$\mathtt{ (o)\ response }$",
     "$\mathtt{ (o)\ interest }$",
-    "$\mathtt{ (o)\ msurf }$",
+    "$\mathtt{ (o)\ descriptors }$",
     "$\mathtt{ (op)\ iimage }$",
     "$\mathtt{ (op)\ response }$",
     "$\mathtt{ (op)\ interest }$",
-    "$\mathtt{ (op)\ msurf }$"
+    "$\mathtt{ (op)\ descriptors }$"
 ]
 
 label_offset = [
@@ -175,11 +175,11 @@ label_offset = [
     (0.1, 0.0),
     (0.1, 0.0),
     (0.1, 0.0),
-    (0.1, -0.1),
+    (-0.62, 0.0),
     (0.1, 0.0),
     (-0.58, 0.0),
     (0.1, 0.0),
-    (0.1, 0.1)   
+    (0.1, 0.0)   
 ]
 
 

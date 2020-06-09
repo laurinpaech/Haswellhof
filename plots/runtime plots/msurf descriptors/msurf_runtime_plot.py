@@ -41,19 +41,19 @@ outputFileName = 'msurf_runtime_plot.png'
 
 # Name of input files with performance data, etc.
 inputFileNames = [
-    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors.csv', 
-    #'2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_improved.csv',
-    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_inlined.csv', 
-    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_inlinedHaarWavelets.csv', 
-    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries.csv', 
-    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_precompute_gauss_case.csv', 
-    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_precompute_gauss_array.csv',
-    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_pecompute_haar.csv', 
-    #'2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_rounding.csv', 
-    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_rounding_unroll_2_24_True_winner.csv',
-    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_simd.csv', 
-    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_simd_2_24.csv',
-    '2020_05_22_19_52_get_msurf_descriptors/get_msurf_descriptors_simd_2_24_unconditional.csv'
+    '2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors.csv', 
+    #'2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_improved.csv',
+    '2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_inlined.csv', 
+    '2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_inlinedHaarWavelets.csv', 
+    #'2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries.csv', 
+    '2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_precompute_gauss_case.csv', 
+    '2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_precompute_gauss_array.csv',
+    '2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_pecompute_haar.csv', 
+    '2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_rounding.csv', 
+    '2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_simd.csv', 
+    '2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_rounding_unroll_2_24_True_winner.csv',
+    '2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_simd_2_24.csv',
+    '2020_05_22_22_23_get_msurf_descriptors_valentin/get_msurf_descriptors_simd_2_24_unconditional.csv'
 ]
 
 # Name of labels
@@ -61,28 +61,29 @@ plotLabels = [
     '$\mathtt{ base }$', 
     '$\mathtt{ improved }$',
     #'$\mathtt{ inlined }$',
-    '$\mathtt{ joined\ haar\ wavelets }$',
-    '$\mathtt{ precheck\ boundaries }$', 
+    '$\mathtt{ joined\ \ haar\ \ wavelets }$',
+    #'$\mathtt{ precheck\ boundaries }$', 
     '$\mathtt{ gauss\ (cases) }$', 
     '$\mathtt{ gauss\ (array) }$',
     '$\mathtt{ precompute\ haar }$', 
-    #'$\mathtt{ rounding }$',
+    '$\mathtt{ rounding }$',
+    '$\mathtt{ avx2 }$',
     '$\mathtt{ autotune\ 2x24 }$',
-    '$\mathtt{ avx2 }$', 
-    '$\mathtt{ autotune\ 2x24\ avx2 }$',
-    '$\mathtt{ autotune\ 2x24\ avx2\ padded }$'
+    '$\mathtt{ autotune\ 2x24 + avx2 }$',
+    '$\mathtt{ autotune\ 2x24 + avx2 + padded }$'
 ]
 
 labelOffset = [
     (0.075, 0.0),
     (0.075, 0.0),
     (0.075, 0.0),
+    #(0.075, -0.05),
+    (0.075, 0.025),
+    (0.075, -0.025),
     (0.075, 0.0),
-    (0.075, 0.075),
-    (0.075, -0.075),
     (0.075, 0.0),
-    (0.075, 0.0),
-    (0.075, 0.0),
+    (0.075, 0.05),
+    (0.075, -0.05),
     (0.075, 0.05),
     (0.075, -0.05)
 ]
@@ -114,7 +115,7 @@ plt.xticks(ticks_x, va='center')
 plt.yticks(ticks_y)
 
 # Setting x and y limits (min, max)
-plt.xlim(ticks_x[0] / 2.0, ticks_x[len(ticks_x) - 1] * 4.0)
+plt.xlim(ticks_x[0] / 2.0, ticks_x[len(ticks_x) - 1] * 5.0)
 plt.ylim(ticks_y[0] - 1, ticks_y[len(ticks_y) - 1] + 1)
 #plt.ylim(ticks_y[0] / 2.0, ticks_y[len(ticks_y) - 1] * 2.0)
 
@@ -126,6 +127,8 @@ ax.yaxis.set_major_formatter(ticker.FuncFormatter(my_yticks))
 ax.tick_params(axis='both', which='major', labelsize=8)
 
 print(colors)
+
+base_cycles = -1
 
 # Iterating through all input files and plotting each as a line
 for i in range(0, len(inputFileNames)):
@@ -149,14 +152,19 @@ for i in range(0, len(inputFileNames)):
     max_cycles = data[1:, 7]
     flops_per_cycles = data[1:, 8]
 
-    print("Cycles:")
-    print(avg_cycles)
+    #print("Cycles:")
+    #print(avg_cycles)
+    if (i==0):
+        base_cycles = avg_cycles[len(avg_cycles) - 2]
+
 
     labelPos = (width[-1]  * (1.0 + labelOffset[i][0]), avg_cycles[-1] * (1.0 + labelOffset[i][1]))
 
     # Plotting  flops per cycles performance
     plt.plot(width, avg_cycles, label=plotLabels[i], color=colors[i%10], marker='o')
     ax.annotate(plotLabels[i], xy=labelPos, va='center', fontsize=6)
+
+    print('Speedup for %s: %.2f' % (plotLabels[i], base_cycles / avg_cycles[len(avg_cycles) - 2]))
 
 # Adding legend to plot
 #plt.legend(loc=1, prop={'size': 6})
