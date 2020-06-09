@@ -369,6 +369,7 @@ const char *images[] = {
 
 int main(int argc, char const *argv[]) {
     std::vector<struct benchmark_data> all_benchmark_data;
+    initialize_folder_name();
     for (int i = 0; i < n_images; i++) {
         char *image_name = (char *)malloc(1024 * sizeof(char));
         strcpy(image_name, images[i]);
@@ -450,11 +451,11 @@ int main(int argc, char const *argv[]) {
         free(image_name);
     }
     
-    extern float* haarResponseX;
-    extern float* haarResponseY;
+    // extern float* haarResponseX;
+    // extern float* haarResponseY;
 
-    aligned_free(haarResponseX);
-    aligned_free(haarResponseY);
+    // aligned_free(haarResponseX);
+    // aligned_free(haarResponseY);
     
     save_benchmark_data(all_benchmark_data);
     // free memory benchmarkdata
