@@ -18,39 +18,32 @@ def my_yticks(y, pos):
 
 
 # Name of output file to save the plot to
-outputFileName = 'compute_response_layers_runtime_bar_plot_switch_complete.png'
+outputFileName = 'compute_response_layers_runtime_bar_plot_first_opts.png'
 
 # Name of input files with performance data, etc.
 inputFileNames = [
     '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layer.csv',
-    '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_sonic_Dyy.csv',
-    #'../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_switch_Dyy.csv', # laurin
-    '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_unconditional.csv',
-    #'../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_switch_Dyy_unconditional.csv', #laurin
-    #'../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_switch_Dyy_unconditional_opt.csv', #laurin
-    #'../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_sonic_Dyy_unconditional.csv', # sebastian
-    '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_sonic_Dyy_unconditional_opt.csv', #sebastian
-   '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_unconditional_strided.csv'
-]
+    '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_precompute.csv',
+    '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_blocking.csv',
+    '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_at_once.csv',
+    ]
 
 # Name of labels
 plotLabels = [
     'base',
-    '$\mathtt{ D_{yy} }$',
-    'padded',
-    'padded $\mathtt{ D_{yy} }$',
-    'padded strided'
+    'precomputations',
+    'blocking',
+    'at once'
 ]
 
 # Getting current axis
 ax = plt.gca()
 
 # Initializing plot title
-plt.title('Compute Response - Complete Runtime Optimizations', x=-0.1, y=1.05, ha='left', fontsize=16,
+plt.title('Compute Response - First Runtime Optimizations', x=-0.1, y=1.05, ha='left', fontsize=16,
           fontweight='bold')
 
 # Initializing plot axis labels
-#plt.xlabel('optimization versions', fontsize=10)
 plt.xlabel('Image Size = 1024', fontsize=10)
 yl = plt.ylabel('[cycles]', fontsize=10, ha='left')
 yl.set_rotation(0)
@@ -100,5 +93,5 @@ for i in range(0, len(inputFileNames)):
 
 plt.xticks(ticks_x, plotLabels)
 #plt.show()
-#Saving plot to file
+# Saving plot to file
 plt.savefig(outputFileName, dpi=300)

@@ -18,58 +18,46 @@ def my_yticks(y, pos):
 
 
 # Name of output file to save the plot to
-outputFileName = 'compute_response_layers_runtime_bar_plot_greater128.png'
+outputFileName = 'compute_response_layers_runtime_bar_plot_unpadded_greater128.png'
 
 # Name of input files with performance data, etc.
 inputFileNames = [
-    '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layer_greater128.csv',
-    # '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_Dyy_leftcorner.csv',
-    # '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_Dyy_top.csv',
-    # '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_Dyy_top_mid.csv',
-    # '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_Dyy.csv',
-    # '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_Dyy_laplacian_locality.csv',
-    # '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_Dyy_laplacian_locality_unconditional.csv',
-    # '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_Dyy_laplacian_locality_unconditional_opt.csv',
-    # '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_Dyy_laplacian_locality_unconditional_opt_flops.csv'
-    '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_unconditional_greater128.csv',
-    '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_Dyy_laplacian_locality_unconditional.csv',
-    #'../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_unconditional_strided_greater128.csv',
-    '../../benchmarking_files/valid_benchmarking/2020_05_23_07_36_laurin/compute_response_layers_Dyy_laplacian_locality_unconditional_opt_flops.csv'
+    '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layer_greater128.csv',
+    '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_Dyy_leftcorner.csv',
+    '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_Dyy_top.csv',
+    '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_Dyy_top_mid.csv',
+    '../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_Dyy.csv',
+    #'../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_Dyy_laplacian_locality.csv' # new name
+    #'../../benchmarking_files/valid_benchmarking/2020_05_20_23_57_sebastian/compute_response_layers_Dyy_laplacian_localityloops.csv' # old name
+
 ]
 
 # Name of labels
 plotLabels = [
-    'Base',
-    # 'Left Corner',
-    # 'Top',
-    # 'Top Mid',
-    # 'Dyy',
-    # 'Locality',
-    # 'Padded',
-    # 'P Opt',
-    # 'P Opt Flops'
-    'padded',
-    'Dyy',
-    #'p strided',
-    'Dyy opt flop'
+    'base',
+    'left top',
+    'top',
+    'top mid',
+    '$\mathtt{ D_{yy} }$'
+    #'locality'
 ]
 
 # Getting current axis
 ax = plt.gca()
 
 # Initializing plot title
-plt.title('Unpadded Runtime Optimizations\n$\mathtt{ compute\_response\_layers }$', fontsize=16, fontweight='bold',
-          loc='center')
+plt.title('Compute Response - Unpadded Runtime Optimizations', x=-0.1, y=1.05, ha='left', fontsize=16, fontweight='bold')
 
 # Initializing plot axis labels
-# plt.xlabel('optimization versions', fontsize=10)
+plt.xlabel('Image Size = 1024', fontsize=10)
 yl = plt.ylabel('[cycles]', fontsize=10, ha='left')
 yl.set_rotation(0)
 ax.yaxis.set_label_coords(-0.1, 1.01)
 
 # Initializing and setting axis ticks
 ticks_x = [i for i, _ in enumerate(inputFileNames)]
-ticks_y = [0, 25000000, 50000000, 75000000, 100000000]
+# ticks_y = [0, 25000000, 50000000, 75000000, 100000000] # laurin scale
+ticks_y = [0, 50000000, 100000000, 150000000, 200000000] # sebastian scale
 
 # Setting y ticks and limits (min, max)
 plt.yticks(ticks_y)
@@ -109,6 +97,6 @@ for i in range(0, len(inputFileNames)):
     plt.bar(i, avg_cycles, label=plotLabels[i])
 
 plt.xticks(ticks_x, plotLabels)
-plt.show()
+#plt.show()
 # Saving plot to file
-#plt.savefig(outputFileName, dpi=300)
+plt.savefig(outputFileName, dpi=300)
