@@ -47,6 +47,8 @@ int main(int argc, char const *argv[])
 	std::vector<struct interest_point> interest_points;
 	get_interest_points(fh, &interest_points);
 
+    // printf("interest points: %lu\n", interest_points.size());
+
 	// Getting M-SURF descriptors for each interest point
 	get_msurf_descriptors(iimage, &interest_points);
 
