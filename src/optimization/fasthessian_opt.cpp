@@ -1073,12 +1073,13 @@ void compute_response_layer_unconditional(struct response_layer *layer, struct i
 
 }
 
+// Padded Dxy reuse
 void compute_response_layer_unconditional_strided(struct response_layer *layer, struct integral_image *iimage) {
     /*
     base function: compute_response_layer_unconditional
 
     optimizations:
-        - Computes Dxy in a strided manner, as a result eliminates unnecessary
+        - Computes Dxy in a strided manner (reusing parts), as a result eliminates unnecessary
             recomputations
     */
 
