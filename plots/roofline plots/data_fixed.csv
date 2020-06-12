@@ -1,0 +1,13 @@
+function,runtime,memory,flops
+'get_msurf_descriptors',199613,2021000000.0,123000000.0
+'get_msurf_descriptors_inlined',138750,1725000000.0,98666666.67
+'get_msurf_descriptors_inlinedHaarWavelets_precheck_boundaries',83639,444666667.0,84000000.0
+'get_msurf_descriptors_precompute_gauss_array',58724,499666667.0,71666666.67
+'get_msurf_descriptors_pecompute_haar',24608,218666666.99999997,46666666.67
+'get_msurf_descriptors_rounding',18391,201333333.0,46666666.67
+'get_msurf_descriptors_rounding_unroll_2_24_True_winner',14125,229333333.0,43666666.67
+'get_msurf_descriptors_simd',14442,223000000.0,44000000.0
+'get_msurf_descriptors_simd_2_24',10384,157333333.00000003,36000000.0
+'compute_response_layers',135342608,592000000.0000001,47250000.0
+'compute_response_layers_switch_Dyy',129156728,504666667.00000006,47333333.33
+'compute_response_layers_Dyy_laplacian_locality_unconditional_opt_flops',45345216,410000000.0,47333333.33
