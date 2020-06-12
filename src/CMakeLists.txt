@@ -226,7 +226,6 @@ target_include_directories(playground
 # Adding libraries to be linked with executable playground
 target_link_libraries(playground)
 
-#[[
 # Adding executable autotune
 add_executable(autotune 
     base/stb_image.h
@@ -274,5 +273,3 @@ target_include_directories(autotune
 
 # Adding libraries to be linked with executable autotune
 target_link_libraries(autotune)
-
-]]
