@@ -91,49 +91,48 @@ end = """
     gauss_s1_c1[6] =  expf(g1_factor * (e_c1_p2 * e_c1_p2));
     gauss_s1_c1[7] =  expf(g1_factor * (e_c1_p3 * e_c1_p3));
     gauss_s1_c1[8] =  expf(g1_factor * (e_c1_p4 * e_c1_p4));
-    
-        // calculate descriptor for this interest point
+
+    // calculate descriptor for this interest point
     for (int i=-8; i<8; i+=5) {
 
+        float *i_arr;
+        if (i == -8 || i == 7) {
+            i_arr = gauss_s1_c1;
+        } else {
+            i_arr = gauss_s1_c0;
+        } 
+
+        int gauss_index_k_start = (i<0?8:0);
+        int gauss_index_k_inc = (i<0?-1:1);
+
         for (int j=-8; j<8; j+=5) {
+
+            float *j_arr;
+            if (j == -8 || j == 7) {
+                j_arr = gauss_s1_c1;
+            } else {
+                j_arr = gauss_s1_c0;
+            } 
 
             float dx = 0.0f;
             float dy = 0.0f; 
             float mdx = 0.0f; 
             float mdy = 0.0f;
 
-            int gauss_index_l = -4;
-            for (int l = j-4; l < j + 5; ++l, ++gauss_index_l) {
-                float gauss_s1_y = -1;
+            int gauss_index_l = (j<0?8:0);
+            int gauss_index_l_inc = (j<0?-1:1);
+            for (int l = (j+8)*24; l < (j + 17)*24; l+=24, gauss_index_l+=gauss_index_l_inc) {
+                float gauss_s1_y = j_arr[gauss_index_l];
 
-                if (j == -8 ) {
-                    gauss_s1_y = gauss_s1_c1[8-(gauss_index_l+4)];
-                } else if (j == -3) {
-                    gauss_s1_y = gauss_s1_c0[8-(gauss_index_l+4)];
-                } else if (j == 2) {
-                    gauss_s1_y = gauss_s1_c0[gauss_index_l+4];
-                } else if (j == 7) {
-                    gauss_s1_y = gauss_s1_c1[gauss_index_l+4];
-                }
-
-                int gauss_index_k = -4;
-                for (int k = i-4; k < i + 5; ++k, ++gauss_index_k) {
-
-                    float gauss_s1_x = -1;
-                    if (i == -8 ) {
-                        gauss_s1_x = gauss_s1_c1[8-(gauss_index_k+4)];
-                    } else if (i == -3) {
-                        gauss_s1_x = gauss_s1_c0[8-(gauss_index_k+4)];
-                    } else if (i == 2) {
-                        gauss_s1_x = gauss_s1_c0[gauss_index_k+4];
-                    } else if (i == 7) {
-                        gauss_s1_x = gauss_s1_c1[gauss_index_k+4];
-                    }
+                int gauss_index_k = gauss_index_k_start;
+                for (int k = i+8; k < i + 17; ++k, gauss_index_k+=gauss_index_k_inc) {
+                    
+                    float gauss_s1_x = i_arr[gauss_index_k];
 
                     float gauss_s1 = gauss_s1_x * gauss_s1_y;
 
-                    float rx = haarResponseX[(l+12)*24+(k+12)];
-                    float ry = haarResponseY[(l+12)*24+(k+12)];
+                    float rx = haarResponseX[l+k];
+                    float ry = haarResponseY[l+k];
                     
                     //Get the gaussian weighted x and y responses on rotated axis
                     float rrx = gauss_s1 * ry;
@@ -170,6 +169,7 @@ end = """
     }
 
     // rescale to unit vector
+    // NOTE: using sqrtf() for floats
     float norm_factor = 1.0f / sqrtf(sum_of_squares);
 
     for (int i = 0; i < 64; ++i) {

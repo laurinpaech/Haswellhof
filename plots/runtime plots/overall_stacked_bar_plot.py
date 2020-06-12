@@ -1,35 +1,36 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+from matplotlib.figure import figaspect
 
 import seaborn as sns
 sns.set()
 
 colors = sns.color_palette().as_hex()
 
-def my_yticks(y,pos):
-    if y <= 0:
+def my_xticks(x,pos):
+    if x <= 0:
         return '$0$'
-    exponent = int(np.log10(y)) 
-    value = y / float(10**exponent);
-    return '${{ %1.1f \mathrm{e} {%2d} }}$' % (value, exponent)
+    #exponent = int(np.log10(y)) 
+    value = x / int(10**6);
+    return '${{ {%2d} }}$' % (value)
 
 # Getting current axis
 ax = plt.gca()
 
-outputFileName = 'overall_stacked_bar_plot.png'
+outputFileName = 'overall_stacked_bar_plot.pdf'
 
 # Initializing plot title
-plt.title('SURF Program Runtime Comparison',  x=-0.1, y=1.05, ha='left', fontsize=16, fontweight='bold')
+plt.title('SURF Runtime Comparisons',  x=-0.22, y=1.05, ha='left', fontsize=16, fontweight='bold')
 
 # Initializing plot axis labels
-plt.xlabel('', fontsize=10)
-yl = plt.ylabel('[cycles]', fontsize=10, ha='left')
-yl.set_rotation(0)
-ax.yaxis.set_label_coords(-0.1, 1.01)
+plt.ylabel('', fontsize=10, labelpad=100)
+xl = plt.xlabel('[mio. cycles]', fontsize=10)
+#yl.set_rotation(0)
+#ax.xaxis.set_label_coords(-0.1, 1.00)
 
 # Setting axis ticks formatter
-ax.yaxis.set_major_formatter(ticker.FuncFormatter(my_yticks))
+ax.xaxis.set_major_formatter(ticker.FuncFormatter(my_xticks))
 
 N = 3
 
@@ -40,6 +41,7 @@ plotLabels = [
     '$\mathtt{ get\_interest\_points }$',
     '$\mathtt{ get\_msurf\_descriptors }$'
 ]
+
 
 '''
 base:
@@ -71,23 +73,44 @@ optimized (v2):
 #get_interest_points_cycles = [30326909, 30393429, 26568530]
 #get_msurf_descriptors_cycles = [569110706, 44537542, 53325326]
 
-compute_integral_image_cycles = [4257082, 2764978, 4591420]
-compute_response_layers_cycles = [203633614, 212745057, 44896938]
-get_interest_points_cycles = [26371938, 26383849, 26421902]
-get_msurf_descriptors_cycles = [610610269, 30229192, 28272216]
+# compute_integral_image_cycles = [4257082, 2764978, 4591420]
+# compute_response_layers_cycles = [203633614, 212745057, 44896938]
+# get_interest_points_cycles = [26371938, 26383849, 26421902]
+# get_msurf_descriptors_cycles = [610610269, 30229192, 28272216]
 
-ind = np.arange(N)    # the x locations for the groups
-width = 0.4           # the width of the bars: can also be len(x) sequence
+compute_integral_image_cycles = [4058780, 2785559, 4591420]
+compute_response_layers_cycles = [135342608, 129156728, 45818320]
+get_interest_points_cycles = [27068836, 27068836, 27068836]
+get_msurf_descriptors_cycles = [568098598, 29552864, 27964796]
+#overall_cycles = [743217661, 194846528, 108804305]
 
-p1 = plt.bar(ind, get_msurf_descriptors_cycles, width, color=colors[3])
-p2 = plt.bar(ind, get_interest_points_cycles, width, bottom=get_msurf_descriptors_cycles, color=colors[2])
-p3 = plt.bar(ind, compute_response_layers_cycles, width, bottom=np.array(get_msurf_descriptors_cycles)+np.array(get_interest_points_cycles), color=colors[1])
-p4 = plt.bar(ind, compute_integral_image_cycles, width, bottom=np.array(get_msurf_descriptors_cycles)+np.array(get_interest_points_cycles)+np.array(compute_response_layers_cycles), color=colors[0])
+opensurf_cycles = [764998891]
+herbertbay_cycles = [312253445]
 
-plt.xticks(ind, ('$\mathtt{ base }$', '$\mathtt{ optimized }$\n$\mathtt{ (not\ \ padded) }$', '$\mathtt{ optimized }$\n$\mathtt{ (padded) }$'))
-plt.yticks(np.arange(0, 800000001, 100000000))
+
+ind = np.arange(N, 0, -1)    # the x locations for the groups
+width = 0.6           # the width of the bars: can also be len(x) sequence
+
+#p0 = plt.barh(ind, overall_cycles, width, color='grey')
+p1 = plt.barh(ind, get_msurf_descriptors_cycles, width, color=colors[3])
+p2 = plt.barh(ind, get_interest_points_cycles, width, left=get_msurf_descriptors_cycles, color=colors[2])
+p3 = plt.barh(ind, compute_response_layers_cycles, width, left=np.array(get_msurf_descriptors_cycles)+np.array(get_interest_points_cycles), color=colors[1])
+p4 = plt.barh(ind, compute_integral_image_cycles, width, left=np.array(get_msurf_descriptors_cycles)+np.array(get_interest_points_cycles)+np.array(compute_response_layers_cycles), color=colors[0])
+
+plt.yticks(ind, ('$\mathtt{ baseline }$', '$\mathtt{ optimized }$\n$\mathtt{ (not\ \ padded) }$', '$\mathtt{ optimized }$\n$\mathtt{ (padded) }$'))
+plt.xticks(np.arange(0, 800000001, 100000000))
 plt.legend((p4[0], p3[0], p2[0], p1[0]), plotLabels)
-#plt.legend((p1[0], p2[0], p3[0]), ('1', '2', '3'))
+
+ratio = 0.5
+xleft, xright = ax.get_xlim()
+ybottom, ytop = ax.get_ylim()
+ax.set_aspect(abs((xright-xleft)/(ybottom-ytop))*ratio)
+
+plt.tight_layout()
+
+plt.gcf().subplots_adjust(left=0.2)
+
+plt.gcf().set_size_inches(7, 3.6)
 
 # Saving plot to file
-plt.savefig(outputFileName, dpi=300)
+plt.savefig(outputFileName, dpi=300, figsize=(500, 200))
