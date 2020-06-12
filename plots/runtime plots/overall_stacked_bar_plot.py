@@ -21,11 +21,11 @@ ax = plt.gca()
 outputFileName = 'overall_stacked_bar_plot.pdf'
 
 # Initializing plot title
-plt.title('SURF Runtime Comparisons',  x=-0.22, y=1.05, ha='left', fontsize=16, fontweight='bold')
+plt.title('Runtime Components',  x=-0.22, y=1.05, ha='left', fontsize=16, fontweight='bold')
 
 # Initializing plot axis labels
 plt.ylabel('', fontsize=10, labelpad=100)
-xl = plt.xlabel('[mio. cycles]', fontsize=10)
+xl = plt.xlabel('[mio. cycles]', fontsize=12)
 #yl.set_rotation(0)
 #ax.xaxis.set_label_coords(-0.1, 1.00)
 

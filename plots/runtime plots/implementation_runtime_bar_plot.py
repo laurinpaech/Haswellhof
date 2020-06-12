@@ -29,11 +29,11 @@ ax = plt.gca()
 outputFileName = 'implementation_runtime_bar_plot.pdf'
 
 # Initializing plot title
-plt.title('Runtime - Different SURF Implementations',  x=-0.22, y=1.05, ha='left', fontsize=16, fontweight='bold')
+plt.title('Runtime - Different SURF Implementations',  x=-0.23, y=1.05, ha='left', fontsize=16, fontweight='bold')
 
 # Initializing plot axis labels
-plt.ylabel('', fontsize=10, labelpad=100)
-xl = plt.xlabel('[mio. cycles]', fontsize=10)
+plt.ylabel('', fontsize=12, labelpad=100)
+xl = plt.xlabel('[mio. cycles]', fontsize=12)
 #yl.set_rotation(0)
 #ax.xaxis.set_label_coords(-0.1, 1.00)
 
@@ -48,7 +48,7 @@ N = 2
 
 # Name of labels
 plotLabels = [
-    'OpenSURF [2]',
+    'OpenSURF [17]',
     'Herbert Bay [1]',
     'Ours'
 ]
@@ -64,9 +64,9 @@ p0 = plt.barh(2, runtime_cycles[0], width, color=colors[0])
 p1 = plt.barh(1, runtime_cycles[1], width, color=colors[3])
 p1 = plt.barh(0, runtime_cycles[2], width, color=colors[2])
 
-plt.yticks(ind, ('OpenSURF [2]', 'Herbert Bay [1]', 'Ours'))
+plt.yticks(ind, ('OpenSURF [17]', 'Herbert Bay [1]', 'Ours'))
 
-ratio = 0.5
+ratio = 0.3
 xleft, xright = ax.get_xlim()
 ybottom, ytop = ax.get_ylim()
 ax.set_aspect(abs((xright-xleft)/(ybottom-ytop))*ratio)
@@ -75,7 +75,7 @@ plt.tight_layout()
 
 plt.gcf().subplots_adjust(left=0.2)
 
-plt.gcf().set_size_inches(7, 3.6)
+plt.gcf().set_size_inches(7, 2.7)
 
 # Saving plot to file
 plt.savefig(outputFileName, dpi=300, figsize=(500, 200))
